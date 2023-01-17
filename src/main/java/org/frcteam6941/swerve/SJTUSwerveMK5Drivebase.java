@@ -36,8 +36,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
     // Snap Rotation Controller
     private final ProfiledPIDController headingController = new ProfiledPIDController(
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KP, Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KI,
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KD, Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
+            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KP,
+            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KI,
+            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KD,
+            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
     private boolean isLockHeading;
     private double headingTarget = 0.0;
     private double headingFeedforward = 0.0;
@@ -75,24 +77,50 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     private SJTUSwerveMK5Drivebase() {
         gyro = new Pigeon(0);
 
-        // Swerve hardware configurations
+        // // Swerve hardware configurations
+        // mSwerveMods = new SJTUSwerveModuleMK5[] {
+        //         new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
+        //                 Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_LEFT_OFFSET,
+        //                 false, true),
+        //         new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_FRONT_RIGHT_DRIVE_MOTOR,
+        //                 Constants.CANID.DRIVETRAIN_FRONT_RIGHT_STEER_MOTOR,
+        //                 Constants.SUBSYSTEM_SWERVE.FRONT_RIGHT_OFFSET, false, true),
+        //         new SJTUSwerveModuleMK5(2, Constants.CANID.DRIVETRAIN_BACK_LEFT_DRIVE_MOTOR,
+        //                 Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_LEFT_OFFSET,
+        //                 false, true),
+        //         new SJTUSwerveModuleMK5(3, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
+        //                 Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_RIGHT_OFFSET,
+        //                 false, true)
+        // };
+
+        // // Module positions and swerve kinematics
+        // swerveModulePositions = new Translation2d[] {
+        //         new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+        //                 Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
+        //         new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+        //                 -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
+        //         new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+        //                 Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
+        //         new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+        //                 -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
+
+        // temporary diagnal swerve
         mSwerveMods = new SJTUSwerveModuleMK5[] {
                 new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_LEFT_OFFSET, false, true),
-                new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_FRONT_RIGHT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_FRONT_RIGHT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_RIGHT_OFFSET, false, true),
-                new SJTUSwerveModuleMK5(2, Constants.CANID.DRIVETRAIN_BACK_LEFT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_LEFT_OFFSET, false, true),
-                new SJTUSwerveModuleMK5(3, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_RIGHT_OFFSET, false, true)
+                        Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_LEFT_OFFSET,
+                        false, true),
+                new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
+                        Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_RIGHT_OFFSET,
+                        false, true)
         };
 
         // Module positions and swerve kinematics
         swerveModulePositions = new Translation2d[] {
-                new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0, Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0, -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0, Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0, -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
+                new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
+                new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
+
         swerveKinematics = new SwerveDriveKinematics(swerveModulePositions);
 
         headingController.enableContinuousInput(0, 360.0); // Enable continuous rotation
@@ -203,13 +231,13 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 mod.setDesiredState(swerveModuleStates[mod.getModuleNumber()], true, false);
             }
         } else {
-            SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.SUBSYSTEM_SWERVE.DRIVE_MAX_VELOCITY);
+            SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
+                    Constants.SUBSYSTEM_SWERVE.DRIVE_MAX_VELOCITY);
             for (SwerveModuleBase mod : mSwerveMods) {
                 mod.setDesiredState(swerveModuleStates[mod.getModuleNumber()], false, false);
             }
         }
 
-        
     }
 
     public void resetHeadingController() {
@@ -284,7 +312,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             mod.setDesiredState(new SwerveModuleState(0.0, antiAngle), false, true);
         }
     }
-    
+
     public double getYaw() {
         return this.gyro.getYaw().getDegrees();
     }
@@ -319,7 +347,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
     @Override
     public SwerveDriveKinematics getKinematics() {
-            return this.swerveKinematics;
+        return this.swerveKinematics;
     }
 
     public Translation2d[] getSwerveModulePositions() {
@@ -360,7 +388,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     public void update(double time, double dt) {
         updateOdometry(time, dt);
         HolonomicDriveSignal driveSignal = this.driveSignal;
-        Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(), getAngularVelocity(), time, dt);
+        Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
+                getAngularVelocity(), time, dt);
         if (trajectorySignal.isPresent()) {
             setState(STATE.PATH_FOLLOWING);
             driveSignal = trajectorySignal.get();
@@ -395,7 +424,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 }
                 break;
         }
-        
+
     }
 
     @Override

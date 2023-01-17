@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
+import frc.robot.coordinators.Coordinator;
 import frc.robot.coordinators.Superstructure;
 import frc.robot.shuffleboard.ShuffleBoardInteractions;
 
@@ -40,7 +41,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         this.updateManager = new UpdateManager(
-            SJTUSwerveMK5Drivebase.getInstance()
+            SJTUSwerveMK5Drivebase.getInstance(),
+            Coordinator.getInstance()
         );
         this.updateManager.startEnableLoop(Constants.LOOPER_DT);
 
@@ -75,7 +77,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
-        Superstructure.getInstance().stop();
 
         this.updateManager.stopDisableLoop();
 
@@ -100,8 +101,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         CommandScheduler.getInstance().cancelAll();
-        Superstructure.getInstance().stop();
-
 
         this.updateManager.stopDisableLoop();
         CommandScheduler.getInstance().enable();
@@ -112,6 +111,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         CommandScheduler.getInstance().run();
+        Coordinator.getInstance().updateDriverAndOperatorCommand();
     }
 
     @Override
