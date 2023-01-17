@@ -464,6 +464,12 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
     }
 
+    @Override
+    public void simulate() {
+
+    }
+
+
     /**
      * Act accordingly under three modes:
      * 1. BRAKE: Make all the wheels to appear in X shape.
