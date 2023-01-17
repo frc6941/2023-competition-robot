@@ -3,6 +3,13 @@ package frc.robot.subsystems;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
 public class Arm implements Updatable {
+    public static class PeriodicIO {
+        // INPUT
+    
+        // OUTPUT
+    }
+    
+    public PeriodicIO mPeriodicIO = new PeriodicIO();
     
     @Override
     public synchronized void read(double time, double dt){

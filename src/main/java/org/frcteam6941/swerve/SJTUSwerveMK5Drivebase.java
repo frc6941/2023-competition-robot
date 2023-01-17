@@ -8,6 +8,7 @@ import org.frcteam6941.control.HolonomicDriveSignal;
 import org.frcteam6941.control.HolonomicTrajectoryFollower;
 import org.frcteam6941.drivers.Gyro;
 import org.frcteam6941.drivers.Pigeon;
+import org.frcteam6941.drivers.PlaceholderGyro;
 import org.frcteam6941.localization.Localizer;
 import org.frcteam6941.localization.SwerveLocalizer;
 import org.frcteam6941.utils.AngleNormalization;
@@ -76,7 +77,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     }
 
     private SJTUSwerveMK5Drivebase() {
-        gyro = new Pigeon(0);
+        // gyro = new Pigeon(0);
 
         // // Swerve hardware configurations
         // mSwerveMods = new SJTUSwerveModuleMK5[] {
@@ -106,6 +107,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         //                 -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
 
         // temporary diagnal swerve
+        gyro = new PlaceholderGyro();
+
         mSwerveMods = new SJTUSwerveModuleMK5[] {
                 new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_LEFT_OFFSET,
