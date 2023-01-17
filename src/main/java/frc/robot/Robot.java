@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.coordinators.Coordinator;
-import frc.robot.coordinators.Superstructure;
 import frc.robot.shuffleboard.ShuffleBoardInteractions;
 
 /**

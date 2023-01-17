@@ -4,7 +4,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
-public class Pigeon {
+public class Pigeon implements Gyro {
     // Actual pigeon object
     private final PigeonIMU mGyro;
 
@@ -19,6 +19,7 @@ public class Pigeon {
         mGyro.configFactoryDefault();
     }
 
+    @Override
     public Rotation2d getYaw() {
         Rotation2d angle = getUnadjustedYaw().minus(yawAdjustmentAngle);
         if (inverted) {
@@ -27,10 +28,12 @@ public class Pigeon {
         return angle;
     }
 
+    @Override
     public Rotation2d getRoll() {
         return getUnadjustedRoll().minus(rollAdjustmentAngle);
     }
 
+    @Override
     public Rotation2d getPitch() {
         return getUnadjustedPitch().minus(pitchAdjustmentAngle);
     }
@@ -40,6 +43,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setYaw(double angleDeg) {
         yawAdjustmentAngle = getUnadjustedYaw().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
@@ -49,6 +53,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setRoll(double angleDeg) {
         rollAdjustmentAngle = getUnadjustedRoll().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
@@ -58,6 +63,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setPitch(double angleDeg) {
         pitchAdjustmentAngle = getUnadjustedRoll().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
