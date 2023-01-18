@@ -48,14 +48,7 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR = 6;
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
-        public static final int FEEDER_MOTOR = 8;
-        public static final int TURRET_MOTOR = 9;
-        public static final int SHOOTER_LEAD_MOTOR = 10;
-        public static final int SHOOTER_FOLLOWER_MOTOR = 11;
-        public static final int CLIMBER_MOTOR = 12;
-        public static final int HOOD_MOTOR = 14;
-        public static final int INTAKER_MOTOR = 29;
-        public static final int TRIGGER_MOTOR = 30;
+        public static final int ARM_MOTOR = 8;
 
         public static final int PNEUMATICS_HUB = 1;
     }
