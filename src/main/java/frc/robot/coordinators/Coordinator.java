@@ -148,4 +148,35 @@ public class Coordinator implements Updatable {
     public void simulate() {
 
     }
+
+    public enum STATE {
+        PREP_SCORING,
+        SCORING,
+        COMMUTING,
+        LOADING,
+        CLIMBING
+    }
+
+    public enum WANTED_ACTION {
+        PREP_SCORE,
+        SCORE,
+        COMMUTE,
+        LOAD,
+        CLIMB
+    }
+
+    public STATE state = STATE.COMMUTING;
+    public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
+
+    public STATE getState() {
+        return state;
+    }
+
+    public void setState(STATE state) {
+        this.state = state;
+    }
+
+    public void setWantedAction(WANTED_ACTION wantedAction) {
+        this.wantedAction = wantedAction;
+    }
 }

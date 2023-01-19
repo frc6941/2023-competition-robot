@@ -14,7 +14,7 @@ import frc.robot.SuperstructureConstants.EXTENDER_LENGTHS;
  * 
  */
 public class SuperstructureState {
-    // The angle of the large base arm.
+    // The angle of the large base arm - viewed from the right, CCW positive.
     public Rotation2d armAngle = new Rotation2d();
     // The length of the extender installed on the base arm.
     public double extenderLength = 10.0;
