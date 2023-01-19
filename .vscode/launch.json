@@ -6,6 +6,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch ArmKinematics",
+      "request": "launch",
+      "mainClass": "frc.robot.kinematics.ArmKinematics",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
+      "name": "Launch KinematicsTest",
+      "request": "launch",
+      "mainClass": "KinematicsTest",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
       "name": "Launch SwerveLocalizer",
       "request": "launch",
       "mainClass": "org.frcteam6941.localization.SwerveLocalizer",

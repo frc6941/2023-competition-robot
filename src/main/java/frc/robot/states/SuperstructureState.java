@@ -2,6 +2,7 @@ package frc.robot.states;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.SuperstructureConstants.ARM_ANGLES;
 import frc.robot.SuperstructureConstants.EXTENDER_LENGTHS;
 
@@ -14,30 +15,13 @@ import frc.robot.SuperstructureConstants.EXTENDER_LENGTHS;
  */
 public class SuperstructureState {
     // The angle of the large base arm.
-    public double armAngle = 0.0;
+    public Rotation2d armAngle = new Rotation2d();
     // The length of the extender installed on the base arm.
     public double extenderLength = 10.0;
 
-    // If is openloop.
-    public boolean isOpenLoop = false;
-    // If arm is in openloop, the corresponding control power from -1 to 1.
-    public double armOpenLoopPower = 0.0;
-    // If extender is in openloop, the corresponding control power from -1 to 1.
-    public double extenderOpenLoopPower = 0.0;
-
-    public SuperstructureState(
-            double armAngle, double extenderLength,
-            boolean isOpenLoop, double armOpenLoopPower, double extenderOpenLoopPower) {
+    public SuperstructureState(Rotation2d armAngle, double extenderLength) {
         this.armAngle = armAngle;
         this.extenderLength = extenderLength;
-
-        this.isOpenLoop = isOpenLoop;
-        this.armOpenLoopPower = armOpenLoopPower;
-        this.extenderOpenLoopPower = extenderOpenLoopPower;
-    }
-
-    public SuperstructureState(double armAngle, double extenderLength) {
-        this(armAngle, extenderLength, false, 0.0, 0.0);
     }
 
     public SuperstructureState() {
@@ -49,12 +33,12 @@ public class SuperstructureState {
     }
 
     public boolean isOnTarget(SuperstructureState desiredState, double armThreshold, double extenderThreshold) {
-        return Util.epsilonEquals(desiredState.armAngle, armAngle, armThreshold)
+        return Util.epsilonEquals(desiredState.armAngle.getDegrees(), armAngle.getDegrees(), armThreshold)
                 && Util.epsilonEquals(desiredState.extenderLength, extenderLength, extenderThreshold);
     }
 
     public SuperstructureState getInRange(double armMax, double armMin, double extenderMax, double extenderMin) {
-        armAngle = Util.clamp(armAngle, armMin, armMax);
+        armAngle = Rotation2d.fromDegrees(Util.clamp(armAngle.getDegrees(), armMin, armMax));
         extenderLength = Util.clamp(extenderLength, extenderMin, extenderMax);
         return this;
     }
@@ -76,6 +60,11 @@ public class SuperstructureState {
         }
          
         SuperstructureState c = (SuperstructureState) o;
-        return c.armAngle == armAngle && c.extenderLength == extenderLength;
+        return c.armAngle.equals(c.armAngle) && c.extenderLength == extenderLength;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Superstructure State: Arm: %.2f deg; Extender: %.2f m", armAngle.getDegrees(), extenderLength);
     }
 }
