@@ -1,11 +1,10 @@
-package frc.robot.kinematics;
+package frc.robot.motion;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.states.SuperstructureState;
@@ -37,9 +36,5 @@ public class ArmKinematics {
         Rotation2d armAngle = new Rotation2d(endEffectorToTower.getX(), endEffectorToTower.getZ());
         double extenderLength = endEffectorToTower.getTranslation().getNorm();
         return new SuperstructureState(armAngle, extenderLength);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(inverseKinematics(new Translation3d(0, 0, 1.0), new Pose2d(new Translation2d(1.0, 0.0), Rotation2d.fromDegrees(0.0))).toString());
     }
 }

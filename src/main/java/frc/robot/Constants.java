@@ -49,14 +49,14 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
         public static final int ARM_MOTOR = 8;
+        public static final int INTAKER_MOTOR = 9;
 
         public static final int PNEUMATICS_HUB = 1;
     }
 
     // Analog ID Configurations
     public static final class ANALOG_ID {
-        public static final int BALL_POSITION_ONE_DETECTOR = 0;
-        public static final int BALL_POSITION_TWO_DETECTOR = 1;
+        public static final int GAMEPIECE_SENSOR = 0;
     }
 
     public static final class LED_CONTROL {

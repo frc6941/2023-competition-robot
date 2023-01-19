@@ -2,7 +2,8 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.team254.lib.drivers.LazyTalonFX;
+
 import frc.robot.Constants;
 
 public class Arm implements Updatable {
@@ -16,7 +17,7 @@ public class Arm implements Updatable {
 
     public PeriodicIO mPeriodicIO = new PeriodicIO();
 
-    public TalonFX armMotor = new TalonFX(Constants.CANID.ARM_MOTOR);
+    private final LazyTalonFX armMotor = new LazyTalonFX(Constants.CANID.ARM_MOTOR);
 
     @Override
     public synchronized void read(double time, double dt) {
