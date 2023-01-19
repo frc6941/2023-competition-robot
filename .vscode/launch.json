@@ -6,16 +6,16 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Launch AStarPathPlanner",
+      "name": "Launch ArmKinematics",
       "request": "launch",
-      "mainClass": "org.frcteam6941.pathplanning.astar.AStarPathPlanner",
+      "mainClass": "frc.robot.kinematics.ArmKinematics",
       "projectName": "2023competitionrobot"
     },
     {
       "type": "java",
-      "name": "Launch PathPlannerTest",
+      "name": "Launch KinematicsTest",
       "request": "launch",
-      "mainClass": "PathPlannerTest",
+      "mainClass": "KinematicsTest",
       "projectName": "2023competitionrobot"
     },
     {
