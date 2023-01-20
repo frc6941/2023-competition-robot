@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.states.SuperstructureState;
@@ -31,8 +32,7 @@ public class ArmKinematics {
         Pose3d topTowerPivot = drivetrainPose3d
                 .plus(transformFromRobotCentertoLowTowerPivot)
                 .plus(transformFromLowTowerPivotToTopTowerPivot);
-        Transform3d endEffectorToTower = new Pose3d(endEffectorPosition, new Rotation3d()).minus(topTowerPivot);
-        System.out.println(endEffectorToTower.toString());
+        Transform3d endEffectorToTower = topTowerPivot.minus(new Pose3d(endEffectorPosition, new Rotation3d()));
         Rotation2d armAngle = new Rotation2d(endEffectorToTower.getX(), endEffectorToTower.getZ());
         double extenderLength = endEffectorToTower.getTranslation().getNorm();
         return new SuperstructureState(armAngle, extenderLength);

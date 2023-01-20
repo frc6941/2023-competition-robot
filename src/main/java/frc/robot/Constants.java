@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -49,7 +50,8 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
         public static final int ARM_MOTOR = 8;
-        public static final int INTAKER_MOTOR = 9;
+        public static final int EXTENDER_MOTOR = 9;
+        public static final int INTAKER_MOTOR = 10;
 
         public static final int PNEUMATICS_HUB = 1;
     }
@@ -79,7 +81,7 @@ public final class Constants {
         public static final double MODULE_MAX_VELOCITY = 4.0;
         public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.125);
 
-        public static final double DRIVE_GEAR_RATIO = 7.73;
+        public static final double DRIVE_GEAR_RATIO = 7.0;
         public static final double ANGLE_GEAR_RATIO = 10.0;
         public static final double DRIVETRAIN_SIDE_WIDTH = 0.58;
         public static final Translation2d DRIVETRAIN_CENTER_OF_ROTATION = new Translation2d(0.0, 0.0);
@@ -104,6 +106,32 @@ public final class Constants {
         // accordingly.
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
+    }
+
+    // Arm Constants
+    public static final class SUBSYSTEM_ARM {
+        public static final double ARM_MASS = 10.0;
+        public static final double ARM_GEAR_RATIO = 50.0;
+
+        public static final double ARM_HOME_ANGLE = 220.0;
+        public static final double ARM_MIN_ANGLE = -110.0;
+        public static final double ARM_MAX_ANGLE = 220.0;
+
+        public static final double ARM_KP = 1.0;
+        public static final double ARM_KI = 0.0;
+        public static final double ARM_KD = 0.0;
+        public static final double ARM_KF = 0.0;
+        public static final double ARM_CRUISE_V = 20000.0;
+        public static final double ARM_CRUIVE_ACC = 40000.0;
+
+
+        public static final ArmFeedforward ARM_FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
+    }
+
+    // Extender Constants
+    public static final class SUBSYSTEM_EXTENDER {
+        public static final double EXTENDER_GEAR_RATIO = 40.0;
+        public static final double EXTENDER_WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
     }
 
     // Controller

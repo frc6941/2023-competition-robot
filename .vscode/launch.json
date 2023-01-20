@@ -8,6 +8,13 @@
       "type": "java",
       "name": "Launch ArmKinematics",
       "request": "launch",
+      "mainClass": "frc.robot.motion.ArmKinematics",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
+      "name": "Launch ArmKinematics",
+      "request": "launch",
       "mainClass": "frc.robot.kinematics.ArmKinematics",
       "projectName": "2023competitionrobot"
     },
