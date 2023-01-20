@@ -18,6 +18,7 @@ import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.coordinators.Coordinator;
 import frc.robot.shuffleboard.ShuffleBoardInteractions;
+import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
 /**
@@ -42,6 +43,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         this.updateManager = new UpdateManager(
             Intaker.getInstance(),
+            ArmAndExtender.getInstance(),
             SJTUSwerveMK5Drivebase.getInstance(),
             Coordinator.getInstance()
         );
@@ -117,9 +119,21 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testInit() {
+
     }
 
     @Override
     public void testPeriodic() {
+
+    }
+
+    @Override
+    public void simulationInit() {
+
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        updateManager.runAllSimulate();
     }
 }

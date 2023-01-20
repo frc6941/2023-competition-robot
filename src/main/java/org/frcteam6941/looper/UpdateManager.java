@@ -95,4 +95,10 @@ public final class UpdateManager {
 	public void stopDisableLoop() {
 		updaterDisableThread.stop();
 	}
+
+	public void runAllSimulate() {
+		updatables.forEach(s -> {
+			s.simulate();
+		});
+	}
 }

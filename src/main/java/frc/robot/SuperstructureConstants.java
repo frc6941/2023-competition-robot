@@ -7,16 +7,10 @@ public class SuperstructureConstants {
         public static double EXTENDER = 0.02;
     }
 
-    // Arm Anngles
+    // Arm Angles
     public static class ARM_ANGLES {
-        public static double MAX = 150.0;
-        public static double MIN = -185.0;
-
-        public static double HEAD_ZONE_MIN_ANGLE = -70.0;
-        public static double HEAD_ZONE_MAX_ANGLE = 70.0;
-
-        public static double BACK_RAISE_ZONE_MIN_ANGLE = MIN;
-        public static double BACK_RAISE_ZONE_MAX_ANGLE = -140.0;
+        public static double MAX = 250.0;
+        public static double MIN = -110.0;
     }
 
     // Extender Lengths

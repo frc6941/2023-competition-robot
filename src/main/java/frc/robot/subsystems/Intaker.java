@@ -35,6 +35,7 @@ public class Intaker implements Updatable{
     }
     
     private Intaker() {
+        intakerMotor.configFactoryDefault(50);
         intakerMotor.setNeutralMode(NeutralMode.Brake);
         intakerMotor.setInverted(false);
     }
@@ -64,7 +65,6 @@ public class Intaker implements Updatable{
         } else {
             intakerMotor.set(ControlMode.PercentOutput, 0.0);
         }
-        System.out.println(intakerMotor.getMotorOutputPercent());
     }
     
     @Override

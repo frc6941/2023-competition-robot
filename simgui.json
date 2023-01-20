@@ -4,11 +4,59 @@
       "window": {
         "visible": true
       }
+    },
+    "Other Devices": {
+      "Talon FX[8]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[8]/Fwd Limit": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[8]/Integrated Sensor": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[8]/Rev Limit": {
+        "header": {
+          "open": true
+        }
+      }
+    },
+    "RoboRIO": {
+      "5V Rail": {
+        "open": true
+      },
+      "6V Rail": {
+        "open": true
+      },
+      "RoboRIO Input": {
+        "open": true
+      },
+      "window": {
+        "visible": true
+      }
     }
   },
   "NTProvider": {
     "types": {
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/SmartDashboard/Mechanism": "Mechanism2d"
+    },
+    "windows": {
+      "/SmartDashboard/Mechanism": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
