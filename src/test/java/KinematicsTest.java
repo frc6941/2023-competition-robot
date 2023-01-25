@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.robot.motion.ArmKinematics;
+import frc.robot.motion.SuperstructureKinematics;
 import frc.robot.states.SuperstructureState;
 
 public class KinematicsTest {
@@ -27,8 +27,8 @@ public class KinematicsTest {
         Pose2d drivetrainPose = new Pose2d(0,0,new Rotation2d());
 
         for(SuperstructureState testState: testStatesArray) {
-            Translation3d endPosition = ArmKinematics.forwardKinematics(testState, drivetrainPose).getTranslation();
-            SuperstructureState inverseState = ArmKinematics.inverseKinematics(endPosition, drivetrainPose);
+            Translation3d endPosition = SuperstructureKinematics.forwardKinematics(testState, drivetrainPose).getTranslation();
+            SuperstructureState inverseState = SuperstructureKinematics.inverseKinematics(endPosition, drivetrainPose);
             assertEquals(testState, inverseState);
         }
     }

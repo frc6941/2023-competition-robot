@@ -4,8 +4,13 @@
 
 package frc.robot;
 
+import org.frcteam6941.utils.Range;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -132,6 +137,42 @@ public final class Constants {
     public static final class SUBSYSTEM_EXTENDER {
         public static final double EXTENDER_GEAR_RATIO = 40.0;
         public static final double EXTENDER_WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
+    }
+
+    // Superstructure Constants
+    public static final class SUBSYSTEM_SUPERSTRUCTURE {
+        public static class STRUCTURE {
+            public static Transform3d ROBOT_CENTER_TO_LOW_PIVOT = new Transform3d(
+                new Pose3d(), new Pose3d(0.50, 0, 0.10, new Rotation3d()));
+            public static Transform3d LOW_PIVOT_TO_HIGH_PIVOT = new Transform3d(
+                new Pose3d(), new Pose3d(-0.50, 0.0, 0.80, new Rotation3d()));
+            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = ROBOT_CENTER_TO_LOW_PIVOT.plus(LOW_PIVOT_TO_HIGH_PIVOT);
+            public static Translation2d LOW_PIVOT_2D_POSITION = new Translation2d(
+                ROBOT_CENTER_TO_LOW_PIVOT.getX(),
+                ROBOT_CENTER_TO_LOW_PIVOT.getZ()
+            );
+            public static Translation2d LOW_TO_HIGH_2D_TRANSLATION = new Translation2d(
+                LOW_PIVOT_TO_HIGH_PIVOT.getX(),
+                LOW_PIVOT_TO_HIGH_PIVOT.getZ()
+            );
+            public static Translation2d HIGH_PIVOT_2D_LOCATION = LOW_PIVOT_2D_POSITION.plus(LOW_TO_HIGH_2D_TRANSLATION);
+        }
+    
+        // Thresholds
+        public static class THRESHOLD {
+            public static double ARM = 2.0;
+            public static double EXTENDER = 0.02;
+        }
+    
+        // Arm Angles
+        public static class ARM_ANGLES {
+            public static Range RANGE = new Range(-120.0, 235);
+        }
+    
+        // Extender Lengths
+        public static class EXTENDER_LENGTHS {
+            public static Range RANGE = new Range(0.80, 1.20);
+        }
     }
 
     // Controller
