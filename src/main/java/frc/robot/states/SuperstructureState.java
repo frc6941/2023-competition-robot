@@ -3,8 +3,6 @@ package frc.robot.states;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.SuperstructureConstants.ARM_ANGLES;
-import frc.robot.SuperstructureConstants.EXTENDER_LENGTHS;
 
 /*
  * Representing the state of superstructure.
@@ -35,18 +33,6 @@ public class SuperstructureState {
     public boolean isOnTarget(SuperstructureState desiredState, double armThreshold, double extenderThreshold) {
         return Util.epsilonEquals(desiredState.armAngle.getDegrees(), armAngle.getDegrees(), armThreshold)
                 && Util.epsilonEquals(desiredState.extenderLength, extenderLength, extenderThreshold);
-    }
-
-    public SuperstructureState getInRange(double armMax, double armMin, double extenderMax, double extenderMin) {
-        armAngle = Rotation2d.fromDegrees(Util.clamp(armAngle.getDegrees(), armMin, armMax));
-        extenderLength = Util.clamp(extenderLength, extenderMin, extenderMax);
-        return this;
-    }
-
-    public SuperstructureState getInRange() {
-        return this.getInRange(
-            ARM_ANGLES.MAX, ARM_ANGLES.MIN,
-            EXTENDER_LENGTHS.MAX, EXTENDER_LENGTHS.MIN);
     }
 
     @Override

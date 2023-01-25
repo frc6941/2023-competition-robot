@@ -52,8 +52,6 @@ public class ArmAndExtender implements Updatable {
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
-    private boolean canArmGoIn = false;
-    private boolean canArmGoOverhead = false;
 
     private static ArmAndExtender instance;
 
@@ -102,7 +100,7 @@ public class ArmAndExtender implements Updatable {
         setLength(superstructureState.extenderLength);
     }
 
-    public void home(double homingAngle) {
+    public void homeArm(double homingAngle) {
         armMotor.setSelectedSensorPosition(
                 Conversions.degreesToFalcon(homingAngle, Constants.SUBSYSTEM_ARM.ARM_GEAR_RATIO));
         armIsHomed = true;
@@ -130,7 +128,7 @@ public class ArmAndExtender implements Updatable {
     @Override
     public synchronized void update(double time, double dt) {
         if (armMotor.isFwdLimitSwitchClosed() == 1) {
-            home(Constants.SUBSYSTEM_ARM.ARM_HOME_ANGLE);
+            homeArm(Constants.SUBSYSTEM_ARM.ARM_HOME_ANGLE);
         }
 
         if (!armIsHomed) {
