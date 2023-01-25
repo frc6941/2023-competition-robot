@@ -64,12 +64,20 @@ public class ArmAndExtender implements Updatable {
 
     private ArmAndExtender() {
         armMotor.configFactoryDefault(50);
-        armMotor.config_kP(0, Constants.SUBSYSTEM_ARM.ARM_KP, 100);
-        armMotor.config_kI(0, Constants.SUBSYSTEM_ARM.ARM_KI, 100);
-        armMotor.config_kD(0, Constants.SUBSYSTEM_ARM.ARM_KD, 100);
-        armMotor.config_kF(0, Constants.SUBSYSTEM_ARM.ARM_KF, 100);
-        armMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.ARM_CRUISE_V, 100);
-        armMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.ARM_CRUIVE_ACC, 100);
+        armMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
+        armMotor.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
+        armMotor.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
+        armMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
+        armMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
+        armMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+
+        extenderMotor.configFactoryDefault(50);
+        extenderMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
+        extenderMotor.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
+        extenderMotor.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
+        extenderMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
+        extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
+        extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
     }
 
     public double getAngle() {
@@ -83,43 +91,52 @@ public class ArmAndExtender implements Updatable {
     public void setAngle(double armAngle) {
         if (armState != ARM_STATE.HOMING) {
             armState = ARM_STATE.ANGLE;
-            mPeriodicIO.armDemand = Util.clamp(armAngle, Constants.SUBSYSTEM_ARM.ARM_MIN_ANGLE,
-                    Constants.SUBSYSTEM_ARM.ARM_MAX_ANGLE);
+            mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.clamp(armAngle);
         }
     }
 
     public void setLength(double extenderLength) {
         if (extenderState != EXTENDER_STATE.HOMING) {
             extenderState = EXTENDER_STATE.LENGTH;
-            mPeriodicIO.extenderDemand = extenderLength;
+            mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
+                    .clamp(extenderLength);
         }
     }
 
     public void setSuperstructureState(SuperstructureState superstructureState) {
-        setAngle(superstructureState.armAngle.getDegrees());
-        setLength(superstructureState.extenderLength);
+        SuperstructureState constrainedState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
+                .constrain(superstructureState);
+        setAngle(constrainedState.armAngle.getDegrees());
+        setLength(constrainedState.extenderLength);
     }
 
     public void homeArm(double homingAngle) {
         armMotor.setSelectedSensorPosition(
-                Conversions.degreesToFalcon(homingAngle, Constants.SUBSYSTEM_ARM.ARM_GEAR_RATIO));
+                Conversions.degreesToFalcon(homingAngle, Constants.SUBSYSTEM_ARM.GEAR_RATIO));
         armIsHomed = true;
+    }
+
+    public void homeExtender(double homingLength) {
+        extenderMotor.setSelectedSensorPosition(
+            Conversions.degreesToFalcon(mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0, Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO)
+        );
+        extenderIsHomed = true;
     }
 
     @Override
     public synchronized void read(double time, double dt) {
         mPeriodicIO.armAngle = Conversions.falconToDegrees(armMotor.getSelectedSensorPosition(),
-                Constants.SUBSYSTEM_ARM.ARM_GEAR_RATIO);
+                Constants.SUBSYSTEM_ARM.GEAR_RATIO);
         mPeriodicIO.armCurrent = armMotor.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotor.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotor.getTemperature();
         mPeriodicIO.armTrajectoryVelocitySetPoint = Units
                 .rotationsPerMinuteToRadiansPerSecond(Conversions.falconToRPM(armMotor.getActiveTrajectoryVelocity(),
-                        Constants.SUBSYSTEM_ARM.ARM_GEAR_RATIO));
+                        Constants.SUBSYSTEM_ARM.GEAR_RATIO));
 
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
-                Constants.SUBSYSTEM_EXTENDER.EXTENDER_GEAR_RATIO) / 360.0
-                * Constants.SUBSYSTEM_EXTENDER.EXTENDER_WHEEL_CIRCUMFERENCE;
+                Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
+                * Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE;
         mPeriodicIO.extenderCurrent = extenderMotor.getSupplyCurrent();
         mPeriodicIO.extenderVoltage = extenderMotor.getMotorOutputVoltage();
         mPeriodicIO.extenderTemperature = extenderMotor.getTemperature();
@@ -128,15 +145,20 @@ public class ArmAndExtender implements Updatable {
     @Override
     public synchronized void update(double time, double dt) {
         if (armMotor.isFwdLimitSwitchClosed() == 1) {
-            homeArm(Constants.SUBSYSTEM_ARM.ARM_HOME_ANGLE);
+            homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
+        }
+
+        if (extenderMotor.isRevLimitSwitchClosed() == 1) {
+            homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
         if (!armIsHomed) {
             armState = ARM_STATE.HOMING;
         }
 
-        // TODO: Add judgements to overhead of arm
-        // TODO: Add restrictions to extender length to avoid collision with drivetrain and/or go over height
+        if (!extenderIsHomed) {
+            extenderState = EXTENDER_STATE.HOMING;
+        }
 
         // Determine Outputs
         switch (armState) {
@@ -145,9 +167,9 @@ public class ArmAndExtender implements Updatable {
                 mPeriodicIO.armFeedforward = 0.0;
                 break;
             case ANGLE:
-                mPeriodicIO.armDemand = Util.clamp(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.ARM_MIN_ANGLE,
-                        Constants.SUBSYSTEM_ARM.ARM_MAX_ANGLE);
-                mPeriodicIO.armFeedforward = Constants.SUBSYSTEM_ARM.ARM_FEEDFORWARD.calculate(
+                mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE
+                        .clamp(mPeriodicIO.armDemand);
+                mPeriodicIO.armFeedforward = Constants.SUBSYSTEM_ARM.FEEDFORWARD.calculate(
                         Units.degreesToRadians(getAngle()), mPeriodicIO.armTrajectoryVelocitySetPoint) / 12.0;
                 break;
             case PERCENTAGE:
@@ -158,19 +180,65 @@ public class ArmAndExtender implements Updatable {
                 mPeriodicIO.armDemand = 0.0;
                 break;
         }
+
+        switch (extenderState) {
+            case HOMING:
+                mPeriodicIO.extenderDemand = -0.2;
+                mPeriodicIO.extenderFeedforward = 0.0;
+                break;
+            case LENGTH:
+                mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
+                        .clamp(mPeriodicIO.extenderDemand);
+                mPeriodicIO.extenderFeedforward = 0.0;
+                break;
+            case PERCENTAGE:
+                mPeriodicIO.extenderDemand = Util.clamp(mPeriodicIO.extenderDemand, -1.0, 1.0);
+                mPeriodicIO.extenderFeedforward = 0.0;
+                break;
+            default:
+                mPeriodicIO.extenderDemand = 0.0;
+                break;
+        }
     }
 
     @Override
     public synchronized void write(double time, double dt) {
         switch (armState) {
             case HOMING:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward, mPeriodicIO.armFeedforward);
+                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
                 break;
             case ANGLE:
-                armMotor.set(ControlMode.MotionMagic, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward, mPeriodicIO.armFeedforward);
+                armMotor.set(ControlMode.MotionMagic,
+                        Conversions.degreesToFalcon(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.GEAR_RATIO),
+                        DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
                 break;
             case PERCENTAGE:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward, mPeriodicIO.armFeedforward);
+                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
+                break;
+            default:
+                mPeriodicIO.armDemand = 0.0;
+                break;
+        }
+
+        switch (extenderState) {
+            case HOMING:
+                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
+                break;
+            case LENGTH:
+                armMotor.set(ControlMode.MotionMagic,
+                        Conversions.degreesToFalcon(
+                                mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
+                                Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
+                        DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
+                break;
+            case PERCENTAGE:
+                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.armFeedforward);
                 break;
             default:
                 mPeriodicIO.armDemand = 0.0;
@@ -181,7 +249,8 @@ public class ArmAndExtender implements Updatable {
     @Override
     public synchronized void telemetry() {
         SmartDashboard.putData("Mechanism", mechDrawing);
-        armMech.setAngle(Units.radiansToDegrees(getAngle()) - 45);
+        armMech.setAngle(Units.radiansToDegrees(getAngle()) - 45.0);
+        armMech.setLength(getLength());
     }
 
     @Override

@@ -16,6 +16,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.motion.SuperstructureConstraint;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -115,28 +116,33 @@ public final class Constants {
 
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
-        public static final double ARM_MASS = 10.0;
-        public static final double ARM_GEAR_RATIO = 50.0;
+        public static final double MASS = 10.0;
+        public static final double GEAR_RATIO = 50.0;
 
-        public static final double ARM_HOME_ANGLE = 220.0;
-        public static final double ARM_MIN_ANGLE = -110.0;
-        public static final double ARM_MAX_ANGLE = 220.0;
+        public static final double HOME_ANGLE = 220.0;
 
-        public static final double ARM_KP = 1.0;
-        public static final double ARM_KI = 0.0;
-        public static final double ARM_KD = 0.0;
-        public static final double ARM_KF = 0.0;
-        public static final double ARM_CRUISE_V = 20000.0;
-        public static final double ARM_CRUIVE_ACC = 40000.0;
+        public static final double KP = 1.0;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KF = 0.0;
+        public static final double CRUISE_V = 20000.0;
+        public static final double CRUIVE_ACC = 40000.0;
 
-
-        public static final ArmFeedforward ARM_FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
+        public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
     }
 
     // Extender Constants
     public static final class SUBSYSTEM_EXTENDER {
-        public static final double EXTENDER_GEAR_RATIO = 40.0;
-        public static final double EXTENDER_WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
+        public static final double GEAR_RATIO = 40.0;
+        public static final double WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
+        public static final double HOME_LENGTH = 80.0;
+
+        public static final double KP = 1.0;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KF = 0.0;
+        public static final double CRUISE_V = 20000.0;
+        public static final double CRUIVE_ACC = 40000.0;
     }
 
     // Superstructure Constants
@@ -164,14 +170,12 @@ public final class Constants {
             public static double EXTENDER = 0.02;
         }
     
-        // Arm Angles
-        public static class ARM_ANGLES {
-            public static Range RANGE = new Range(-120.0, 235);
-        }
-    
-        // Extender Lengths
-        public static class EXTENDER_LENGTHS {
-            public static Range RANGE = new Range(0.80, 1.20);
+        // Constraints
+        public static class CONSTRAINTS {
+            public static Range ARM_RANGE = new Range(-120.0, 235);
+            public static Range EXTENDER_RANGE = new Range(0.80, 1.20);
+            public static Range HEIGHT_RANGE = new Range(0.005, 0.198);
+            public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(ARM_RANGE, ARM_RANGE, EXTENDER_RANGE);
         }
     }
 
