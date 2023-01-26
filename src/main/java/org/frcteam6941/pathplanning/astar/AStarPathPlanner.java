@@ -69,7 +69,7 @@ public class AStarPathPlanner {
             for (Node clNode : closedSet) {
                 if (Math.abs(clNode.x - endingPoint.getX()) <= stepx
                         && Math.abs(clNode.y - endingPoint.getY()) <= stepy) {
-                    System.out.println("Found route");
+                    System.out.println("Found route, Time: " + timer.get() + " seconds");
                     ArrayList<Translation2d> resultPath = new ArrayList<>();
                     resultPath.add(endingPoint);
                     return reconstructPath(clNode, resultPath);
@@ -101,7 +101,6 @@ public class AStarPathPlanner {
         // Search a new node according to step
         Node node = new Node(new Translation2d(minimalNode.x + stepx, minimalNode.y + stepy), destination,
                 minimalNode.g + Math.abs(stepx) + Math.abs(stepy), hGain, minimalNode);
-        System.out.println(minimalNode);
         // If obstacles are encoutered, return
         if (checkObstacles(node, obstacles)) {
             return;

@@ -26,6 +26,16 @@ public class RectangularObstacle implements Obstacle{
         }
     }
 
+    public RectangularObstacle(Translation2d[] cornerPoints, double marginx, double marginy) {
+        this(cornerPoints);
+        marginx = Math.abs(marginx);
+        marginy = Math.abs(marginy);
+        minX -= marginx;
+        minY -= marginy;
+        maxX += marginx;
+        marginy += marginy;
+    }
+
 
     @Override
     public boolean isInObstacle(double x, double y) {
