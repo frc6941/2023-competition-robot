@@ -23,19 +23,18 @@ public class AStarPathPlanner {
      * @param stepy         The search step size in y direction
      * @param hGain         The gain in heuristics value. The larger, the more A*
      *                      algorithm will behave like Best-fit Search with faster
-     *                      executing speed; the smaller, the more A* algorithm will
-     *                      behave like Dijkstra Algorithm and give more optimal
-     *                      results in a longer period
+     *                      executing speed sacrifising accuracy; the smaller, the
+     *                      more A* algorithm will behave like Dijkstra Algorithm
+     *                      and give more optimal results in a longer period
      * @param overtimeLimit The maximum executing time for the planning in seconds
-     * @return ArrayList<Translation2d>} The path found. If not found, will return
-     *         null
+     * @return ArrayList<Translation2d>} The path found. If not, will return null
      */
     public ArrayList<Translation2d> plan(Translation2d startingPoint, Translation2d endingPoint, Obstacle[] obstacles,
             double stepx, double stepy, double hGain, double overtimeLimit) {
         // Cleanup parameters
         stepx = Math.abs(stepx);
         stepy = Math.abs(stepy);
-        
+
         // Clear open and closed set
         openSet = new PriorityQueue<>();
         closedSet = new PriorityQueue<>();
@@ -72,7 +71,8 @@ public class AStarPathPlanner {
                     System.out.println("Found route, Time: " + timer.get() + " seconds");
                     ArrayList<Translation2d> resultPath = new ArrayList<>();
                     resultPath.add(endingPoint);
-                    return reconstructPath(clNode, resultPath);
+                    // Use recursion to get original path, and return the trimmed one
+                    return trimPath(reconstructPath(clNode, resultPath));
                 }
             }
         }
@@ -138,6 +138,35 @@ public class AStarPathPlanner {
         } else {
             return reconstructPath(currentNode.previousNode, currentTranslations);
         }
+    }
+
+    private ArrayList<Translation2d> trimPath(ArrayList<Translation2d> path) {
+        // Handle inputs
+        if (path == null) {
+            return path;
+        }
+
+        int pathLength = path.size();
+        if (pathLength > 2) {
+            // Calculate the vector between -3 and -2 points, finding a direction
+            Translation2d vector = path.get(pathLength - 1).minus(path.get(pathLength - 2));
+            Translation2d tempVector;
+
+            for (int i = pathLength - 3; i >= 0; i--) {
+                // Calculate the vector of the -4 and -3 points
+                tempVector = path.get(i + 1).minus(path.get(i));
+                // Caculate cross product, if zero is produced then points are on the same
+                // straight line, trim it
+                if ((vector.getX() * tempVector.getY() - tempVector.getX() * vector.getY()) == 0) {
+                    path.remove(i + 1);
+                    // Else, update the prodcut to be the next direction indicator
+                } else {
+                    vector = tempVector;
+                }
+            }
+        }
+
+        return path;
     }
 
     private class Node implements Comparable<Node> {
