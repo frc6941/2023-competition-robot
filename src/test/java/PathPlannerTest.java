@@ -1,6 +1,8 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collector;
@@ -12,6 +14,7 @@ import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
+import org.frcteam6941.pathplanning.trajectory.TrajectoryGenerationUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,26 +131,6 @@ public class PathPlannerTest {
         ArrayList<Translation2d> result = pathPlanner.plan(startPoint, endPoint, obstacles, 0.1, 0.1, 1.0, 1.0);
         PathConstraints constraint = new PathConstraints(3.5, 5.0);
 
-        Translation2d point1 = result.remove(0);
-        Translation2d point2 = result.remove(0);
-        PathPlannerTrajectory finalTrajectory;
-
-        if (result.size() > 0) {
-            PathPoint[] remaningControllingPoints = result.stream().map(x -> new PathPoint(x, new Rotation2d())).collect(Collectors.toList()).toArray(new PathPoint[] {});
-            finalTrajectory = PathPlanner.generatePath(
-                    constraint,
-                    false,
-                    new PathPoint(point1, new Rotation2d()),
-                    new PathPoint(point2, new Rotation2d()),
-                    remaningControllingPoints
-            );
-        } else {
-            finalTrajectory = PathPlanner.generatePath(
-                    constraint,
-                    false,
-                    new PathPoint(point1, new Rotation2d()),
-                    new PathPoint(point2, new Rotation2d()));
-        }
-        System.out.println(finalTrajectory);
+        assertTimeoutPreemptively(Duration.ofSeconds((long) 1.0), () -> TrajectoryGenerationUtils.generatePathPlannerTrajectory(result, constraint));
     }
 }
