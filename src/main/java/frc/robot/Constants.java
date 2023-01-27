@@ -149,33 +149,36 @@ public final class Constants {
     public static final class SUBSYSTEM_SUPERSTRUCTURE {
         public static class STRUCTURE {
             public static Transform3d ROBOT_CENTER_TO_LOW_PIVOT = new Transform3d(
-                new Pose3d(), new Pose3d(0.50, 0, 0.10, new Rotation3d()));
+                    new Pose3d(), new Pose3d(0.50, 0, 0.10, new Rotation3d()));
             public static Transform3d LOW_PIVOT_TO_HIGH_PIVOT = new Transform3d(
-                new Pose3d(), new Pose3d(-0.50, 0.0, 0.80, new Rotation3d()));
-            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = ROBOT_CENTER_TO_LOW_PIVOT.plus(LOW_PIVOT_TO_HIGH_PIVOT);
+                    new Pose3d(), new Pose3d(-0.50, 0.0, 0.80, new Rotation3d()));
+            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = ROBOT_CENTER_TO_LOW_PIVOT
+                    .plus(LOW_PIVOT_TO_HIGH_PIVOT);
             public static Translation2d LOW_PIVOT_2D_POSITION = new Translation2d(
-                ROBOT_CENTER_TO_LOW_PIVOT.getX(),
-                ROBOT_CENTER_TO_LOW_PIVOT.getZ()
-            );
+                    ROBOT_CENTER_TO_LOW_PIVOT.getX(),
+                    ROBOT_CENTER_TO_LOW_PIVOT.getZ());
             public static Translation2d LOW_TO_HIGH_2D_TRANSLATION = new Translation2d(
-                LOW_PIVOT_TO_HIGH_PIVOT.getX(),
-                LOW_PIVOT_TO_HIGH_PIVOT.getZ()
-            );
+                    LOW_PIVOT_TO_HIGH_PIVOT.getX(),
+                    LOW_PIVOT_TO_HIGH_PIVOT.getZ());
             public static Translation2d HIGH_PIVOT_2D_LOCATION = LOW_PIVOT_2D_POSITION.plus(LOW_TO_HIGH_2D_TRANSLATION);
         }
-    
+
         // Thresholds
         public static class THRESHOLD {
             public static double ARM = 2.0;
             public static double EXTENDER = 0.02;
         }
-    
+
         // Constraints
         public static class CONSTRAINTS {
-            public static Range ARM_RANGE = new Range(-120.0, 235);
+            public static Range ARM_RANGE = new Range(-70.0, 235);
             public static Range EXTENDER_RANGE = new Range(0.80, 1.20);
             public static Range HEIGHT_RANGE = new Range(0.005, 0.198);
-            public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(ARM_RANGE, ARM_RANGE, EXTENDER_RANGE);
+            public static Range DANGEROUS_POSITIVE = new Range(210, Double.POSITIVE_INFINITY);
+            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -60.0);
+            public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
+                ARM_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
+            );
         }
     }
 

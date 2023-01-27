@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.team254.lib.drivers.LazyTalonFX;
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
+import frc.robot.motion.SuperstructureConstraint;
 import frc.robot.states.SuperstructureState;
 
 public class ArmAndExtender implements Updatable {
@@ -88,14 +90,14 @@ public class ArmAndExtender implements Updatable {
         return mPeriodicIO.extenderLength;
     }
 
-    public void setAngle(double armAngle) {
+    private void setAngle(double armAngle) {
         if (armState != ARM_STATE.HOMING) {
             armState = ARM_STATE.ANGLE;
             mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.clamp(armAngle);
         }
     }
 
-    public void setLength(double extenderLength) {
+    private void setLength(double extenderLength) {
         if (extenderState != EXTENDER_STATE.HOMING) {
             extenderState = EXTENDER_STATE.LENGTH;
             mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
@@ -105,9 +107,13 @@ public class ArmAndExtender implements Updatable {
 
     public void setSuperstructureState(SuperstructureState superstructureState) {
         SuperstructureState constrainedState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
-                .constrain(superstructureState);
+                .optimize(superstructureState, getSuperstructureState());
         setAngle(constrainedState.armAngle.getDegrees());
         setLength(constrainedState.extenderLength);
+    }
+
+    public SuperstructureState getSuperstructureState() {
+        return new SuperstructureState(Rotation2d.fromDegrees(getAngle()), getLength());
     }
 
     public void homeArm(double homingAngle) {
@@ -118,8 +124,9 @@ public class ArmAndExtender implements Updatable {
 
     public void homeExtender(double homingLength) {
         extenderMotor.setSelectedSensorPosition(
-            Conversions.degreesToFalcon(mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0, Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO)
-        );
+                Conversions.degreesToFalcon(
+                        mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
+                        Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
         extenderIsHomed = true;
     }
 
@@ -270,7 +277,8 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void simulate() {
-
+        armIsHomed = true;
+        extenderIsHomed = true;
     }
 
     public enum ARM_STATE {
