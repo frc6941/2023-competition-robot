@@ -31,8 +31,15 @@ public class SuperstructureState {
     }
 
     public boolean isOnTarget(SuperstructureState desiredState, double armThreshold, double extenderThreshold) {
-        return Util.epsilonEquals(desiredState.armAngle.getDegrees(), armAngle.getDegrees(), armThreshold)
-                && Util.epsilonEquals(desiredState.extenderLength, extenderLength, extenderThreshold);
+        return isArmOnTarget(desiredState, armThreshold) && isExtenderOnTarget(desiredState, extenderThreshold);
+    }
+
+    public boolean isArmOnTarget(SuperstructureState desiredState, double armThreshold) {
+        return Util.epsilonEquals(desiredState.armAngle.getDegrees(), armAngle.getDegrees(), armThreshold);
+    }
+
+    public boolean isExtenderOnTarget(SuperstructureState desiredState, double extenderThreshold) {
+        return Util.epsilonEquals(desiredState.extenderLength, extenderLength, extenderThreshold);
     }
 
     @Override
