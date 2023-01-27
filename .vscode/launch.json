@@ -6,6 +6,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch AStarPathPlanner",
+      "request": "launch",
+      "mainClass": "org.frcteam6941.pathplanning.astar.AStarPathPlanner",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
+      "name": "Launch PathPlannerTest",
+      "request": "launch",
+      "mainClass": "PathPlannerTest",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
       "name": "Launch SwerveLocalizer",
       "request": "launch",
       "mainClass": "org.frcteam6941.localization.SwerveLocalizer",
