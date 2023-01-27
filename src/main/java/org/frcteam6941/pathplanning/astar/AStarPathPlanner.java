@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.PriorityQueue;
 
 import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
+import org.frcteam6941.pathplanning.universal.Path;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -29,7 +30,7 @@ public class AStarPathPlanner {
      * @param overtimeLimit The maximum executing time for the planning in seconds
      * @return ArrayList<Translation2d>} The path found. If not, will return null
      */
-    public ArrayList<Translation2d> plan(Translation2d startingPoint, Translation2d endingPoint, Obstacle[] obstacles,
+    public Path plan(Translation2d startingPoint, Translation2d endingPoint, Obstacle[] obstacles,
             double stepx, double stepy, double hGain, double overtimeLimit) {
         // Cleanup parameters
         stepx = Math.abs(stepx);
@@ -70,9 +71,10 @@ public class AStarPathPlanner {
                         && Math.abs(clNode.y - endingPoint.getY()) <= stepy) {
                     System.out.println("Found route, Time: " + timer.get() + " seconds");
                     ArrayList<Translation2d> resultPath = new ArrayList<>();
+                    double pathLength = clNode.g + new Translation2d(clNode.x, clNode.y).getDistance(endingPoint);
                     resultPath.add(endingPoint);
                     // Use recursion to get original path, and return the trimmed one
-                    return reconstructPath(clNode, resultPath);
+                    return new Path(pathLength, reconstructPath(clNode, resultPath));
                 }
             }
         }

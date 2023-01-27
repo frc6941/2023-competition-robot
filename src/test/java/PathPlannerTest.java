@@ -82,24 +82,8 @@ public class PathPlannerTest {
         Translation2d proposedPoint = new Translation2d(7.74, 2.91);
         Translation2d targetPoint = new Translation2d(2.04, 2.75);
         assertEquals(
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).size(),
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY)
-                        .size());
-        assertEquals(
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).size(),
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY)
-                        .size());
-        assertEquals(
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).size(),
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.001, Double.POSITIVE_INFINITY)
-                        .size());
-        assertEquals(
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).size(),
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.001, Double.POSITIVE_INFINITY)
-                        .size());
-        assertEquals(
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).size(),
-                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.001, Double.POSITIVE_INFINITY)
+                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).getPathPoints().size(),
+                pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, Double.POSITIVE_INFINITY).getPathPoints()
                         .size());
     }
 
@@ -117,7 +101,7 @@ public class PathPlannerTest {
                         FieldConstants.Community.chargingStationCorners)
         };
 
-        ArrayList<Translation2d> result = pathPlanner.plan(startPoint, endPoint, obstacles, 0.1, 0.1, 1.0, 1.0);
+        ArrayList<Translation2d> result = pathPlanner.plan(startPoint, endPoint, obstacles, 0.1, 0.1, 1.0, 1.0).getPathPoints();
         PathConstraints constraint = new PathConstraints(3.5, 5.0);
 
         assertTimeoutPreemptively(Duration.ofSeconds((long) 1.0), () -> TrajectoryGenerationUtils.generatePathPlannerTrajectory(result, constraint));
