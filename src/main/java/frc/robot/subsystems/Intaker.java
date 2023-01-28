@@ -1,10 +1,10 @@
 package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
-import org.frcteam6941.utils.LazyVictorSPX;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -22,7 +22,7 @@ public class Intaker implements Updatable{
     
     public PeriodicIO mPeriodicIO = new PeriodicIO();
 
-    private final LazyVictorSPX intakerMotor = new LazyVictorSPX(Constants.CANID.INTAKER_MOTOR);
+    private final CANSparkMax intakerMotor = new CANSparkMax(Constants.CANID.INTAKER_MOTOR, MotorType.kBrushless);
     private final AnalogInput gamepieceSensor = new AnalogInput(Constants.ANALOG_ID.GAMEPIECE_SENSOR);
 
     private static Intaker instance;
@@ -35,9 +35,7 @@ public class Intaker implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.configFactoryDefault(50);
-        intakerMotor.setNeutralMode(NeutralMode.Brake);
-        intakerMotor.setInverted(false);
+        intakerMotor.setIdleMode(IdleMode.kCoast);
     }
 
     public void setIntakerPower(double power) {
@@ -50,7 +48,7 @@ public class Intaker implements Updatable{
 
     @Override
     public synchronized void read(double time, double dt){
-        mPeriodicIO.intakerMotorVoltage = intakerMotor.getMotorOutputVoltage();
+        mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
         mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
     }
     
@@ -61,15 +59,14 @@ public class Intaker implements Updatable{
     @Override
     public synchronized void write(double time, double dt){
         if(!mPeriodicIO.hasGamePiece || (mPeriodicIO.hasGamePiece && mPeriodicIO.intakerMotorDemand <= 0.0)){
-            intakerMotor.set(ControlMode.PercentOutput, mPeriodicIO.intakerMotorDemand);
+            intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         } else {
-            intakerMotor.set(ControlMode.PercentOutput, 0.0);
+            intakerMotor.set(0.0);
         }
     }
     
     @Override
     public synchronized void telemetry(){
-
     }
     
     @Override
