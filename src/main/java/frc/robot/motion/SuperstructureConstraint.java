@@ -24,31 +24,41 @@ public class SuperstructureConstraint {
     }
 
     public SuperstructureState optimize(SuperstructureState desiredState, SuperstructureState currentState) {
-        Translation2d finalPosition = SuperstructureKinematics.forwardKinematics2d(desiredState);
-        Translation2d newPosition = new Translation2d(finalPosition.getX(),
-                this.heightRange.clamp(finalPosition.getY()));
-        SuperstructureState clampedDesiredState = SuperstructureKinematics.inverseKinematics2d(newPosition);
+        // Clamp state into max and min
+        SuperstructureState clampedDesiredState = new SuperstructureState(
+                Rotation2d.fromDegrees(this.armRange.clamp(desiredState.armAngle.getDegrees())),
+                this.extenderRange.clamp(desiredState.extenderLength));
 
-        
-        clampedDesiredState = new SuperstructureState(
-                Rotation2d.fromDegrees(this.armRange.clamp(clampedDesiredState.armAngle.getDegrees())),
-                this.extenderRange.clamp(desiredState.extenderLength)
-        );
-
+        // Judge dangerous positive and negative, retract if needed
         if (dangerousPositiveArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
             clampedDesiredState.extenderLength = extenderRange.min;
-            if(!currentState.isExtenderOnTarget(clampedDesiredState, Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
+            if (!currentState.isExtenderOnTarget(clampedDesiredState,
+                    Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
                 clampedDesiredState.armAngle = Rotation2d.fromDegrees(dangerousPositiveArmRange.min);
             }
         } else if (dangerousNegativeArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
             clampedDesiredState.extenderLength = extenderRange.min;
-            if(!currentState.isExtenderOnTarget(clampedDesiredState, Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
+            if (!currentState.isExtenderOnTarget(clampedDesiredState,
+                    Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
                 clampedDesiredState.armAngle = Rotation2d.fromDegrees(dangerousNegativeArmRange.max);
             }
         } else {
-
+            // Use forward kinematics to determine final position, then clamp height to
+            // limited zone
+            Translation2d finalPosition = SuperstructureKinematics.forwardKinematics2d(clampedDesiredState);
+            Translation2d newPosition = new Translation2d(finalPosition.getX(),
+                    this.heightRange.clamp(finalPosition.getY()));
+            clampedDesiredState = SuperstructureKinematics.inverseKinematics2d(newPosition);
+            // clamp again to regulate the angles into arm range
+            clampedDesiredState = new SuperstructureState(
+                    Rotation2d.fromDegrees(this.armRange.clamp(clampedDesiredState.armAngle.getDegrees())),
+                    this.extenderRange.clamp(clampedDesiredState.extenderLength));
         }
 
         return clampedDesiredState;
+    }
+
+    public static void main(String[] args) {
+
     }
 }

@@ -55,11 +55,10 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR = 6;
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
-        public static final int ARM_MOTOR = 8;
-        public static final int EXTENDER_MOTOR = 9;
-        public static final int INTAKER_MOTOR = 10;
-
-        public static final int PNEUMATICS_HUB = 1;
+        public static final int ARM_MOTOR_LEADER = 8;
+        public static final int ARM_MOTOR_FOLLOWER = 9;
+        public static final int EXTENDER_MOTOR = 10;
+        public static final int INTAKER_MOTOR = 11;
     }
 
     // Analog ID Configurations
@@ -117,7 +116,7 @@ public final class Constants {
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
         public static final double MASS = 10.0;
-        public static final double GEAR_RATIO = 50.0;
+        public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
 
         public static final double HOME_ANGLE = 220.0;
 
@@ -148,19 +147,12 @@ public final class Constants {
     // Superstructure Constants
     public static final class SUBSYSTEM_SUPERSTRUCTURE {
         public static class STRUCTURE {
-            public static Transform3d ROBOT_CENTER_TO_LOW_PIVOT = new Transform3d(
-                    new Pose3d(), new Pose3d(0.50, 0, 0.10, new Rotation3d()));
-            public static Transform3d LOW_PIVOT_TO_HIGH_PIVOT = new Transform3d(
-                    new Pose3d(), new Pose3d(-0.50, 0.0, 0.80, new Rotation3d()));
-            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = ROBOT_CENTER_TO_LOW_PIVOT
-                    .plus(LOW_PIVOT_TO_HIGH_PIVOT);
-            public static Translation2d LOW_PIVOT_2D_POSITION = new Translation2d(
-                    ROBOT_CENTER_TO_LOW_PIVOT.getX(),
-                    ROBOT_CENTER_TO_LOW_PIVOT.getZ());
-            public static Translation2d LOW_TO_HIGH_2D_TRANSLATION = new Translation2d(
-                    LOW_PIVOT_TO_HIGH_PIVOT.getX(),
-                    LOW_PIVOT_TO_HIGH_PIVOT.getZ());
-            public static Translation2d HIGH_PIVOT_2D_LOCATION = LOW_PIVOT_2D_POSITION.plus(LOW_TO_HIGH_2D_TRANSLATION);
+            
+            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = new Transform3d(
+                new Pose3d(), new Pose3d(0.210, 0, 1.08479, new Rotation3d()));
+            public static Translation2d HIGH_PIVOT_2D_LOCATION = new Translation2d(
+                ROBOT_CENTER_TO_HIGH_PIVOT.getX(),
+                ROBOT_CENTER_TO_HIGH_PIVOT.getZ());
         }
 
         // Thresholds
@@ -171,13 +163,13 @@ public final class Constants {
 
         // Constraints
         public static class CONSTRAINTS {
-            public static Range ARM_RANGE = new Range(-70.0, 235);
-            public static Range EXTENDER_RANGE = new Range(0.80, 1.20);
-            public static Range HEIGHT_RANGE = new Range(0.005, 0.198);
-            public static Range DANGEROUS_POSITIVE = new Range(210, Double.POSITIVE_INFINITY);
-            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -60.0);
+            public static Range ARM_RANGE = new Range(-120.0, 220.0);
+            public static Range EXTENDER_RANGE = new Range(0.80, 1.50);
+            public static Range HEIGHT_RANGE = new Range(0.15, 1.80);
+            public static Range DANGEROUS_POSITIVE = new Range(210, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -85); // TODO: Need reconfirmation
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
-                ARM_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
+                HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
             );
         }
     }

@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
-import frc.robot.motion.SuperstructureConstraint;
 import frc.robot.states.SuperstructureState;
 
 public class ArmAndExtender implements Updatable {
@@ -43,7 +42,8 @@ public class ArmAndExtender implements Updatable {
 
     public PeriodicIO mPeriodicIO = new PeriodicIO();
 
-    private final LazyTalonFX armMotor = new LazyTalonFX(Constants.CANID.ARM_MOTOR);
+    private final LazyTalonFX armMotorLeader = new LazyTalonFX(Constants.CANID.ARM_MOTOR_LEADER);
+    private final LazyTalonFX armMotorFollower = new LazyTalonFX(Constants.CANID.ARM_MOTOR_FOLLOWER);
     private final LazyTalonFX extenderMotor = new LazyTalonFX(Constants.CANID.EXTENDER_MOTOR);
 
     private final Mechanism2d mechDrawing = new Mechanism2d(4, 2.5);
@@ -65,13 +65,13 @@ public class ArmAndExtender implements Updatable {
     }
 
     private ArmAndExtender() {
-        armMotor.configFactoryDefault(50);
-        armMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
-        armMotor.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
-        armMotor.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
-        armMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
-        armMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
-        armMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        armMotorLeader.configFactoryDefault(50);
+        armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
+        armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
+        armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
+        armMotorLeader.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
+        armMotorLeader.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
+        armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
 
         extenderMotor.configFactoryDefault(50);
         extenderMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
@@ -117,7 +117,7 @@ public class ArmAndExtender implements Updatable {
     }
 
     public void homeArm(double homingAngle) {
-        armMotor.setSelectedSensorPosition(
+        armMotorLeader.setSelectedSensorPosition(
                 Conversions.degreesToFalcon(homingAngle, Constants.SUBSYSTEM_ARM.GEAR_RATIO));
         armIsHomed = true;
     }
@@ -132,14 +132,15 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void read(double time, double dt) {
-        mPeriodicIO.armAngle = Conversions.falconToDegrees(armMotor.getSelectedSensorPosition(),
+        mPeriodicIO.armAngle = Conversions.falconToDegrees(armMotorLeader.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_ARM.GEAR_RATIO);
-        mPeriodicIO.armCurrent = armMotor.getSupplyCurrent();
-        mPeriodicIO.armVoltage = armMotor.getMotorOutputVoltage();
-        mPeriodicIO.armTemperature = armMotor.getTemperature();
+        mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
+        mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
+        mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
         mPeriodicIO.armTrajectoryVelocitySetPoint = Units
-                .rotationsPerMinuteToRadiansPerSecond(Conversions.falconToRPM(armMotor.getActiveTrajectoryVelocity(),
-                        Constants.SUBSYSTEM_ARM.GEAR_RATIO));
+                .rotationsPerMinuteToRadiansPerSecond(
+                        Conversions.falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(),
+                                Constants.SUBSYSTEM_ARM.GEAR_RATIO));
 
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
@@ -151,7 +152,7 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (armMotor.isFwdLimitSwitchClosed() == 1) {
+        if (armMotorLeader.isFwdLimitSwitchClosed() == 1) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
@@ -212,43 +213,45 @@ public class ArmAndExtender implements Updatable {
     public synchronized void write(double time, double dt) {
         switch (armState) {
             case HOMING:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
                         mPeriodicIO.armFeedforward);
                 break;
             case ANGLE:
-                armMotor.set(ControlMode.MotionMagic,
+                armMotorLeader.set(ControlMode.MotionMagic,
                         Conversions.degreesToFalcon(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.GEAR_RATIO),
                         DemandType.ArbitraryFeedForward,
                         mPeriodicIO.armFeedforward);
                 break;
             case PERCENTAGE:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
                         mPeriodicIO.armFeedforward);
                 break;
             default:
-                mPeriodicIO.armDemand = 0.0;
+                armMotorLeader.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
                 break;
+
         }
+        armMotorFollower.set(ControlMode.Follower, Constants.CANID.ARM_MOTOR_LEADER);
 
         switch (extenderState) {
             case HOMING:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
+                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.extenderFeedforward);
                 break;
             case LENGTH:
-                armMotor.set(ControlMode.MotionMagic,
+                extenderMotor.set(ControlMode.MotionMagic,
                         Conversions.degreesToFalcon(
                                 mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
                                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
                         DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
+                        mPeriodicIO.extenderFeedforward);
                 break;
             case PERCENTAGE:
-                armMotor.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
+                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand, DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.extenderFeedforward);
                 break;
             default:
-                mPeriodicIO.armDemand = 0.0;
+                extenderMotor.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
                 break;
         }
     }
