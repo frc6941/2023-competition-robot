@@ -10,9 +10,16 @@ import com.pathplanner.lib.server.PathPlannerServer;
 
 import org.frcteam6941.looper.UpdateManager;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
@@ -30,10 +37,11 @@ import frc.robot.subsystems.Intaker;
  * build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private UpdateManager updateManager;
     private final AutoSelector mAutoSelector = AutoSelector.getInstance();
     private final ShuffleBoardInteractions mShuffleBoardInteractions = ShuffleBoardInteractions.getInstance();
+
     /**
      * This function is run when the robot is first started up and should be used
      * for any
@@ -41,12 +49,22 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
+        Logger.getInstance().recordMetadata("ProjectName", "MyProject");
+
+        if (isReal()) {
+            Logger.getInstance().addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
+            Logger.getInstance().addDataReceiver(new NT4Publisher());
+        } else {
+            setUseTiming(false);
+        }
+
+        Logger.getInstance().start();
+
         this.updateManager = new UpdateManager(
-            Intaker.getInstance(),
-            ArmAndExtender.getInstance(),
-            SJTUSwerveMK5Drivebase.getInstance(),
-            Coordinator.getInstance()
-        );
+                Intaker.getInstance(),
+                ArmAndExtender.getInstance(),
+                SJTUSwerveMK5Drivebase.getInstance(),
+                Coordinator.getInstance());
         this.updateManager.startEnableLoop(Constants.LOOPER_DT);
 
         CameraServer.startAutomaticCapture();
