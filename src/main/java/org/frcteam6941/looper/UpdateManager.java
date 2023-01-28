@@ -25,6 +25,8 @@ public final class UpdateManager {
 		void stop();
 
 		void disabled(double time, double dt);
+
+		void simulate();
 	}
 
 	private double lastTimestamp = 0.0;
@@ -92,5 +94,11 @@ public final class UpdateManager {
 
 	public void stopDisableLoop() {
 		updaterDisableThread.stop();
+	}
+
+	public void runAllSimulate() {
+		updatables.forEach(s -> {
+			s.simulate();
+		});
 	}
 }

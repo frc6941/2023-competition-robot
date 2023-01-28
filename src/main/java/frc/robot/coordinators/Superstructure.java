@@ -37,4 +37,9 @@ public class Superstructure implements Updatable{
     public synchronized void disabled(double time, double dt){
         // Auto Generated Method
     }
+
+    @Override
+    public void simulate() {
+
+    }
 }

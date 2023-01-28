@@ -4,12 +4,19 @@
 
 package frc.robot;
 
+import org.frcteam6941.utils.Range;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.motion.SuperstructureConstraint;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -48,22 +55,15 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR = 6;
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
-        public static final int FEEDER_MOTOR = 8;
-        public static final int TURRET_MOTOR = 9;
-        public static final int SHOOTER_LEAD_MOTOR = 10;
-        public static final int SHOOTER_FOLLOWER_MOTOR = 11;
-        public static final int CLIMBER_MOTOR = 12;
-        public static final int HOOD_MOTOR = 14;
-        public static final int INTAKER_MOTOR = 29;
-        public static final int TRIGGER_MOTOR = 30;
-
-        public static final int PNEUMATICS_HUB = 1;
+        public static final int ARM_MOTOR_LEADER = 8;
+        public static final int ARM_MOTOR_FOLLOWER = 9;
+        public static final int EXTENDER_MOTOR = 10;
+        public static final int INTAKER_MOTOR = 11;
     }
 
     // Analog ID Configurations
     public static final class ANALOG_ID {
-        public static final int BALL_POSITION_ONE_DETECTOR = 0;
-        public static final int BALL_POSITION_TWO_DETECTOR = 1;
+        public static final int GAMEPIECE_SENSOR = 0;
     }
 
     public static final class LED_CONTROL {
@@ -86,7 +86,7 @@ public final class Constants {
         public static final double MODULE_MAX_VELOCITY = 4.0;
         public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.125);
 
-        public static final double DRIVE_GEAR_RATIO = 7.73;
+        public static final double DRIVE_GEAR_RATIO = 7.0;
         public static final double ANGLE_GEAR_RATIO = 10.0;
         public static final double DRIVETRAIN_SIDE_WIDTH = 0.58;
         public static final Translation2d DRIVETRAIN_CENTER_OF_ROTATION = new Translation2d(0.0, 0.0);
@@ -111,6 +111,67 @@ public final class Constants {
         // accordingly.
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
+    }
+
+    // Arm Constants
+    public static final class SUBSYSTEM_ARM {
+        public static final double MASS = 10.0;
+        public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
+
+        public static final double HOME_ANGLE = 220.0;
+
+        public static final double KP = 1.0;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KF = 0.0;
+        public static final double CRUISE_V = 20000.0;
+        public static final double CRUIVE_ACC = 40000.0;
+
+        public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
+    }
+
+    // Extender Constants
+    public static final class SUBSYSTEM_EXTENDER {
+        public static final double GEAR_RATIO = 40.0;
+        public static final double WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
+        public static final double HOME_LENGTH = 80.0;
+
+        public static final double KP = 1.0;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KF = 0.0;
+        public static final double CRUISE_V = 20000.0;
+        public static final double CRUIVE_ACC = 40000.0;
+    }
+
+    // Superstructure Constants
+    public static final class SUBSYSTEM_SUPERSTRUCTURE {
+        public static class STRUCTURE {
+            
+            public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = new Transform3d(
+                new Pose3d(), new Pose3d(0.210, 0, 1.08479, new Rotation3d()));
+            public static Translation2d HIGH_PIVOT_2D_LOCATION = new Translation2d(
+                ROBOT_CENTER_TO_HIGH_PIVOT.getX(),
+                ROBOT_CENTER_TO_HIGH_PIVOT.getZ());
+        }
+
+        // Thresholds
+        public static class THRESHOLD {
+            public static double ARM = 2.0;
+            public static double EXTENDER = 0.02;
+        }
+
+        // Constraints
+        public static class CONSTRAINTS {
+            public static Range ARM_RANGE = new Range(-120.0, 220.0);
+            public static Range EXTENDER_RANGE = new Range(0.80, 1.50);
+            public static Range HEIGHT_RANGE = new Range(0.15, 1.80);
+            public static Range DANGEROUS_POSITIVE = new Range(210, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -85); // TODO: Need reconfirmation
+            public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
+                HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
+            );
+        }
     }
 
     // Controller
