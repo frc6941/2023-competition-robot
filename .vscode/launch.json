@@ -6,6 +6,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch SuperstructureConstraint",
+      "request": "launch",
+      "mainClass": "frc.robot.motion.SuperstructureConstraint",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
+      "name": "Launch Constants",
+      "request": "launch",
+      "mainClass": "frc.robot.Constants",
+      "projectName": "2023competitionrobot"
+    },
+    {
+      "type": "java",
       "name": "Launch SuperstructureKinematics",
       "request": "launch",
       "mainClass": "frc.robot.motion.SuperstructureKinematics",

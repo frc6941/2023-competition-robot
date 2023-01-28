@@ -17,7 +17,7 @@ public class Intaker implements Updatable{
         public boolean hasGamePiece = false;
     
         // OUTPUT
-        public double intakerMotorDemand = 1.0;
+        public double intakerMotorDemand = 0.0;
     }
     
     public PeriodicIO mPeriodicIO = new PeriodicIO();
