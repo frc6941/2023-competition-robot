@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import org.frcteam1678.lib.math.Conversions;
 import org.frcteam6941.looper.UpdateManager.Updatable;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -13,14 +15,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.states.SuperstructureState;
 
 public class ArmAndExtender implements Updatable {
-    public static class PeriodicIO {
+    @AutoLog
+    public static class ArmAndExtenderPeriodicIO {
         // INPUT
         public double armCurrent = 0.0;
         public double armVoltage = 0.0;
@@ -31,7 +33,7 @@ public class ArmAndExtender implements Updatable {
         public double extenderCurrent = 0.0;
         public double extenderVoltage = 0.0;
         public double extenderTemperature = 0.0;
-        public double extenderLength = 0.0;
+        public double extenderLength = 0.80;
 
         // OUTPUT
         public double armDemand = 0.0;
@@ -40,17 +42,18 @@ public class ArmAndExtender implements Updatable {
         public double extenderFeedforward = 0.0;
     }
 
-    public PeriodicIO mPeriodicIO = new PeriodicIO();
+    public ArmAndExtenderPeriodicIOAutoLogged mPeriodicIO = new ArmAndExtenderPeriodicIOAutoLogged();
 
     private final LazyTalonFX armMotorLeader = new LazyTalonFX(Constants.CANID.ARM_MOTOR_LEADER);
     private final LazyTalonFX armMotorFollower = new LazyTalonFX(Constants.CANID.ARM_MOTOR_FOLLOWER);
     private final LazyTalonFX extenderMotor = new LazyTalonFX(Constants.CANID.EXTENDER_MOTOR);
 
     private final Mechanism2d mechDrawing = new Mechanism2d(4, 2.5);
-    private final MechanismRoot2d mechRoot = mechDrawing.getRoot("Low Pivot", 2.0, 0);
-    private final MechanismLigament2d towerMech = mechRoot.append(new MechanismLigament2d("Tower", 1, 45));
-    private final MechanismLigament2d armMech = towerMech
-            .append(new MechanismLigament2d("Arm", 0.80, 0.0, 6, new Color8Bit(Color.kPurple)));
+    private final MechanismRoot2d mechRoot = mechDrawing.getRoot(
+            "High Pivot", Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getX(),
+            Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getY());
+    private final MechanismLigament2d armMech = mechRoot
+            .append(new MechanismLigament2d("Arm", 0.80, 0.0, 3, new Color8Bit(Color.kPurple)));
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
@@ -235,20 +238,31 @@ public class ArmAndExtender implements Updatable {
 
         switch (extenderState) {
             case HOMING:
-                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.extenderFeedforward);
-                break;
-            case LENGTH:
-                extenderMotor.set(ControlMode.MotionMagic,
-                        Conversions.degreesToFalcon(
-                                mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
-                                Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
+                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand,
                         DemandType.ArbitraryFeedForward,
                         mPeriodicIO.extenderFeedforward);
                 break;
+            case LENGTH:
+                if (!armIsHomed) {
+                    extenderMotor.set(ControlMode.PercentOutput, 0.0);
+                } else {
+                    extenderMotor.set(ControlMode.MotionMagic,
+                            Conversions.degreesToFalcon(
+                                    mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
+                                            * 360.0,
+                                    Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
+                            DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.extenderFeedforward);
+                }
+                break;
             case PERCENTAGE:
-                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.extenderFeedforward);
+                if (!armIsHomed) {
+                    extenderMotor.set(ControlMode.PercentOutput, 0.0);
+                } else {
+                    extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand,
+                            DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.extenderFeedforward);
+                }
                 break;
             default:
                 extenderMotor.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
@@ -258,9 +272,12 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void telemetry() {
-        SmartDashboard.putData("Mechanism", mechDrawing);
-        armMech.setAngle(Units.radiansToDegrees(getAngle()) - 45.0);
+        armMech.setAngle(getAngle());
+        System.out.println(getLength());
         armMech.setLength(getLength());
+
+        Logger.getInstance().processInputs("Arm and Extender", mPeriodicIO);
+        Logger.getInstance().recordOutput("Arm Mechanism", mechDrawing);
     }
 
     @Override

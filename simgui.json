@@ -44,6 +44,7 @@
   },
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/Arm Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
@@ -60,8 +61,17 @@
     }
   },
   "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
+    },
     "transitory": {
-      "SmartDashboard": {
+      "AdvantageKit": {
+        "Arm and Extender": {
+          "open": true
+        },
         "open": true
       }
     }

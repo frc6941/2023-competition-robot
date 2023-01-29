@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
+import org.littletonrobotics.junction.AutoLog;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -11,7 +12,8 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
 
 public class Intaker implements Updatable{
-    public static class PeriodicIO {
+    @AutoLog
+    public static class IntakerPeriodicIO {
         // INPUT
         public double intakerMotorVoltage = 0.0;
         public boolean hasGamePiece = false;
@@ -20,7 +22,7 @@ public class Intaker implements Updatable{
         public double intakerMotorDemand = 0.0;
     }
     
-    public PeriodicIO mPeriodicIO = new PeriodicIO();
+    public IntakerPeriodicIOAutoLogged mPeriodicIO = new IntakerPeriodicIOAutoLogged();
 
     private final CANSparkMax intakerMotor = new CANSparkMax(Constants.CANID.INTAKER_MOTOR, MotorType.kBrushless);
     private final AnalogInput gamepieceSensor = new AnalogInput(Constants.ANALOG_ID.GAMEPIECE_SENSOR);

@@ -10,16 +10,12 @@ import com.pathplanner.lib.server.PathPlannerServer;
 
 import org.frcteam6941.looper.UpdateManager;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
-import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
@@ -49,16 +45,18 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void robotInit() {
-        Logger.getInstance().recordMetadata("ProjectName", "MyProject");
+        Logger logger = Logger.getInstance();
+        logger.recordMetadata("ProjectName", "MyProject");
 
         if (isReal()) {
-            Logger.getInstance().addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
-            Logger.getInstance().addDataReceiver(new NT4Publisher());
+            logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
+            logger.addDataReceiver(new NT4Publisher());
         } else {
-            setUseTiming(false);
+            logger.addDataReceiver(new WPILOGWriter("/log"));
+            logger.addDataReceiver(new NT4Publisher());
         }
 
-        Logger.getInstance().start();
+        logger.start();
 
         this.updateManager = new UpdateManager(
                 Intaker.getInstance(),
