@@ -58,7 +58,6 @@ public class Robot extends LoggedRobot {
             logger.addDataReceiver(new NT4Publisher());
             updateManager.startEnableLoop(Constants.LOOPER_DT);
         } else {
-            logger.addDataReceiver(new WPILOGWriter("/log"));
             logger.addDataReceiver(new NT4Publisher());
             updateManager.startSimulateLoop(Constants.LOOPER_DT);
         }
@@ -77,10 +76,9 @@ public class Robot extends LoggedRobot {
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-        this.updateManager.stopEnableLoop();
+        updateManager.invokeStop();
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().disable();
-        this.updateManager.startDisableLoop(Constants.LOOPER_DT);
     }
 
     @Override
@@ -94,11 +92,14 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
-
-        this.updateManager.stopDisableLoop();
-
         CommandScheduler.getInstance().enable();
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
+
+        if (isReal()) {
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
+        } else {
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+        }
+        updateManager.invokeStart();
 
         Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
         autoMode.ifPresent(autoModeBase -> {
@@ -118,10 +119,12 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopInit() {
         CommandScheduler.getInstance().cancelAll();
-
-        this.updateManager.stopDisableLoop();
         CommandScheduler.getInstance().enable();
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
+        if (isReal()) {
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
+        } else {
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+        }
     }
 
     /** This function is called periodically during operator control. */

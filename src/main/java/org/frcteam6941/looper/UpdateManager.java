@@ -24,8 +24,6 @@ public final class UpdateManager {
 
 		void stop();
 
-		void disabled(double time, double dt);
-
 		void simulate(double time, double dt);
 	}
 
@@ -42,24 +40,6 @@ public final class UpdateManager {
 					s.read(timestamp, dt);
 					s.update(timestamp, dt);
 					s.write(timestamp, dt);
-					s.telemetry();
-				});
-
-			}
-		}
-	};
-
-	private Runnable disableRunnable = new Runnable() {
-		@Override
-		public void run() {
-			synchronized (taskRunningLock_) {
-				final double timestamp = Timer.getFPGATimestamp();
-				final double dt = timestamp - lastTimestamp;
-				lastTimestamp = timestamp;
-				updatables.forEach(s -> {
-					s.disabled(timestamp, dt);
-					s.read(timestamp, dt);
-					s.update(timestamp, dt);
 					s.telemetry();
 				});
 
@@ -86,7 +66,6 @@ public final class UpdateManager {
 	};
 
 	private final Notifier updaterEnableThread = new Notifier(enableRunnable);
-	private final Notifier updaterDisableThread = new Notifier(disableRunnable);
 	private final Notifier updaterSimulationThread = new Notifier(simulationRunnable);
 
 	public UpdateManager(Updatable... updatables) {
@@ -99,20 +78,10 @@ public final class UpdateManager {
 
 	public void startEnableLoop(double period) {
 		updatables.forEach(s -> s.start());
-		updaterEnableThread.startPeriodic(period);
 	}
 
 	public void stopEnableLoop() {
 		updaterEnableThread.stop();
-		updatables.forEach(s -> s.stop());
-	}
-
-	public void startDisableLoop(double period) {
-		updaterDisableThread.startPeriodic(period);
-	}
-
-	public void stopDisableLoop() {
-		updaterDisableThread.stop();
 	}
 
 	public void startSimulateLoop(double period) {
@@ -121,5 +90,13 @@ public final class UpdateManager {
 
 	public void stopSimulateLoop() {
 		updaterSimulationThread.stop();
+	}
+
+	public void invokeStart() {
+		updatables.forEach(s -> s.start());
+	}
+
+	public void invokeStop() {
+		updatables.forEach(s -> s.stop());
 	}
 }

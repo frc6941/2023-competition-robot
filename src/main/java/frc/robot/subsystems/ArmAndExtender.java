@@ -7,11 +7,16 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.team254.lib.drivers.LazyTalonFX;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -36,8 +41,10 @@ public class ArmAndExtender implements Updatable {
         public double extenderLength = 0.80;
 
         // OUTPUT
+        public String armControlState = ARM_STATE.HOMING.toString();
         public double armDemand = 0.0;
         public double armFeedforward = 0.0;
+        public String extenderControlState = EXTENDER_STATE.HOMING.toString();
         public double extenderDemand = 0.0;
         public double extenderFeedforward = 0.0;
     }
@@ -47,6 +54,26 @@ public class ArmAndExtender implements Updatable {
     private final LazyTalonFX armMotorLeader = new LazyTalonFX(Constants.CANID.ARM_MOTOR_LEADER);
     private final LazyTalonFX armMotorFollower = new LazyTalonFX(Constants.CANID.ARM_MOTOR_FOLLOWER);
     private final LazyTalonFX extenderMotor = new LazyTalonFX(Constants.CANID.EXTENDER_MOTOR);
+    private final TalonFXSimCollection simArmMotor = armMotorLeader.getSimCollection();
+    private final TalonFXSimCollection simExtenderMotor = extenderMotor.getSimCollection();
+
+    private final SingleJointedArmSim simArm = new SingleJointedArmSim(
+            DCMotor.getFalcon500(2),
+            Constants.SUBSYSTEM_ARM.GEAR_RATIO,
+            SingleJointedArmSim.estimateMOI(
+                    Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.average(),
+                    Constants.SUBSYSTEM_ARM.MASS),
+            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.average(),
+            Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.min),
+            Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.max),
+            Constants.SUBSYSTEM_ARM.MASS,
+            false);
+    private final ElevatorSim simElevator = new ElevatorSim(DCMotor.getFalcon500(1),
+            Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO, 5.0,
+            Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE / 2.0 / Math.PI,
+            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min,
+            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.max,
+            false);
 
     private final Mechanism2d mechDrawing = new Mechanism2d(4, 2.5);
     private final MechanismRoot2d mechRoot = mechDrawing.getRoot(
@@ -94,14 +121,14 @@ public class ArmAndExtender implements Updatable {
     }
 
     private void setAngle(double armAngle) {
-        if (armState != ARM_STATE.HOMING) {
+        if (armIsHomed) {
             armState = ARM_STATE.ANGLE;
             mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.clamp(armAngle);
         }
     }
 
     private void setLength(double extenderLength) {
-        if (extenderState != EXTENDER_STATE.HOMING) {
+        if (extenderIsHomed) {
             extenderState = EXTENDER_STATE.LENGTH;
             mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
                     .clamp(extenderLength);
@@ -128,7 +155,7 @@ public class ArmAndExtender implements Updatable {
     public void homeExtender(double homingLength) {
         extenderMotor.setSelectedSensorPosition(
                 Conversions.degreesToFalcon(
-                        mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
+                        homingLength / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
                         Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
         extenderIsHomed = true;
     }
@@ -171,10 +198,13 @@ public class ArmAndExtender implements Updatable {
             extenderState = EXTENDER_STATE.HOMING;
         }
 
+        mPeriodicIO.armControlState = armState.toString();
+        mPeriodicIO.extenderControlState = extenderState.toString();
+
         // Determine Outputs
         switch (armState) {
             case HOMING:
-                mPeriodicIO.armDemand = 0.2;
+                mPeriodicIO.armDemand = -0.2;
                 mPeriodicIO.armFeedforward = 0.0;
                 break;
             case ANGLE:
@@ -244,7 +274,14 @@ public class ArmAndExtender implements Updatable {
                 break;
             case LENGTH:
                 if (!armIsHomed) {
-                    extenderMotor.set(ControlMode.PercentOutput, 0.0);
+                    extenderMotor.set(ControlMode.MotionMagic,
+                            Conversions.degreesToFalcon(
+                                    Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
+                                            / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
+                                            * 360.0,
+                                    Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
+                            DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.extenderFeedforward);
                 } else {
                     extenderMotor.set(ControlMode.MotionMagic,
                             Conversions.degreesToFalcon(
@@ -290,14 +327,44 @@ public class ArmAndExtender implements Updatable {
     }
 
     @Override
-    public synchronized void disabled(double time, double dt) {
-        // Auto Generated Method
-    }
-
-    @Override
     public synchronized void simulate(double time, double dt) {
-        armIsHomed = true;
-        extenderIsHomed = true;
+        simArm.update(dt);
+        simElevator.update(dt);
+
+        simArmMotor.setIntegratedSensorRawPosition(
+                (int) Conversions.degreesToFalcon(
+                        Units.radiansToDegrees(simArm.getAngleRads()), Constants.SUBSYSTEM_ARM.GEAR_RATIO));
+        simArmMotor.setIntegratedSensorVelocity((int) Conversions.RPMToFalcon(
+                Units.radiansPerSecondToRotationsPerMinute(simArm.getVelocityRadPerSec()),
+                Constants.SUBSYSTEM_ARM.GEAR_RATIO));
+        simExtenderMotor.setIntegratedSensorRawPosition(
+                (int) Conversions.degreesToFalcon(
+                        simElevator.getPositionMeters() / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
+                        Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
+        simExtenderMotor.setIntegratedSensorVelocity(
+                (int) Conversions.MPSToFalcon(
+                        simElevator.getVelocityMetersPerSecond(), Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE,
+                        Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
+
+        if (simArm.wouldHitLowerLimit(simArm.getAngleRads()-0.0001)) {
+            homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
+        }
+        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters()-0.0001)) {
+            homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
+        }
+
+        simArmMotor.setBusVoltage(RobotController.getBatteryVoltage());
+        simExtenderMotor.setBusVoltage(RobotController.getBatteryVoltage());
+        simArm.setInputVoltage(simArmMotor.getMotorOutputLeadVoltage());
+        simElevator.setInputVoltage(simExtenderMotor.getMotorOutputLeadVoltage());
+
+        mPeriodicIO.armAngle = Units.radiansToDegrees(simArm.getAngleRads());
+        mPeriodicIO.extenderLength = simElevator.getPositionMeters();
+        mPeriodicIO.armVoltage = simArmMotor.getMotorOutputLeadVoltage();
+        mPeriodicIO.extenderVoltage = simExtenderMotor.getMotorOutputLeadVoltage();
+
+        setAngle(30.0);
+        setLength(1.20);
     }
 
     public enum ARM_STATE {

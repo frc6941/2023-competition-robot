@@ -51,13 +51,6 @@
       "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/SmartDashboard/Mechanism": "Mechanism2d"
-    },
-    "windows": {
-      "/SmartDashboard/Mechanism": {
-        "window": {
-          "visible": true
-        }
-      }
     }
   },
   "NetworkTables": {

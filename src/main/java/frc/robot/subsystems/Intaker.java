@@ -80,11 +80,6 @@ public class Intaker implements Updatable{
     @Override
     public synchronized void stop(){
     }
-    
-    @Override
-    public synchronized void disabled(double time, double dt){
-        
-    }
 
     @Override
     public synchronized void simulate(double time, double dt){

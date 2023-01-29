@@ -138,11 +138,6 @@ public class Coordinator implements Updatable {
     public synchronized void stop(){
         // Auto Generated Method
     }
-    
-    @Override
-    public synchronized void disabled(double time, double dt){
-        // Auto Generated Method
-    }
 
     @Override
     public void simulate(double time, double dt) {

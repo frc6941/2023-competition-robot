@@ -115,17 +115,16 @@ public final class Constants {
 
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
-        public static final double MASS = 10.0;
+        public static final double MASS = 5.0;
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
+        public static final double HOME_ANGLE = -120.0;
 
-        public static final double HOME_ANGLE = 220.0;
-
-        public static final double KP = 1.0;
+        public static final double KP = 0.4;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
-        public static final double KF = 0.0;
-        public static final double CRUISE_V = 20000.0;
-        public static final double CRUIVE_ACC = 40000.0;
+        public static final double KF = 1023 / (6380 * 2048.0);
+        public static final double CRUISE_V = 30000.0;
+        public static final double CRUIVE_ACC = 60000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
     }
@@ -134,7 +133,7 @@ public final class Constants {
     public static final class SUBSYSTEM_EXTENDER {
         public static final double GEAR_RATIO = 40.0;
         public static final double WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
-        public static final double HOME_LENGTH = 80.0;
+        public static final double HOME_LENGTH = 0.80;
 
         public static final double KP = 1.0;
         public static final double KI = 0.0;
