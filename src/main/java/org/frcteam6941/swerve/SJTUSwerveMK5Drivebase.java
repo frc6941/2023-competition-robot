@@ -12,6 +12,7 @@ import org.frcteam6941.drivers.PlaceholderGyro;
 import org.frcteam6941.localization.Localizer;
 import org.frcteam6941.localization.SwerveLocalizer;
 import org.frcteam6941.utils.AngleNormalization;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -22,7 +23,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /**
@@ -429,6 +429,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 break;
         }
 
+        gyro.updateIO();
     }
 
     @Override
@@ -439,10 +440,11 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     @Override
     public void telemetry() {
         for (SwerveModuleBase mod : mSwerveMods) {
-            SmartDashboard.putNumber("Mod " + mod.getModuleNumber(), mod.getEncoderUnbound().getDegrees());
+            Logger.getInstance().recordOutput("Drivetrain/Module Angle/Mod " + mod.getModuleNumber(), mod.getEncoderUnbound().getDegrees());
         }
-        SmartDashboard.putNumber("Pitch", getPitch());
-        SmartDashboard.putNumber("Roll", getRoll());
+        Logger.getInstance().recordOutput("Drivetrain/SwerveModuleStates", getModuleStates());
+        Logger.getInstance().processInputs("Drivetrain/Gyro", gyro.getIO());
+
         if (Constants.AUTO_TUNING) {
             this.trajectoryFollower.sendData();
         }

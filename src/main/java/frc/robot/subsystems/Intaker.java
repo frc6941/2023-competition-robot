@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -69,6 +70,7 @@ public class Intaker implements Updatable{
     
     @Override
     public synchronized void telemetry(){
+        Logger.getInstance().processInputs("Intaker", mPeriodicIO);
     }
     
     @Override

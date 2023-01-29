@@ -273,7 +273,6 @@ public class ArmAndExtender implements Updatable {
     @Override
     public synchronized void telemetry() {
         armMech.setAngle(getAngle());
-        System.out.println(getLength());
         armMech.setLength(getLength());
 
         Logger.getInstance().processInputs("Arm and Extender", mPeriodicIO);
