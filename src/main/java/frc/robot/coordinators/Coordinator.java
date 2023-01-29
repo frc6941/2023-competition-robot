@@ -145,7 +145,7 @@ public class Coordinator implements Updatable {
     }
 
     @Override
-    public void simulate() {
+    public void simulate(double time, double dt) {
 
     }
 

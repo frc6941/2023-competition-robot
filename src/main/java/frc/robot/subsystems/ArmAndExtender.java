@@ -295,7 +295,7 @@ public class ArmAndExtender implements Updatable {
     }
 
     @Override
-    public synchronized void simulate() {
+    public synchronized void simulate(double time, double dt) {
         armIsHomed = true;
         extenderIsHomed = true;
     }

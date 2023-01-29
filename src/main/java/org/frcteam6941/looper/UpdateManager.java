@@ -26,7 +26,7 @@ public final class UpdateManager {
 
 		void disabled(double time, double dt);
 
-		void simulate();
+		void simulate(double time, double dt);
 	}
 
 	private double lastTimestamp = 0.0;
@@ -67,8 +67,27 @@ public final class UpdateManager {
 		}
 	};
 
+	private Runnable simulationRunnable = new Runnable() {
+		@Override
+		public void run() {
+			synchronized (taskRunningLock_) {
+				final double timestamp = Timer.getFPGATimestamp();
+				final double dt = timestamp - lastTimestamp;
+				lastTimestamp = timestamp;
+				updatables.forEach(s -> {
+					s.simulate(timestamp, dt);
+					s.update(timestamp, dt);
+					s.write(timestamp, dt);
+					s.telemetry();
+				});
+
+			}
+		}
+	};
+
 	private final Notifier updaterEnableThread = new Notifier(enableRunnable);
 	private final Notifier updaterDisableThread = new Notifier(disableRunnable);
+	private final Notifier updaterSimulationThread = new Notifier(simulationRunnable);
 
 	public UpdateManager(Updatable... updatables) {
 		this(Arrays.asList(updatables));
@@ -96,9 +115,11 @@ public final class UpdateManager {
 		updaterDisableThread.stop();
 	}
 
-	public void runAllSimulate() {
-		updatables.forEach(s -> {
-			s.simulate();
-		});
+	public void startSimulateLoop(double period) {
+		updaterSimulationThread.startPeriodic(period);
+	}
+
+	public void stopSimulateLoop() {
+		updaterSimulationThread.stop();
 	}
 }

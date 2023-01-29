@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.coordinators.Coordinator;
-import frc.robot.shuffleboard.ShuffleBoardInteractions;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
@@ -36,7 +35,6 @@ import frc.robot.subsystems.Intaker;
 public class Robot extends LoggedRobot {
     private UpdateManager updateManager;
     private final AutoSelector mAutoSelector = AutoSelector.getInstance();
-    private final ShuffleBoardInteractions mShuffleBoardInteractions = ShuffleBoardInteractions.getInstance();
 
     /**
      * This function is run when the robot is first started up and should be used
@@ -45,26 +43,27 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void robotInit() {
+        updateManager = new UpdateManager(
+                Intaker.getInstance(),
+                ArmAndExtender.getInstance(),
+                SJTUSwerveMK5Drivebase.getInstance(),
+                Coordinator.getInstance()
+        );
+
         Logger logger = Logger.getInstance();
         logger.recordMetadata("ProjectName", "MyProject");
 
         if (isReal()) {
             logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
             logger.addDataReceiver(new NT4Publisher());
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
         } else {
             logger.addDataReceiver(new WPILOGWriter("/log"));
             logger.addDataReceiver(new NT4Publisher());
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
         }
 
         logger.start();
-
-        this.updateManager = new UpdateManager(
-                Intaker.getInstance(),
-                ArmAndExtender.getInstance(),
-                SJTUSwerveMK5Drivebase.getInstance(),
-                Coordinator.getInstance());
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
-
         CameraServer.startAutomaticCapture();
         if (Constants.AUTO_TUNING) {
             PathPlannerServer.startServer(6941);
@@ -73,7 +72,6 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
-        mShuffleBoardInteractions.update();
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
@@ -141,15 +139,5 @@ public class Robot extends LoggedRobot {
     @Override
     public void testPeriodic() {
 
-    }
-
-    @Override
-    public void simulationInit() {
-
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        updateManager.runAllSimulate();
     }
 }

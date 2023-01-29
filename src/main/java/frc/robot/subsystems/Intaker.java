@@ -87,6 +87,6 @@ public class Intaker implements Updatable{
     }
 
     @Override
-    public synchronized void simulate(){
+    public synchronized void simulate(double time, double dt){
     }
 }

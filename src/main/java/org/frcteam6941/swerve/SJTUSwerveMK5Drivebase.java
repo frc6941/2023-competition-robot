@@ -467,7 +467,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     }
 
     @Override
-    public void simulate() {
+    public void simulate(double time, double dt) {
 
     }
 
