@@ -51,7 +51,7 @@ public class Robot extends LoggedRobot {
         );
 
         Logger logger = Logger.getInstance();
-        logger.recordMetadata("ProjectName", "MyProject");
+        logger.recordMetadata("ProjectName", "6941 2023 Competition Robot");
 
         if (isReal()) {
             logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
@@ -141,6 +141,16 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void testPeriodic() {
+
+    }
+
+    @Override
+    public void simulationInit() {
+
+    }
+
+    @Override
+    public void simulationPeriodic() {
 
     }
 }

@@ -143,10 +143,15 @@ public final class Constants {
         public static final double CRUIVE_ACC = 60000.0;
     }
 
+    // Intake Constants
+    public static final class SUBSYSTEM_INTAKE {
+        public static final double INTAKING_PERCENTAGE = 0.70;
+        public static final double OUTTAKING_PERCENTAGE = -0.50;
+    }
+
     // Superstructure Constants
     public static final class SUBSYSTEM_SUPERSTRUCTURE {
         public static class STRUCTURE {
-            
             public static Transform3d ROBOT_CENTER_TO_HIGH_PIVOT = new Transform3d(
                 new Pose3d(), new Pose3d(0.210, 0, 1.08479, new Rotation3d()));
             public static Translation2d HIGH_PIVOT_2D_LOCATION = new Translation2d(

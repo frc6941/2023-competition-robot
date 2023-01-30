@@ -100,5 +100,5 @@ public class ControlBoard {
         } else {
             return SWERVE_CARDINAL.NONE;
         }
-    }    
+    }
 }

@@ -11,6 +11,16 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
+import frc.robot.states.ScoringAndLoadingState;
+import frc.robot.states.SuperstructureState;
+import frc.robot.states.ScoringAndLoadingState.GAME_PIECE;
+import frc.robot.states.ScoringAndLoadingState.LOADING_LOCATION;
+import frc.robot.states.ScoringAndLoadingState.LOADING_SIDE;
+import frc.robot.states.ScoringAndLoadingState.SCORING_GRID;
+import frc.robot.states.ScoringAndLoadingState.SCORING_ROW;
+import frc.robot.states.ScoringAndLoadingState.SCORING_SIDE;
+import frc.robot.subsystems.ArmAndExtender;
+import frc.robot.subsystems.Intaker;
 
 public class Coordinator implements Updatable {
     public static class PeriodicIO {
@@ -35,6 +45,26 @@ public class Coordinator implements Updatable {
 
     private final ControlBoard mControlBoard = ControlBoard.getInstance();
     private final SJTUSwerveMK5Drivebase mSwerve = SJTUSwerveMK5Drivebase.getInstance();
+    private final Intaker mIntaker = Intaker.getInstance();
+    private final ArmAndExtender mAndExtender = ArmAndExtender.getInstance();
+
+    // Target Settings
+    private ScoringAndLoadingState scoringAndLoadingState = new ScoringAndLoadingState(
+        GAME_PIECE.CONE,
+        SCORING_ROW.HIGH,
+        SCORING_SIDE.RIGHT,
+        SCORING_GRID.RIGHT,
+        LOADING_LOCATION.DOUBLE_SUBSTATION_LEFT,
+        LOADING_SIDE.NONE
+    );
+
+    private SuperstructureState targetSuperstructureState = new SuperstructureState();
+    private Pose2d targetRobotPose = null;
+    private double targetIntakerPercentage = 0.0;
+
+    // State machine related
+    public STATE state = STATE.COMMUTING;
+    public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
 
     // Swerve setting related variables
     private boolean swerveSelfLocking = false;
@@ -61,6 +91,22 @@ public class Coordinator implements Updatable {
             mSwerve.getLocalizer().reset(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
+        }
+    }
+
+    /**
+     * Build targets according to command and state.
+     */
+    public void updateTargets() {
+        switch(state) {
+            case PREP_SCORING:
+                break;
+            case SCORING:
+                break;
+            case COMMUTING:
+                break;
+            case LOADING:
+                break;
         }
     }
 
@@ -148,20 +194,15 @@ public class Coordinator implements Updatable {
         PREP_SCORING,
         SCORING,
         COMMUTING,
-        LOADING,
-        CLIMBING
+        LOADING
     }
 
     public enum WANTED_ACTION {
         PREP_SCORE,
         SCORE,
         COMMUTE,
-        LOAD,
-        CLIMB
+        LOAD
     }
-
-    public STATE state = STATE.COMMUTING;
-    public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
 
     public STATE getState() {
         return state;
