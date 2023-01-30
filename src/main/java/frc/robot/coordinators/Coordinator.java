@@ -12,14 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
-import frc.robot.states.ScoringAndLoadingState;
 import frc.robot.states.SuperstructureState;
-import frc.robot.states.ScoringAndLoadingState.GAME_PIECE;
-import frc.robot.states.ScoringAndLoadingState.LOADING_LOCATION;
-import frc.robot.states.ScoringAndLoadingState.LOADING_SIDE;
-import frc.robot.states.ScoringAndLoadingState.SCORING_GRID;
-import frc.robot.states.ScoringAndLoadingState.SCORING_ROW;
-import frc.robot.states.ScoringAndLoadingState.SCORING_SIDE;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
@@ -49,15 +42,6 @@ public class Coordinator implements Updatable {
     private final Intaker mIntaker = Intaker.getInstance();
     private final ArmAndExtender mAndExtender = ArmAndExtender.getInstance();
 
-    // Target Settings
-    private ScoringAndLoadingState scoringAndLoadingState = new ScoringAndLoadingState(
-        GAME_PIECE.CONE,
-        SCORING_ROW.HIGH,
-        SCORING_SIDE.RIGHT,
-        SCORING_GRID.RIGHT,
-        LOADING_LOCATION.DOUBLE_SUBSTATION_LEFT,
-        LOADING_SIDE.NONE
-    );
 
     private SuperstructureState targetSuperstructureState = new SuperstructureState();
     private Pose2d targetRobotPose = null;
@@ -98,7 +82,7 @@ public class Coordinator implements Updatable {
             mSwerve.setTargetPose(
                 new DirectionalPose2d(
                     new Pose2d(5.0, 5.0, new Rotation2d()),
-                    true, true, true
+                    false, true, true
                 )
             );
         }

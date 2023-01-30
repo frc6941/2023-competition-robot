@@ -14,7 +14,8 @@ public class DirectionalPoseFollower {
 
     private DirectionalPose2d targetPose = null;
 
-    public DirectionalPoseFollower(PIDController xController, PIDController yController, ProfiledPIDController thetaController) {
+    public DirectionalPoseFollower(PIDController xController, PIDController yController,
+            ProfiledPIDController thetaController) {
         this.xController = xController;
         this.yController = yController;
         this.thetaController = thetaController;
@@ -36,29 +37,25 @@ public class DirectionalPoseFollower {
         if (targetPose == null) {
             return Optional.empty();
         } else {
-            if (currentPose.getTranslation().minus(targetPose.getTranslation()).getNorm() > 5.0) {
-                return Optional.empty();
-            } else {
-                double x = inputDriveSignal.getTranslation().getX();
-                double y = inputDriveSignal.getTranslation().getY();
-                double theta = inputDriveSignal.getRotation();
-                if (targetPose.isXRestricted()) {
-                    x = xController.calculate(currentPose.getX(), targetPose.getX());
-                }
-                if (targetPose.isYRestricted()) {
-                    y = yController.calculate(currentPose.getY(), targetPose.getY());
-                }
-                if (targetPose.isThetaRestricted()) {
-                    theta = thetaController.calculate(currentPose.getRotation().getDegrees(),
-                            targetPose.getRotation().getDegrees());
-                }
-                return Optional.of(
-                        new HolonomicDriveSignal(
-                                new Translation2d(x, y),
-                                theta,
-                                true,
-                                true));
+            double x = inputDriveSignal.getTranslation().getX();
+            double y = inputDriveSignal.getTranslation().getY();
+            double theta = inputDriveSignal.getRotation();
+            if (targetPose.isXRestricted()) {
+                x = xController.calculate(currentPose.getX(), targetPose.getX());
             }
+            if (targetPose.isYRestricted()) {
+                y = yController.calculate(currentPose.getY(), targetPose.getY());
+            }
+            if (targetPose.isThetaRestricted()) {
+                theta = thetaController.calculate(currentPose.getRotation().getDegrees(),
+                        targetPose.getRotation().getDegrees());
+            }
+            return Optional.of(
+                    new HolonomicDriveSignal(
+                            new Translation2d(x, y),
+                            theta,
+                            true,
+                            true));
         }
     }
 
