@@ -24,9 +24,7 @@ public final class UpdateManager {
 
 		void stop();
 
-		void disabled(double time, double dt);
-
-		void simulate();
+		void simulate(double time, double dt);
 	}
 
 	private double lastTimestamp = 0.0;
@@ -49,7 +47,7 @@ public final class UpdateManager {
 		}
 	};
 
-	private Runnable disableRunnable = new Runnable() {
+	private Runnable simulationRunnable = new Runnable() {
 		@Override
 		public void run() {
 			synchronized (taskRunningLock_) {
@@ -57,9 +55,9 @@ public final class UpdateManager {
 				final double dt = timestamp - lastTimestamp;
 				lastTimestamp = timestamp;
 				updatables.forEach(s -> {
-					s.disabled(timestamp, dt);
-					s.read(timestamp, dt);
+					s.simulate(timestamp, dt);
 					s.update(timestamp, dt);
+					s.write(timestamp, dt);
 					s.telemetry();
 				});
 
@@ -68,7 +66,7 @@ public final class UpdateManager {
 	};
 
 	private final Notifier updaterEnableThread = new Notifier(enableRunnable);
-	private final Notifier updaterDisableThread = new Notifier(disableRunnable);
+	private final Notifier updaterSimulationThread = new Notifier(simulationRunnable);
 
 	public UpdateManager(Updatable... updatables) {
 		this(Arrays.asList(updatables));
@@ -80,25 +78,25 @@ public final class UpdateManager {
 
 	public void startEnableLoop(double period) {
 		updatables.forEach(s -> s.start());
-		updaterEnableThread.startPeriodic(period);
 	}
 
 	public void stopEnableLoop() {
 		updaterEnableThread.stop();
+	}
+
+	public void startSimulateLoop(double period) {
+		updaterSimulationThread.startPeriodic(period);
+	}
+
+	public void stopSimulateLoop() {
+		updaterSimulationThread.stop();
+	}
+
+	public void invokeStart() {
+		updatables.forEach(s -> s.start());
+	}
+
+	public void invokeStop() {
 		updatables.forEach(s -> s.stop());
-	}
-
-	public void startDisableLoop(double period) {
-		updaterDisableThread.startPeriodic(period);
-	}
-
-	public void stopDisableLoop() {
-		updaterDisableThread.stop();
-	}
-
-	public void runAllSimulate() {
-		updatables.forEach(s -> {
-			s.simulate();
-		});
 	}
 }
