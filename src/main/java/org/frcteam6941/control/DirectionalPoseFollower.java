@@ -3,19 +3,21 @@ package org.frcteam6941.control;
 import java.util.Optional;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class DirectionalPoseFollower {
     private PIDController xController;
     private PIDController yController;
-    private PIDController thetaController;
+    private ProfiledPIDController thetaController;
 
     private DirectionalPose2d targetPose = null;
 
-    public DirectionalPoseFollower(PIDController xController, PIDController yController) {
+    public DirectionalPoseFollower(PIDController xController, PIDController yController, ProfiledPIDController thetaController) {
         this.xController = xController;
         this.yController = yController;
+        this.thetaController = thetaController;
     }
 
     public void setTargetPose(DirectionalPose2d targetPose) {
@@ -26,7 +28,11 @@ public class DirectionalPoseFollower {
         this.targetPose = new DirectionalPose2d(targetPose, true, true, true);
     }
 
-    public Optional<HolonomicDriveSignal> getDriveSignal(Pose2d currentPose, HolonomicDriveSignal inputDriveSignal) {
+    public void clear() {
+        this.targetPose = null;
+    }
+
+    public Optional<HolonomicDriveSignal> update(Pose2d currentPose, HolonomicDriveSignal inputDriveSignal) {
         if (targetPose == null) {
             return Optional.empty();
         } else {

@@ -70,7 +70,7 @@ public class ControlBoard {
     }
 
     public double getSwerveRotation() {
-        double rotAxis = driver.getAxis(Side.RIGHT, Axis.X) * 2.0;
+        double rotAxis = driver.getAxis(Side.RIGHT, Axis.X) * 4.0;
         rotAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_R ? rotAxis : -rotAxis;
 
         if (Math.abs(rotAxis) < kSwerveDeadband) {

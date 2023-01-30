@@ -57,6 +57,12 @@
     },
     "transitory": {
       "AdvantageKit": {
+        "RealOutputs": {
+          "Drivetrain": {
+            "open": true
+          },
+          "open": true
+        },
         "open": true
       }
     }

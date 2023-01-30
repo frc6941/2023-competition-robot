@@ -76,7 +76,7 @@ public class SwerveLocalizer implements Localizer {
 
     @Override
     public Pose2d getLatestPose() {
-        return poseEstimator.getEstimatedPosition();
+        return fieldToVehicle.lastEntry().getValue();
     }
 
     @Override

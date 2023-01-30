@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 
+import org.frcteam6941.control.DirectionalPose2d;
+import org.frcteam6941.control.DirectionalPoseFollower;
 import org.frcteam6941.control.HolonomicDriveSignal;
 import org.frcteam6941.control.HolonomicTrajectoryFollower;
 import org.frcteam6941.drivers.Gyro;
@@ -52,6 +54,11 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             new PIDController(1.5, 0.0, 0.0),
             this.headingController,
             Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_FEEDFORWARD);
+    // Pose Assist Controller
+    private final DirectionalPoseFollower poseAssistedFollower = new DirectionalPoseFollower(
+            new PIDController(3.0, 0.0, 0.0),
+            new PIDController(3.0, 0.0, 0.0),
+            this.headingController);
 
     // Swerve Kinematics and Odometry
     private final SwerveDriveKinematics swerveKinematics;
@@ -109,16 +116,16 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                         -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
 
         swerveKinematics = new SwerveDriveKinematics(swerveModulePositions);
-        
+
         swerveModsPositions = new SwerveModulePosition[] {
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition()
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
         };
 
         headingController.enableContinuousInput(0, 360.0); // Enable continuous rotation
-        headingController.setTolerance(2.0);
+        headingController.setTolerance(3.0);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
     }
@@ -253,7 +260,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
      */
     public void drive(Translation2d translationalVelocity, double rotationalVelocity, boolean isFieldOriented,
             boolean isOpenLoop) {
-        inputDriveSignal = new HolonomicDriveSignal(translationalVelocity, rotationalVelocity, isFieldOriented, isOpenLoop);
+        inputDriveSignal = new HolonomicDriveSignal(translationalVelocity, rotationalVelocity, isFieldOriented,
+                isOpenLoop);
     }
 
     /**
@@ -273,8 +281,27 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             this.gyro.setYaw(targetTrajectory.getInitialHolonomicPose().getRotation().getDegrees());
             this.headingController.reset(getYaw(), getAngularVelocity());
         }
-        setState(STATE.PATH_FOLLOWING);
         this.trajectoryFollower.follow(targetTrajectory);
+    }
+
+    public void cancelFollow() {
+        this.trajectoryFollower.cancel();
+    }
+
+    /**
+     * Core method to set the target pose for the pose assisted follower.
+     * 
+     * @param targetPose The pose target with directional constraints.
+     */
+    public void setTargetPose(DirectionalPose2d targetPose) {
+        poseAssistedFollower.setTargetPose(targetPose);
+        if (targetPose.isThetaRestricted() && state != STATE.POSE_ASSISTED) {
+            headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());
+        }
+    }
+
+    public void cancelPoseAssisit() {
+        this.poseAssistedFollower.clear();
     }
 
     /**
@@ -384,23 +411,20 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         driveSignal = inputDriveSignal;
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
                 getAngularVelocity(), time, dt);
+        Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(getPose(), inputDriveSignal);
         if (trajectorySignal.isPresent()) {
             setState(STATE.PATH_FOLLOWING);
             driveSignal = trajectorySignal.get();
-            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), driveSignal.getRotation(),
-                    driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
+        } else if (poseAssistedSignal.isPresent()) {
+            setState(STATE.POSE_ASSISTED);
+            driveSignal = poseAssistedSignal.get();
         }
 
         if (isLockHeading) {
             headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
             double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
-            if (Math.abs(gyro.getYaw().getDegrees() - headingTarget) > 0.5
-                    && driveSignal.getTranslation().getNorm() < 0.08) {
-                rotation += Math.signum(rotation) * Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_STATIC_HEADING_KS;
-            }
             rotation += headingFeedforward;
-            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation,
-                    driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
+            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation, driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
         }
 
         switch (state) {
@@ -409,6 +433,13 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 break;
             case DRIVE:
                 updateModules(driveSignal, dt);
+                break;
+            case POSE_ASSISTED:
+                if(poseAssistedSignal.isPresent()) {
+                    updateModules(driveSignal, dt);
+                } else {
+                    setState(STATE.DRIVE);
+                }
                 break;
             case PATH_FOLLOWING:
                 if (trajectorySignal.isPresent()) {
@@ -430,7 +461,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     @Override
     public void telemetry() {
         for (SwerveModuleBase mod : mSwerveMods) {
-            Logger.getInstance().recordOutput("Drivetrain/Module Angle/Mod " + mod.getModuleNumber(), mod.getEncoderUnbound().getDegrees());
+            Logger.getInstance().recordOutput("Drivetrain/Module Angle/Mod " + mod.getModuleNumber(),
+                    mod.getEncoderUnbound().getDegrees());
         }
         Logger.getInstance().recordOutput("Drivetrain/SwerveModuleStates", getModuleStates());
         Logger.getInstance().processInputs("Drivetrain/Gyro", gyro.getIO());
@@ -468,30 +500,34 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 chassisSpeeds = new ChassisSpeeds(x, y, rotation);
             }
         }
-
+        // TODO: Potential Bug: May produce zero [0 null] like result for this method
         SwerveModuleState[] perfectModuleStates = swerveKinematics.toSwerveModuleStates(chassisSpeeds);
-        for(int i = 0; i < perfectModuleStates.length; i++) {
-            swerveModsPositions[i] = new SwerveModulePosition(swerveModsPositions[i].distanceMeters + perfectModuleStates[i].speedMetersPerSecond * dt, perfectModuleStates[i].angle);
+        for (int i = 0; i < perfectModuleStates.length; i++) {
+            swerveModsPositions[i] = new SwerveModulePosition(
+                    swerveModsPositions[i].distanceMeters + perfectModuleStates[i].speedMetersPerSecond * dt,
+                    perfectModuleStates[i].angle);
         }
-        
+
+        Logger.getInstance().recordOutput("Drivetrain/SimulatedModuleStates", perfectModuleStates);
+
         gyro.setYaw(gyro.getYaw().getDegrees() + Units.radiansToDegrees(chassisSpeeds.omegaRadiansPerSecond * dt));
         this.pose = swerveLocalizer.updateWithTime(time, dt, gyro.getYaw(), swerveModsPositions);
         this.translation = new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
-
     }
-
 
     /**
      * Act accordingly under three modes:
      * 1. BRAKE: Make all the wheels to appear in X shape.
      * 2. DRIVE: Normal drive mode. The rotation will get overrided if there's lock
      * heading.
+     * 3. POSE_ASSISTED: Go to a specific
      * 3. PATH_FOLLOWING: Path following mode. The rotation will get overrided if
      * there's lock heading.
      */
     public enum STATE {
         BRAKE,
         DRIVE,
+        POSE_ASSISTED,
         PATH_FOLLOWING
     };
 

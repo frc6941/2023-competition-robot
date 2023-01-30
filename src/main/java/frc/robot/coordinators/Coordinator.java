@@ -2,6 +2,7 @@ package frc.robot.coordinators;
 
 import java.util.Optional;
 
+import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 
@@ -91,6 +92,19 @@ public class Coordinator implements Updatable {
             mSwerve.getLocalizer().reset(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
+        }
+
+        if (mControlBoard.getDriverController().getController().getLeftBumperPressed()) {
+            mSwerve.setTargetPose(
+                new DirectionalPose2d(
+                    new Pose2d(5.0, 5.0, new Rotation2d()),
+                    true, true, true
+                )
+            );
+        }
+
+        if(mControlBoard.getDriverController().getController().getLeftBumperReleased()) {
+            mSwerve.cancelPoseAssisit();
         }
     }
 
