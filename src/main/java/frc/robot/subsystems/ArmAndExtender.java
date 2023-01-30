@@ -67,7 +67,7 @@ public class ArmAndExtender implements Updatable {
             Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.min),
             Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.max),
             Constants.SUBSYSTEM_ARM.MASS,
-            false);
+            true);
     private final ElevatorSim simElevator = new ElevatorSim(DCMotor.getFalcon500(1),
             Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO, 5.0,
             Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE / 2.0 / Math.PI,
@@ -83,11 +83,17 @@ public class ArmAndExtender implements Updatable {
             .append(new MechanismLigament2d("Arm", 0.80, 0.0, 8, new Color8Bit(Color.kPurple)));
     private final MechanismLigament2d extenderMech = mechRoot
             .append(new MechanismLigament2d("Extender", 0.80, 0.0, 3, new Color8Bit(Color.kYellow)));
-    private final MechanismLigament2d towerMech = mechRoot
-            .append(new MechanismLigament2d("Tower", 0.80, 260, 8, new Color8Bit(Color.kBlue)));
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
+
+    private SuperstructureState inputedSuperstructureState = new SuperstructureState();
+    private SuperstructureState desiredSuperstructureState = new SuperstructureState();
+    private SuperstructureState currentSuperstructureState = new SuperstructureState(
+        Rotation2d.fromDegrees(getAngle()), getLength()
+    );
+    private Double armOpenLoopPercentage = null;
+    private Double extenderOpenLoopPercentage = null;
 
     private static ArmAndExtender instance;
 
@@ -114,6 +120,8 @@ public class ArmAndExtender implements Updatable {
         extenderMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
         extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+
+        mechRoot.append(new MechanismLigament2d("Tower", 0.80, 240, 8, new Color8Bit(Color.kBlue)));
     }
 
     public double getAngle() {
@@ -124,30 +132,51 @@ public class ArmAndExtender implements Updatable {
         return mPeriodicIO.extenderLength;
     }
 
-    private void setAngle(double armAngle) {
+    public void setAngle(double armAngle) {
         if (armIsHomed) {
             armState = ARM_STATE.ANGLE;
-            mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.clamp(armAngle);
+            inputedSuperstructureState.armAngle = Rotation2d.fromDegrees(armAngle);
+            armOpenLoopPercentage = null;
         }
     }
 
-    private void setLength(double extenderLength) {
+    public void setArmPercentage(double power) {
+        if (armIsHomed) {
+            armState = ARM_STATE.PERCENTAGE;
+            armOpenLoopPercentage = power;
+        }
+    }
+
+    public void setLength(double extenderLength) {
         if (extenderIsHomed) {
             extenderState = EXTENDER_STATE.LENGTH;
-            mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
-                    .clamp(extenderLength);
+            inputedSuperstructureState.extenderLength = extenderLength;
+            extenderOpenLoopPercentage = null;
+        }
+    }
+
+    public void setExtenderPercentage(double power){
+        if (extenderIsHomed) {
+            extenderState = EXTENDER_STATE.PERCENTAGE;
+            extenderOpenLoopPercentage = power;
         }
     }
 
     public void setSuperstructureState(SuperstructureState superstructureState) {
-        SuperstructureState constrainedState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
-                .optimize(superstructureState, getSuperstructureState());
-        setAngle(constrainedState.armAngle.getDegrees());
-        setLength(constrainedState.extenderLength);
+        setAngle(superstructureState.armAngle.getDegrees());
+        setLength(superstructureState.extenderLength);
     }
 
-    public SuperstructureState getSuperstructureState() {
-        return new SuperstructureState(Rotation2d.fromDegrees(getAngle()), getLength());
+    public SuperstructureState getCurrentSuperstructureState() {
+        return currentSuperstructureState;
+    }
+
+    public SuperstructureState getDesiredSuperstructureState() {
+        return desiredSuperstructureState;
+    }
+
+    public SuperstructureState getInputedSuperstructureState() {
+        return inputedSuperstructureState;
     }
 
     public void homeArm(double homingAngle) {
@@ -182,6 +211,14 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderCurrent = extenderMotor.getSupplyCurrent();
         mPeriodicIO.extenderVoltage = extenderMotor.getMotorOutputVoltage();
         mPeriodicIO.extenderTemperature = extenderMotor.getTemperature();
+
+        mPeriodicIO.armControlState = armState.toString();
+        mPeriodicIO.extenderControlState = extenderState.toString();
+
+        currentSuperstructureState = new SuperstructureState(
+            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+            mPeriodicIO.extenderLength
+        );
     }
 
     @Override
@@ -202,8 +239,9 @@ public class ArmAndExtender implements Updatable {
             extenderState = EXTENDER_STATE.HOMING;
         }
 
-        mPeriodicIO.armControlState = armState.toString();
-        mPeriodicIO.extenderControlState = extenderState.toString();
+        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT.optimize(inputedSuperstructureState, currentSuperstructureState);
+        mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage : desiredSuperstructureState.armAngle.getDegrees();
+        mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage : desiredSuperstructureState.extenderLength;
 
         // Determine Outputs
         switch (armState) {
@@ -367,6 +405,16 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderLength = simElevator.getPositionMeters();
         mPeriodicIO.armVoltage = simArmMotor.getMotorOutputLeadVoltage();
         mPeriodicIO.extenderVoltage = simExtenderMotor.getMotorOutputLeadVoltage();
+        mPeriodicIO.armControlState = armState.toString();
+        mPeriodicIO.extenderControlState = extenderState.toString();
+
+        currentSuperstructureState = new SuperstructureState(
+            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+            mPeriodicIO.extenderLength
+        );
+
+        setAngle(140);
+        setLength(1.80);
     }
 
     public enum ARM_STATE {
