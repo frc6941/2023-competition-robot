@@ -18,4 +18,8 @@ public class Range {
     public double clamp(double value) {
         return Util.clamp(value, min, max);
     }
+
+    public double average() {
+        return (min + max ) / 2.0;
+    }
 }

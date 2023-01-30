@@ -10,14 +10,16 @@ import com.pathplanner.lib.server.PathPlannerServer;
 
 import org.frcteam6941.looper.UpdateManager;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.coordinators.Coordinator;
-import frc.robot.shuffleboard.ShuffleBoardInteractions;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
@@ -30,10 +32,10 @@ import frc.robot.subsystems.Intaker;
  * build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private UpdateManager updateManager;
     private final AutoSelector mAutoSelector = AutoSelector.getInstance();
-    private final ShuffleBoardInteractions mShuffleBoardInteractions = ShuffleBoardInteractions.getInstance();
+
     /**
      * This function is run when the robot is first started up and should be used
      * for any
@@ -41,14 +43,26 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        this.updateManager = new UpdateManager(
-            Intaker.getInstance(),
-            ArmAndExtender.getInstance(),
-            SJTUSwerveMK5Drivebase.getInstance(),
-            Coordinator.getInstance()
+        updateManager = new UpdateManager(
+                Intaker.getInstance(),
+                ArmAndExtender.getInstance(),
+                SJTUSwerveMK5Drivebase.getInstance(),
+                Coordinator.getInstance()
         );
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
 
+        Logger logger = Logger.getInstance();
+        logger.recordMetadata("ProjectName", "MyProject");
+
+        if (isReal()) {
+            logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
+            logger.addDataReceiver(new NT4Publisher());
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
+        } else {
+            logger.addDataReceiver(new NT4Publisher());
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+        }
+
+        logger.start();
         CameraServer.startAutomaticCapture();
         if (Constants.AUTO_TUNING) {
             PathPlannerServer.startServer(6941);
@@ -57,16 +71,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
-        mShuffleBoardInteractions.update();
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-        this.updateManager.stopEnableLoop();
+        updateManager.invokeStop();
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().disable();
-        this.updateManager.startDisableLoop(Constants.LOOPER_DT);
     }
 
     @Override
@@ -80,11 +92,14 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
-
-        this.updateManager.stopDisableLoop();
-
         CommandScheduler.getInstance().enable();
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
+
+        if (isReal()) {
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
+        } else {
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+        }
+        updateManager.invokeStart();
 
         Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
         autoMode.ifPresent(autoModeBase -> {
@@ -104,10 +119,12 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         CommandScheduler.getInstance().cancelAll();
-
-        this.updateManager.stopDisableLoop();
         CommandScheduler.getInstance().enable();
-        this.updateManager.startEnableLoop(Constants.LOOPER_DT);
+        if (isReal()) {
+            updateManager.startEnableLoop(Constants.LOOPER_DT);
+        } else {
+            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+        }
     }
 
     /** This function is called periodically during operator control. */
@@ -125,15 +142,5 @@ public class Robot extends TimedRobot {
     @Override
     public void testPeriodic() {
 
-    }
-
-    @Override
-    public void simulationInit() {
-
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        updateManager.runAllSimulate();
     }
 }

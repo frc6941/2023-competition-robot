@@ -81,13 +81,13 @@ public final class Constants {
 
     // Swerve Drivetrain Constants
     public static final class SUBSYSTEM_SWERVE {
-        public static final double DRIVE_MAX_VELOCITY = 3.5;
+        public static final double DRIVE_MAX_VELOCITY = 4.0;
 
         public static final double MODULE_MAX_VELOCITY = 4.0;
         public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.125);
 
         public static final double DRIVE_GEAR_RATIO = 7.0;
-        public static final double ANGLE_GEAR_RATIO = 10.0;
+        public static final double ANGLE_GEAR_RATIO = (56.0 / 6.0) * (60.0 / 10.0);
         public static final double DRIVETRAIN_SIDE_WIDTH = 0.58;
         public static final Translation2d DRIVETRAIN_CENTER_OF_ROTATION = new Translation2d(0.0, 0.0);
 
@@ -115,17 +115,16 @@ public final class Constants {
 
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
-        public static final double MASS = 10.0;
+        public static final double MASS = 5.0;
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
+        public static final double HOME_ANGLE = -120.0;
 
-        public static final double HOME_ANGLE = 220.0;
-
-        public static final double KP = 1.0;
+        public static final double KP = 0.2;
         public static final double KI = 0.0;
-        public static final double KD = 0.0;
-        public static final double KF = 0.0;
-        public static final double CRUISE_V = 20000.0;
-        public static final double CRUIVE_ACC = 40000.0;
+        public static final double KD = 0.01;
+        public static final double KF = 1023 / (6380 * 2048.0);
+        public static final double CRUISE_V = 30000.0;
+        public static final double CRUIVE_ACC = 60000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
     }
@@ -134,14 +133,14 @@ public final class Constants {
     public static final class SUBSYSTEM_EXTENDER {
         public static final double GEAR_RATIO = 40.0;
         public static final double WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
-        public static final double HOME_LENGTH = 80.0;
+        public static final double HOME_LENGTH = 0.80;
 
-        public static final double KP = 1.0;
+        public static final double KP = 0.7;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
-        public static final double KF = 0.0;
-        public static final double CRUISE_V = 20000.0;
-        public static final double CRUIVE_ACC = 40000.0;
+        public static final double KF = 1023 / (6380 * 2048.0);
+        public static final double CRUISE_V = 30000.0;
+        public static final double CRUIVE_ACC = 60000.0;
     }
 
     // Superstructure Constants
@@ -176,7 +175,7 @@ public final class Constants {
 
     // Controller
     public static final class CONTROLBOARD {
-        public static final double CONTROLLER_DEADBAND = 0.09;
+        public static final double CONTROLLER_DEADBAND = 0.15;
 
         public static final int DRIVER_CONTROLLER_PORT = 0;
         public static final boolean CONTROLLER_INVERT_X = false;
