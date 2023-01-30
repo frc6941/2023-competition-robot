@@ -75,12 +75,16 @@ public class ArmAndExtender implements Updatable {
             Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.max,
             false);
 
-    private final Mechanism2d mechDrawing = new Mechanism2d(4, 2.5);
+    private final Mechanism2d mechDrawing = new Mechanism2d(5, 2.5);
     private final MechanismRoot2d mechRoot = mechDrawing.getRoot(
-            "High Pivot", Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getX(),
+            "High Pivot", Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getX() + 2.0,
             Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getY());
     private final MechanismLigament2d armMech = mechRoot
-            .append(new MechanismLigament2d("Arm", 0.80, 0.0, 3, new Color8Bit(Color.kPurple)));
+            .append(new MechanismLigament2d("Arm", 0.80, 0.0, 8, new Color8Bit(Color.kPurple)));
+    private final MechanismLigament2d extenderMech = mechRoot
+            .append(new MechanismLigament2d("Extender", 0.80, 0.0, 3, new Color8Bit(Color.kYellow)));
+    private final MechanismLigament2d towerMech = mechRoot
+            .append(new MechanismLigament2d("Tower", 0.80, 260, 8, new Color8Bit(Color.kBlue)));
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
@@ -310,7 +314,8 @@ public class ArmAndExtender implements Updatable {
     @Override
     public synchronized void telemetry() {
         armMech.setAngle(getAngle());
-        armMech.setLength(getLength());
+        extenderMech.setAngle(getAngle());
+        extenderMech.setLength(getLength());
 
         Logger.getInstance().processInputs("Arm and Extender", mPeriodicIO);
         Logger.getInstance().recordOutput("Arm Mechanism", mechDrawing);
@@ -362,9 +367,6 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderLength = simElevator.getPositionMeters();
         mPeriodicIO.armVoltage = simArmMotor.getMotorOutputLeadVoltage();
         mPeriodicIO.extenderVoltage = simExtenderMotor.getMotorOutputLeadVoltage();
-
-        setAngle(30.0);
-        setLength(1.20);
     }
 
     public enum ARM_STATE {
