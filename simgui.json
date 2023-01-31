@@ -45,28 +45,88 @@
       "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
-      "/SmartDashboard/Mechanism": "Mechanism2d"
+      "/SmartDashboard/Game Piece": "String Chooser",
+      "/SmartDashboard/Loading Location": "String Chooser",
+      "/SmartDashboard/Mechanism": "Mechanism2d",
+      "/SmartDashboard/Simulated Game Piece": "String Chooser",
+      "/SmartDashboard/Target Grid": "String Chooser",
+      "/SmartDashboard/Target Row": "String Chooser",
+      "/SmartDashboard/Target Side": "String Chooser"
+    },
+    "windows": {
+      "/SmartDashboard/Game Piece": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Loading Location": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Simulated Game Piece": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Grid": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Row": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Side": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
-    "Persistent Values": {
-      "open": false
-    },
-    "Retained Values": {
-      "open": false
-    },
     "transitory": {
       "AdvantageKit": {
-        "RealOutputs": {
-          "Drivetrain": {
+        "Drivetrain": {
+          "Gyro": {
             "open": true
-          },
+          }
+        }
+      },
+      "Shuffleboard": {
+        ".recording": {
           "open": true
         }
       },
       "SmartDashboard": {
         "TunableNumbers": {
+          "Commuting": {
+            "Far": {
+              "open": true
+            },
+            "Near": {
+              "open": true
+            },
+            "open": true
+          },
           "Scoring": {
+            "Cone": {
+              "Far": {
+                "Mid Row": {
+                  "open": true
+                },
+                "open": true
+              },
+              "Near": {
+                "High Row": {
+                  "open": true
+                },
+                "open": true
+              },
+              "open": true
+            },
             "open": true
           },
           "open": true

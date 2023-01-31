@@ -294,6 +294,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
      * @param targetPose The pose target with directional constraints.
      */
     public void setTargetPose(DirectionalPose2d targetPose) {
+        if (targetPose == null) {
+            poseAssistedFollower.clear();
+            return;
+        }
         poseAssistedFollower.setTargetPose(targetPose);
         if (targetPose.isThetaRestricted() && state != STATE.POSE_ASSISTED) {
             headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
+import frc.robot.Constants.SUBSYSTEM_ARM;
 import frc.robot.states.SuperstructureState;
 
 public class ArmAndExtender implements Updatable {
@@ -109,6 +110,7 @@ public class ArmAndExtender implements Updatable {
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
         armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
         armMotorLeader.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
+        armMotorLeader.config_IntegralZone(0, Constants.SUBSYSTEM_ARM.IZONE, 100);
         armMotorLeader.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
 
@@ -120,7 +122,7 @@ public class ArmAndExtender implements Updatable {
         extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
 
-        mechRoot.append(new MechanismLigament2d("Tower", 0.80, 240, 8, new Color8Bit(Color.kBlue)));
+        mechRoot.append(new MechanismLigament2d("Tower", 0.80, 260, 8, new Color8Bit(Color.kBlue)));
     }
 
     public double getAngle() {

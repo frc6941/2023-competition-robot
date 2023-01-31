@@ -46,6 +46,7 @@ public class DirectionalPoseFollower {
             if (targetPose.isYRestricted()) {
                 y = yController.calculate(currentPose.getY(), targetPose.getY());
             }
+            // TODO: Fix Heading Controller Conflict & the resulting tweak
             if (targetPose.isThetaRestricted()) {
                 theta = thetaController.calculate(currentPose.getRotation().getDegrees(),
                         targetPose.getRotation().getDegrees());
@@ -70,14 +71,14 @@ public class DirectionalPoseFollower {
     }
 
     public boolean isXRestricted() {
-        return targetPose == null ? false : targetPose.isXRestricted();
+        return (targetPose == null ? false : targetPose.isXRestricted());
     }
 
     public boolean isYRestricted() {
-        return targetPose == null ? false : targetPose.isYRestricted();
+        return (targetPose == null ? false : targetPose.isYRestricted());
     }
 
     public boolean isThetaRestricted() {
-        return targetPose == null ? false : targetPose.isThetaRestricted();
+        return (targetPose == null ? false : targetPose.isThetaRestricted());
     }
 }

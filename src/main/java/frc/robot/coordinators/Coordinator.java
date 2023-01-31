@@ -1,15 +1,21 @@
 package frc.robot.coordinators;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
@@ -20,7 +26,10 @@ import frc.robot.states.LoadingTarget;
 import frc.robot.states.ScoringTarget;
 import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
+import frc.robot.states.LoadingTarget.LOADING_LOCATION;
+import frc.robot.states.ScoringTarget.SCORING_GRID;
 import frc.robot.states.ScoringTarget.SCORING_ROW;
+import frc.robot.states.ScoringTarget.SCORING_SIDE;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
@@ -58,8 +67,8 @@ public class Coordinator implements Updatable {
     public double coreIntakerPower;
     public DirectionalPose2d coreDirectionalPose2d;
 
-    public LoadingTarget loadingTarget;
-    public ScoringTarget scoringTarget;
+    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.MID, SCORING_GRID.OUTER, SCORING_SIDE.OUTER);
     
     public boolean gotGamePieceRecord = false;
     public Timer scoreFinishedTimer = new Timer();
@@ -76,6 +85,14 @@ public class Coordinator implements Updatable {
     private boolean swerveSelfLocking = false;
     private Double swerveSelfLockheadingRecord;
 
+    // TODO: Change this to physical button and trigger board after simulation
+    private LoggedDashboardChooser<GamePiece> simulatedTargetGamepiece = new LoggedDashboardChooser<GamePiece>("Game Piece");
+    private LoggedDashboardChooser<SCORING_GRID> simulatedScoringGridChooser = new LoggedDashboardChooser<SCORING_GRID>("Target Grid");
+    private LoggedDashboardChooser<SCORING_SIDE> simulatedScoringSideChooser = new LoggedDashboardChooser<SCORING_SIDE>("Target Side");
+    private LoggedDashboardChooser<SCORING_ROW> simulatedScoringRowChooser = new LoggedDashboardChooser<SCORING_ROW>("Target Row");
+    private LoggedDashboardChooser<LOADING_LOCATION> simulatedLoadingLocationChooser = new LoggedDashboardChooser<LOADING_LOCATION>("Loading Location");
+    private LoggedDashboardChooser<Boolean> simulatedGotGamepiece = new LoggedDashboardChooser<Boolean>("Simulated Game Piece");
+
     private static Coordinator instance;
 
     public static Coordinator getInstance() {
@@ -83,6 +100,16 @@ public class Coordinator implements Updatable {
             instance = new Coordinator();
         }
         return instance;
+    }
+
+    private Coordinator() {
+        List.of(GamePiece.class.getEnumConstants()).forEach(x -> simulatedTargetGamepiece.addDefaultOption(x.toString(), x));
+        List.of(SCORING_GRID.class.getEnumConstants()).forEach(x -> simulatedScoringGridChooser.addDefaultOption(x.toString(), x));
+        List.of(SCORING_SIDE.class.getEnumConstants()).forEach(x -> simulatedScoringSideChooser.addDefaultOption(x.toString(), x));
+        List.of(SCORING_ROW.class.getEnumConstants()).forEach(x -> simulatedScoringRowChooser.addDefaultOption(x.toString(), x));
+        List.of(LOADING_LOCATION.class.getEnumConstants()).forEach(x -> simulatedLoadingLocationChooser.addDefaultOption(x.toString(), x));
+        simulatedGotGamepiece.addDefaultOption("No", false);
+        simulatedGotGamepiece.addDefaultOption("Yes", true);
     }
 
     public synchronized void updateDriverAndOperatorCommand() {
@@ -99,17 +126,7 @@ public class Coordinator implements Updatable {
             mSwerve.resetHeadingController();
         }
 
-        if (mControlBoard.getDriverController().getController().getLeftBumperPressed()) {
-            mSwerve.setTargetPose(
-                new DirectionalPose2d(
-                    new Pose2d(5.0, 5.0, new Rotation2d()),
-                    false, true, true
-                )
-            );
-        }
-
-        if(mControlBoard.getDriverController().getController().getLeftBumperReleased()) {
-            mSwerve.cancelPoseAssisit();
+        if (mControlBoard.getAutomateProgressButtonPressed()) {
         }
     }
 
@@ -231,6 +248,7 @@ public class Coordinator implements Updatable {
             switch(state) {
                 case PREP_SCORING:
                     if(wantedAction == WANTED_ACTION.SCORE) {
+                        System.out.println("Command Get.");
                         setState(STATE.SCORING);
                     } else if (wantedAction == WANTED_ACTION.COMMUTE) {
                         setState(STATE.COMMUTING);
@@ -240,7 +258,7 @@ public class Coordinator implements Updatable {
                     break;
                 case SCORING:
                     if(wantedAction == WANTED_ACTION.COMMUTE) {
-                        if(scoreFinishedTimer.hasElapsed(0.5)) {
+                        if(scoreFinishedTimer.get() > 0.5) {
                             scoreFinishedTimer.stop();
                             scoreFinishedTimer.reset();
                             setState(STATE.COMMUTING);
@@ -301,6 +319,7 @@ public class Coordinator implements Updatable {
         updateDirections();
         updateStates();
         updateSwerve();
+        SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
     }
     
     @Override
@@ -328,7 +347,7 @@ public class Coordinator implements Updatable {
     
     @Override
     public synchronized void telemetry(){
-        // Auto Generated Method
+        Logger.getInstance().recordOutput("Coordinator/State", state.toString());
     }
     
     @Override
@@ -343,10 +362,39 @@ public class Coordinator implements Updatable {
 
     @Override
     public void simulate(double time, double dt) {
+        if(mControlBoard.getCommutePressed()) {
+            setWantedAction(WANTED_ACTION.COMMUTE);
+        }
+        if(mControlBoard.getLoadPressed()) {
+            setWantedAction(WANTED_ACTION.LOAD);
+        }
+        if(mControlBoard.getScorePressed()) {
+            setWantedAction(WANTED_ACTION.SCORE);
+        }
+        if(mControlBoard.getPrepScorePressed()) {
+            setWantedAction(WANTED_ACTION.PREP_SCORE);
+        }
 
+
+        mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
+        mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
+        if(!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
+            gotGamePieceRecord = true;
+        }
+        mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
+
+        mPeriodicIO.inIntakerHasGamePiece = simulatedGotGamepiece.get();
+        scoringTarget.setScoringGrid(simulatedScoringGridChooser.get());
+        scoringTarget.setScoringRow(simulatedScoringRowChooser.get());
+        scoringTarget.setScoringSide(simulatedScoringSideChooser.get());
+        scoringTarget.setTargetGamePiece(simulatedTargetGamepiece.get());
+
+        loadingTarget.setTargetGamePiece(simulatedTargetGamepiece.get());
+        loadingTarget.setLoadingLocation(simulatedLoadingLocationChooser.get());
     }
 
     public enum STATE {
+        //TODO: Add A* Auto Navigation
         PREP_SCORING,
         SCORING,
         COMMUTING,
@@ -375,9 +423,12 @@ public class Coordinator implements Updatable {
     }
 
     public void setWantedAction(WANTED_ACTION wantedAction) {
-        if(wantedAction != this.wantedAction) {
-            wantedActionChanged = true;
-        }
+        wantedActionChanged = true;
         this.wantedAction = wantedAction;
+    }
+
+    public void setTargets(ScoringTarget scoringTarget, LoadingTarget loadingTarget) {
+        this.scoringTarget = scoringTarget;
+        this.loadingTarget = loadingTarget;
     }
 }

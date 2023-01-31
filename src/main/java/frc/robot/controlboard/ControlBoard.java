@@ -101,4 +101,24 @@ public class ControlBoard {
             return SWERVE_CARDINAL.NONE;
         }
     }
+
+    public boolean getAutomateProgressButtonPressed() {
+        return driver.getController().getAButtonPressed();
+    }
+
+    public boolean getCommutePressed() {
+        return driver.getController().getXButtonPressed();
+    }
+
+    public boolean getLoadPressed() {
+        return driver.getController().getYButtonPressed();
+    }
+
+    public boolean getPrepScorePressed() {
+        return driver.getController().getBButtonPressed();
+    }
+
+    public boolean getScorePressed() {
+        return driver.getController().getRightBumperPressed();
+    }
 }

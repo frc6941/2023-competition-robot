@@ -32,11 +32,12 @@ public class ScoringTarget {
     // User determined inputs
     private GamePiece targetGamePiece;
     private SCORING_ROW scoringRow;
-    private SCORING_SIDE scoringSide;
     private SCORING_GRID scoringGrid;
+    private SCORING_SIDE scoringSide;
+    
     
 
-    public ScoringTarget(GamePiece targetGamePiece, SCORING_ROW scoringRow, SCORING_SIDE scoringSide, SCORING_GRID scoringGrid) {
+    public ScoringTarget(GamePiece targetGamePiece, SCORING_ROW scoringRow, SCORING_GRID scoringGrid, SCORING_SIDE scoringSide) {
         this.targetGamePiece = targetGamePiece;
         this.scoringRow = scoringRow;
         this.scoringSide = scoringSide;

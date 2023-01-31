@@ -116,12 +116,13 @@ public final class Constants {
     public static final class SUBSYSTEM_ARM {
         public static final double MASS = 5.0;
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
-        public static final double HOME_ANGLE = -120.0;
+        public static final double HOME_ANGLE = -100.0;
 
-        public static final double KP = 0.2;
-        public static final double KI = 0.0;
+        public static final double KP = 0.4;
+        public static final double KI = 0.001;
         public static final double KD = 0.01;
         public static final double KF = 1023 / (6380 * 2048.0);
+        public static final double IZONE = 1000.0;
         public static final double CRUISE_V = 30000.0;
         public static final double CRUIVE_ACC = 60000.0;
 
@@ -166,10 +167,10 @@ public final class Constants {
 
         // Constraints
         public static class CONSTRAINTS {
-            public static Range ARM_RANGE = new Range(-120.0, 220.0);
-            public static Range EXTENDER_RANGE = new Range(0.80, 1.50);
+            public static Range ARM_RANGE = new Range(-100.0, 255.0);
+            public static Range EXTENDER_RANGE = new Range(0.80, 1.40);
             public static Range HEIGHT_RANGE = new Range(0.15, 1.80);
-            public static Range DANGEROUS_POSITIVE = new Range(210, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_POSITIVE = new Range(220, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
             public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -85); // TODO: Need reconfirmation
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
                 HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
