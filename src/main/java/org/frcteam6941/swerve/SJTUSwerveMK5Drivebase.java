@@ -412,22 +412,19 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
                 getAngularVelocity(), time, dt);
         Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(getPose(), inputDriveSignal);
-
-        if (poseAssistedSignal.isPresent()) {
+        if (trajectorySignal.isPresent()) {
+            setState(STATE.PATH_FOLLOWING);
+            driveSignal = trajectorySignal.get();
+        } else if (poseAssistedSignal.isPresent()) {
             setState(STATE.POSE_ASSISTED);
             driveSignal = poseAssistedSignal.get();
-        } else {
-            if (trajectorySignal.isPresent()) {
-                setState(STATE.PATH_FOLLOWING);
-                driveSignal = trajectorySignal.get();
-            }
+        }
 
-            if (isLockHeading) {
-                headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
-                double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
-                rotation += headingFeedforward;
-                driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation, driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
-            }
+        if (isLockHeading && !poseAssistedFollower.isThetaRestricted()) {
+            headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
+            double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
+            rotation += headingFeedforward;
+            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation, driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
         }
 
         switch (state) {

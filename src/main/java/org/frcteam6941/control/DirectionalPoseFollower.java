@@ -68,4 +68,16 @@ public class DirectionalPoseFollower {
                     && (thetaController.atSetpoint() || !targetPose.isThetaRestricted());
         }
     }
+
+    public boolean isXRestricted() {
+        return targetPose == null ? false : targetPose.isXRestricted();
+    }
+
+    public boolean isYRestricted() {
+        return targetPose == null ? false : targetPose.isYRestricted();
+    }
+
+    public boolean isThetaRestricted() {
+        return targetPose == null ? false : targetPose.isThetaRestricted();
+    }
 }

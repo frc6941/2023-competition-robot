@@ -90,8 +90,7 @@ public class ArmAndExtender implements Updatable {
     private SuperstructureState inputedSuperstructureState = new SuperstructureState();
     private SuperstructureState desiredSuperstructureState = new SuperstructureState();
     private SuperstructureState currentSuperstructureState = new SuperstructureState(
-        Rotation2d.fromDegrees(getAngle()), getLength()
-    );
+            Rotation2d.fromDegrees(getAngle()), getLength());
     private Double armOpenLoopPercentage = null;
     private Double extenderOpenLoopPercentage = null;
 
@@ -155,7 +154,7 @@ public class ArmAndExtender implements Updatable {
         }
     }
 
-    public void setExtenderPercentage(double power){
+    public void setExtenderPercentage(double power) {
         if (extenderIsHomed) {
             extenderState = EXTENDER_STATE.PERCENTAGE;
             extenderOpenLoopPercentage = power;
@@ -177,6 +176,12 @@ public class ArmAndExtender implements Updatable {
 
     public SuperstructureState getInputedSuperstructureState() {
         return inputedSuperstructureState;
+    }
+
+    public boolean isOnTarget() {
+        return currentSuperstructureState.isOnTarget(desiredSuperstructureState,
+                Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.ARM,
+                Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);
     }
 
     public void homeArm(double homingAngle) {
@@ -216,9 +221,8 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderControlState = extenderState.toString();
 
         currentSuperstructureState = new SuperstructureState(
-            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
-            mPeriodicIO.extenderLength
-        );
+                Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+                mPeriodicIO.extenderLength);
     }
 
     @Override
@@ -239,9 +243,12 @@ public class ArmAndExtender implements Updatable {
             extenderState = EXTENDER_STATE.HOMING;
         }
 
-        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT.optimize(inputedSuperstructureState, currentSuperstructureState);
-        mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage : desiredSuperstructureState.armAngle.getDegrees();
-        mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage : desiredSuperstructureState.extenderLength;
+        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
+                .optimize(inputedSuperstructureState, currentSuperstructureState);
+        mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage
+                : desiredSuperstructureState.armAngle.getDegrees();
+        mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage
+                : desiredSuperstructureState.extenderLength;
 
         // Determine Outputs
         switch (armState) {
@@ -389,10 +396,10 @@ public class ArmAndExtender implements Updatable {
                         simElevator.getVelocityMetersPerSecond(), Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE,
                         Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
 
-        if (simArm.wouldHitLowerLimit(simArm.getAngleRads()-0.0001)) {
+        if (simArm.wouldHitLowerLimit(simArm.getAngleRads() - 0.0001)) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
-        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters()-0.0001)) {
+        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters() - 0.0001)) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
@@ -409,9 +416,8 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderControlState = extenderState.toString();
 
         currentSuperstructureState = new SuperstructureState(
-            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
-            mPeriodicIO.extenderLength
-        );
+                Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+                mPeriodicIO.extenderLength);
     }
 
     public enum ARM_STATE {

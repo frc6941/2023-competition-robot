@@ -49,6 +49,8 @@ public class SuperstructureStateBuilder {
                 -70.0);
         public static LoggedTunableNumber lowRowCubeLengthFar = new LoggedTunableNumber(
                 "Scoring/Cube/Far/Low Row/Length", 1.00);
+
+        public static LoggedTunableNumber delta = new LoggedTunableNumber("Scoring/Delta Angle Positive", 5.0);
     }
 
     private static class Loading {
@@ -124,6 +126,18 @@ public class SuperstructureStateBuilder {
             default:
                 return null;
         }
+    }
+
+    // "Lower" the arm by an angle of delta. Near and far sides are automatically considered.
+    public static SuperstructureState buildScoringSupertructureStateLowerDelta(ScoringTarget target, Direction direction) {
+        SuperstructureState temp = buildScoringSupertructureState(target, direction);
+        temp.armAngle = temp.armAngle.plus(Rotation2d.fromDegrees(direction == Direction.NEAR ? -Scoring.delta.get() : Scoring.delta.get()));
+        return temp;
+    }
+
+    public static SuperstructureState getSuperstrucutreStateLowerDelta(SuperstructureState temp, Direction direction) {
+        temp.armAngle = temp.armAngle.plus(Rotation2d.fromDegrees(direction == Direction.NEAR ? -Scoring.delta.get() : Scoring.delta.get()));
+        return temp;
     }
 
     public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction) {
