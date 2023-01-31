@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
+import org.frcteam6941.utils.AngleNormalization;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,6 +13,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
+import frc.robot.states.Direction;
+import frc.robot.states.LoadingTarget;
+import frc.robot.states.ScoringTarget;
 import frc.robot.states.SuperstructureState;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
@@ -26,6 +30,8 @@ public class Coordinator implements Updatable {
         public boolean inSwerveBrake = false;
         public double inSwerveFieldHeadingAngle = 0.0;
         public double inSwerveAngularVelocity = 0.0;
+
+        public boolean inIntakerHasGamePiece = false;
 
         /** OUTPUTS */
         // Swerve Variables
@@ -42,14 +48,18 @@ public class Coordinator implements Updatable {
     private final Intaker mIntaker = Intaker.getInstance();
     private final ArmAndExtender mAndExtender = ArmAndExtender.getInstance();
 
-
-    private SuperstructureState targetSuperstructureState = new SuperstructureState();
-    private Pose2d targetRobotPose = null;
-    private double targetIntakerPercentage = 0.0;
+    // Core control variabls
+    public SuperstructureState superstructureState;
+    public LoadingTarget loadingTarget;
+    public ScoringTarget scoringTarget;
+    public double intakerPower;
+    public Direction intakeDirection = Direction.NEAR;
+    public Direction commuteDirection = Direction.FAR;
+    public Direction scoreDireciton = Direction.NEAR;
 
     // State machine related
     public STATE state = STATE.COMMUTING;
-    public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
+    public boolean wantedActionChanged = false;
 
     // Swerve setting related variables
     private boolean swerveSelfLocking = false;
@@ -62,6 +72,15 @@ public class Coordinator implements Updatable {
             instance = new Coordinator();
         }
         return instance;
+    }
+
+    public boolean hasGamePiece() {
+        return mPeriodicIO.inIntakerHasGamePiece;
+    }
+
+    public boolean isOnNearSide() {
+        double correctAngle = AngleNormalization.getAbsoluteAngleDegree(mPeriodicIO.inSwerveFieldHeadingAngle);
+        return correctAngle <= 90.0 && correctAngle >= -90.0;
     }
 
     public synchronized void updateDriverAndOperatorCommand() {
@@ -92,7 +111,7 @@ public class Coordinator implements Updatable {
         }
     }
 
-    /**
+    /*
      * Build targets according to command and state.
      */
     public void updateTargets() {
@@ -104,6 +123,8 @@ public class Coordinator implements Updatable {
             case COMMUTING:
                 break;
             case LOADING:
+                break;
+            case MANUAL:
                 break;
         }
     }
@@ -137,15 +158,22 @@ public class Coordinator implements Updatable {
         }   
     }
 
+    public void updateDirections() {
+        
+    }
+
 
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
+        mPeriodicIO.inIntakerHasGamePiece = mIntaker.hasGamePiece();
     }
     
     @Override
     public synchronized void update(double time, double dt){
+        if(wantedActionChanged) {
+        }
         updateSwerve();
     }
     
@@ -192,14 +220,8 @@ public class Coordinator implements Updatable {
         PREP_SCORING,
         SCORING,
         COMMUTING,
-        LOADING
-    }
-
-    public enum WANTED_ACTION {
-        PREP_SCORE,
-        SCORE,
-        COMMUTE,
-        LOAD
+        LOADING,
+        MANUAL
     }
 
     public STATE getState() {
@@ -208,9 +230,5 @@ public class Coordinator implements Updatable {
 
     public void setState(STATE state) {
         this.state = state;
-    }
-
-    public void setWantedAction(WANTED_ACTION wantedAction) {
-        this.wantedAction = wantedAction;
     }
 }

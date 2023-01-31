@@ -412,9 +412,6 @@ public class ArmAndExtender implements Updatable {
             Rotation2d.fromDegrees(mPeriodicIO.armAngle),
             mPeriodicIO.extenderLength
         );
-
-        setAngle(140);
-        setLength(1.80);
     }
 
     public enum ARM_STATE {

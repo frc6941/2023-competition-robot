@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -141,7 +142,9 @@ public final class FieldConstants {
         public static final double midX = fieldLength - Units.inchesToMeters(132.25);
         public static final double outerX = fieldLength - Units.inchesToMeters(264.25);
         public static final double leftY = FieldConstants.fieldWidth;
+        public static final double leftQuaterY = leftY - Units.inchesToMeters(25.25);
         public static final double midY = leftY - Units.inchesToMeters(50.5);
+        public static final double rightQuaterY = leftY - Units.inchesToMeters(50.5 + 25.25);
         public static final double rightY = leftY - width;
         public static final Translation2d[] regionCorners = new Translation2d[] {
                 new Translation2d(
@@ -171,6 +174,9 @@ public final class FieldConstants {
         public static final double singleSubstationLowZ = Units.inchesToMeters(27.125);
         public static final double singleSubstationCenterZ = singleSubstationLowZ + (singleSubstationHeight / 2.0);
         public static final double singleSubstationHighZ = singleSubstationLowZ + singleSubstationHeight;
+
+        public static final Translation2d outerLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX, LoadingZone.leftQuaterY);
+        public static final Translation2d innterLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX, LoadingZone.rightQuaterY);
     }
 
     // Locations of staged game pieces
@@ -238,4 +244,22 @@ public final class FieldConstants {
                     Units.inchesToMeters(42.19),
                     Units.inchesToMeters(18.22),
                     new Rotation3d()));
+    
+
+    public static Pose2d allianceFlip(Pose2d original) {
+        return original;
+    }
+
+    public static Translation2d allianceFlip(Translation2d original) {
+        return original;
+    }
+
+    public static Pose3d allianceFlip(Pose3d original) {
+        return original;
+    }
+
+    public static Translation3d allianceFlip(Translation3d original) {
+        return original;
+    }
+
 }

@@ -1,13 +1,13 @@
 package frc.robot.states;
 
 public class LoadingTarget {
-    public enum LOADING_LOCATION {
+    public static enum LOADING_LOCATION {
         GROUND,
-        DOUBLE_SUBSTATION_LEFT,
-        DOUBLE_SUBSTATION_RIGHT
+        DOUBLE_SUBSTATION_OUTER,
+        DOUBLE_SUBSTATION_INNER
     }
 
-    public enum LOADING_SIDE {
+    public static enum LOADING_SIDE {
         NEAR,
         FAR,
         NONE
@@ -47,5 +47,4 @@ public class LoadingTarget {
     public void setLoadingSide(LOADING_SIDE loadingSide) {
         this.loadingSide = loadingSide;
     }
-
 }

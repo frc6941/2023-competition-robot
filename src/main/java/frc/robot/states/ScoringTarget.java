@@ -1,22 +1,32 @@
 package frc.robot.states;
 
 public class ScoringTarget {
-    public enum SCORING_ROW {
+    public static enum SCORING_ROW {
         LOW,
         MID,
         HIGH
     }
 
-    public enum SCORING_GRID {
-        LEFT,
-        RIGHT,
-        COOPERTITION
+    public static enum SCORING_GRID {
+        OUTER(1),
+        INNER(7),
+        COOPERTITION(4);
+
+        public int num;
+        SCORING_GRID(int num) {
+            this.num = num;
+        }
     }
 
     // In the direction of driver.
-    public enum SCORING_SIDE {
-        LEFT,
-        RIGHT
+    public static enum SCORING_SIDE {
+        OUTER(-1),
+        INNER(1);
+
+        public int delta;
+        SCORING_SIDE(int delta) {
+            this.delta = delta;
+        }
     }
 
     // User determined inputs
@@ -65,4 +75,14 @@ public class ScoringTarget {
         this.scoringGrid = scoringGrid;
     }
 
+    public int getPosition() {
+        if(targetGamePiece == GamePiece.CUBE) {
+            return scoringGrid.num;
+        } else if (targetGamePiece == GamePiece.CONE) {
+            return scoringGrid.num + scoringSide.delta;
+        } else {
+            System.out.println("Scoring Target: Invalid Game Piece.");
+            return -1;
+        }
+    }
 }

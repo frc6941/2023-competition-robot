@@ -49,6 +49,10 @@ public class Intaker implements Updatable{
         return mPeriodicIO.intakerMotorVoltage;
     }
 
+    public boolean hasGamePiece() {
+        return mPeriodicIO.hasGamePiece;
+    }
+
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();

@@ -62,6 +62,14 @@
             "open": true
           },
           "open": true
+        }
+      },
+      "SmartDashboard": {
+        "TunableNumbers": {
+          "Scoring": {
+            "open": true
+          },
+          "open": true
         },
         "open": true
       }
