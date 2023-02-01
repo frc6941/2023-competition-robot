@@ -167,9 +167,21 @@ public class Coordinator implements Updatable {
      */
     public void updateDirections() {
         if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
-            loadDirection = Direction.NEAR;
-            commuteDirection = Direction.FAR;
-            scoreDirection = Direction.NEAR;
+            if(scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
+                loadDirection = Direction.NEAR;
+                commuteDirection = Direction.FAR;
+                scoreDirection = Direction.NEAR;
+            } else {
+                if(Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
+                    loadDirection = Direction.NEAR;
+                    commuteDirection = Direction.FAR;
+                    scoreDirection = Direction.NEAR;
+                } else {
+                    loadDirection = Direction.FAR;
+                    commuteDirection = Direction.NEAR;
+                    scoreDirection = Direction.NEAR;
+                }
+            }
         } else if (gotGamePieceRecord) {
             gotGamePieceRecord = false;
             // Load on NEAR side
@@ -195,12 +207,8 @@ public class Coordinator implements Updatable {
             if(state == STATE.COMMUTING) {
                 if(Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
                     loadDirection = Direction.NEAR;
-                    commuteDirection = Direction.FAR;
-                    scoreDirection = Direction.NEAR;
                 } else {
                     loadDirection = Direction.FAR;
-                    commuteDirection = Direction.NEAR;
-                    scoreDirection = Direction.FAR;
                 }
             }
         }
