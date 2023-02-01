@@ -11,6 +11,7 @@ import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
+import org.frcteam6941.pathplanning.smoothing.FloydTrimming;
 import org.frcteam6941.pathplanning.trajectory.TrajectoryGenerationUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import com.pathplanner.lib.PathConstraints;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.FieldConstants;
+import frc.robot.motion.FieldObstacles;
 
 public class PathPlannerTest {
     @BeforeEach
@@ -61,11 +63,12 @@ public class PathPlannerTest {
         Translation2d proposedPoint = new Translation2d(7.74, 2.91);
         Translation2d targetPoint = new Translation2d(2.04, 2.75);
 
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.2));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.2));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.2));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.2));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.2));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.5, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 2.0, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.0, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.5, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 2.0, 0.5));
     }
 
     @Test
@@ -105,5 +108,15 @@ public class PathPlannerTest {
         PathConstraints constraint = new PathConstraints(3.5, 5.0);
 
         assertTimeoutPreemptively(Duration.ofSeconds((long) 1.0), () -> TrajectoryGenerationUtils.generatePathPlannerTrajectory(result, constraint));
+    }
+
+    @Test
+    void testFieldFind() {
+        AStarPathPlanner pathPlanner = new AStarPathPlanner();
+        Translation2d startPoint = new Translation2d(4.29, 1.08);
+        Translation2d endPoint = new Translation2d(1.88, 3.31);
+        System.out.println(FloydTrimming.trimPath(
+            pathPlanner.plan(startPoint, endPoint, FieldObstacles.obstacleList, 0.05, 0.05, 1.5, 5.0)  
+        ).getLength());
     }
 }

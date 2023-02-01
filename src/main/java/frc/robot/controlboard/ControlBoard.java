@@ -65,7 +65,7 @@ public class ControlBoard {
         } else {
             double pedalScale = 1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL + Constants.CONTROLBOARD.CONTROLLER_PEDAL * pedal;
             double breakScale = (1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL) * breaker;
-            return tAxes.times(pedalScale).minus(tAxes.times(breakScale)).times(Constants.SUBSYSTEM_SWERVE.DRIVE_MAX_VELOCITY);
+            return tAxes.times(pedalScale).minus(tAxes.times(breakScale)).times(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
         }
     }
 
@@ -116,6 +116,10 @@ public class ControlBoard {
     }
 
     public boolean getScorePressed() {
+        return driver.getController().getAButtonPressed();
+    }
+
+    public boolean getAutoTracking() {
         return driver.getController().getRightBumperPressed();
     }
 }

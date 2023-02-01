@@ -9,13 +9,18 @@ import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.team254.lib.util.Util;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
+import frc.robot.motion.AStarPathProvider;
+import frc.robot.motion.PathProvider;
 import frc.robot.states.AssistedPoseBuilder;
 import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
@@ -66,13 +71,20 @@ public class Coordinator implements Updatable {
     public DirectionalPose2d coreDirectionalPose2d;
 
     public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
-    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.MID, SCORING_GRID.OUTER, SCORING_SIDE.OUTER);
-    
-    public boolean gotGamePieceRecord = false;
-    public Timer scoreFinishedTimer = new Timer();
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.MID, SCORING_GRID.OUTER,
+            SCORING_SIDE.OUTER);
     public Direction loadDirection = Direction.NEAR;
     public Direction commuteDirection = Direction.FAR;
     public Direction scoreDirection = Direction.NEAR;
+
+    public boolean gotGamePieceRecord = false;
+    public Timer scoreFinishedTimer = new Timer();
+
+    // Path planning related
+    public PathProvider pathProvider = new AStarPathProvider();
+    public Timer pathTrackingStartTimer = new Timer();
+    public boolean autoTracking = false;
+    public boolean wantAutoTracking = false;
 
     // State machine related
     public STATE state = STATE.COMMUTING;
@@ -84,12 +96,18 @@ public class Coordinator implements Updatable {
     private Double swerveSelfLockheadingRecord;
 
     // TODO: Change this to physical button and trigger board after simulation
-    private LoggedDashboardChooser<GamePiece> simulatedTargetGamepiece = new LoggedDashboardChooser<GamePiece>("Game Piece");
-    private LoggedDashboardChooser<SCORING_GRID> simulatedScoringGridChooser = new LoggedDashboardChooser<SCORING_GRID>("Target Grid");
-    private LoggedDashboardChooser<SCORING_SIDE> simulatedScoringSideChooser = new LoggedDashboardChooser<SCORING_SIDE>("Target Side");
-    private LoggedDashboardChooser<SCORING_ROW> simulatedScoringRowChooser = new LoggedDashboardChooser<SCORING_ROW>("Target Row");
-    private LoggedDashboardChooser<LOADING_LOCATION> simulatedLoadingLocationChooser = new LoggedDashboardChooser<LOADING_LOCATION>("Loading Location");
-    private LoggedDashboardChooser<Boolean> simulatedGotGamepiece = new LoggedDashboardChooser<Boolean>("Simulated Game Piece");
+    private LoggedDashboardChooser<GamePiece> simulatedTargetGamepiece = new LoggedDashboardChooser<GamePiece>(
+            "Game Piece");
+    private LoggedDashboardChooser<SCORING_GRID> simulatedScoringGridChooser = new LoggedDashboardChooser<SCORING_GRID>(
+            "Target Grid");
+    private LoggedDashboardChooser<SCORING_SIDE> simulatedScoringSideChooser = new LoggedDashboardChooser<SCORING_SIDE>(
+            "Target Side");
+    private LoggedDashboardChooser<SCORING_ROW> simulatedScoringRowChooser = new LoggedDashboardChooser<SCORING_ROW>(
+            "Target Row");
+    private LoggedDashboardChooser<LOADING_LOCATION> simulatedLoadingLocationChooser = new LoggedDashboardChooser<LOADING_LOCATION>(
+            "Loading Location");
+    private LoggedDashboardChooser<Boolean> simulatedGotGamepiece = new LoggedDashboardChooser<Boolean>(
+            "Simulated Game Piece");
 
     private static Coordinator instance;
 
@@ -101,11 +119,16 @@ public class Coordinator implements Updatable {
     }
 
     private Coordinator() {
-        List.of(GamePiece.class.getEnumConstants()).forEach(x -> simulatedTargetGamepiece.addDefaultOption(x.toString(), x));
-        List.of(SCORING_GRID.class.getEnumConstants()).forEach(x -> simulatedScoringGridChooser.addDefaultOption(x.toString(), x));
-        List.of(SCORING_SIDE.class.getEnumConstants()).forEach(x -> simulatedScoringSideChooser.addDefaultOption(x.toString(), x));
-        List.of(SCORING_ROW.class.getEnumConstants()).forEach(x -> simulatedScoringRowChooser.addDefaultOption(x.toString(), x));
-        List.of(LOADING_LOCATION.class.getEnumConstants()).forEach(x -> simulatedLoadingLocationChooser.addDefaultOption(x.toString(), x));
+        List.of(GamePiece.class.getEnumConstants())
+                .forEach(x -> simulatedTargetGamepiece.addDefaultOption(x.toString(), x));
+        List.of(SCORING_GRID.class.getEnumConstants())
+                .forEach(x -> simulatedScoringGridChooser.addDefaultOption(x.toString(), x));
+        List.of(SCORING_SIDE.class.getEnumConstants())
+                .forEach(x -> simulatedScoringSideChooser.addDefaultOption(x.toString(), x));
+        List.of(SCORING_ROW.class.getEnumConstants())
+                .forEach(x -> simulatedScoringRowChooser.addDefaultOption(x.toString(), x));
+        List.of(LOADING_LOCATION.class.getEnumConstants())
+                .forEach(x -> simulatedLoadingLocationChooser.addDefaultOption(x.toString(), x));
         simulatedGotGamepiece.addDefaultOption("No", false);
         simulatedGotGamepiece.addDefaultOption("Yes", true);
     }
@@ -123,8 +146,11 @@ public class Coordinator implements Updatable {
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
         }
-    }
 
+        if (mControlBoard.getAutoTracking()) {
+            wantAutoTracking = !wantAutoTracking;
+        }
+    }
 
     /**
      * Update Swerve status.
@@ -136,7 +162,7 @@ public class Coordinator implements Updatable {
         mPeriodicIO.outSwerveTranslation = mPeriodicIO.inSwerveTranslation;
         mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
         if (mPeriodicIO.inSwervePoseAssisted != null) {
-            if(mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
+            if (mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
                 mPeriodicIO.outSwerveLockHeading = true;
                 mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
                 swerveSelfLockheadingRecord = null;
@@ -157,22 +183,21 @@ public class Coordinator implements Updatable {
             mPeriodicIO.outSwerveLockHeading = false;
             mPeriodicIO.outSwerveHeadingTarget = 0.0;
             swerveSelfLockheadingRecord = null;
-        }   
+        }
     }
-    
 
     /*
      * Update the direction of loading, commuting and scoring.
      * The guiding principle is to let the driver turn as less as possible.
      */
     public void updateDirections() {
-        if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
-            if(scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
+        if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+            if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
                 loadDirection = Direction.NEAR;
                 commuteDirection = Direction.FAR;
                 scoreDirection = Direction.NEAR;
             } else {
-                if(Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
+                if (Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
                     loadDirection = Direction.NEAR;
                     commuteDirection = Direction.FAR;
                     scoreDirection = Direction.NEAR;
@@ -185,27 +210,27 @@ public class Coordinator implements Updatable {
         } else if (gotGamePieceRecord) {
             gotGamePieceRecord = false;
             // Load on NEAR side
-            if(mPeriodicIO.inCurrentSuperstructureState.armAngle.getCos() > 0.0) {
+            if (mPeriodicIO.inCurrentSuperstructureState.armAngle.getCos() > 0.0) {
                 loadDirection = Direction.NEAR;
                 commuteDirection = Direction.FAR;
-                if(scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
+                if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
                     scoreDirection = Direction.NEAR;
                 } else {
                     scoreDirection = Direction.FAR;
                 }
-            // Load on FAR side
+                // Load on FAR side
             } else {
                 loadDirection = Direction.FAR;
                 commuteDirection = Direction.NEAR;
-                if(scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
+                if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
                     scoreDirection = Direction.FAR;
                 } else {
                     scoreDirection = Direction.NEAR;
                 }
             }
         } else {
-            if(state == STATE.COMMUTING) {
-                if(Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
+            if (state == STATE.COMMUTING) {
+                if (Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
                     loadDirection = Direction.NEAR;
                 } else {
                     loadDirection = Direction.FAR;
@@ -214,33 +239,72 @@ public class Coordinator implements Updatable {
         }
     }
 
-    public void updateStates() {
-        switch(state) {
+    public void updateStates(double dt) {
+        if(state != STATE.PREP_SCORING) {
+            autoTracking = false;
+            wantAutoTracking = false;
+            pathTrackingStartTimer.reset();
+            pathTrackingStartTimer.stop();
+            pathProvider.clear();
+        }
+
+        switch (state) {
             case SCORING:
                 coreIntakerPower = 0.0;
-                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
+                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget, scoreDirection);
                 coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
-                if(mArmAndExtender.isOnTarget()) {
-                    scoreFinishedTimer.start();
-                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
-                    coreDirectionalPose2d.setXRestricted(false);
+                Transform2d delta = coreDirectionalPose2d.minus(mSwerve.getLocalizer().getLatestPose());
+                if (Util.epsilonEquals(0, delta.getX(), 0.05) && Util.epsilonEquals(0, delta.getY(), 0.05) && Util.epsilonEquals(0, delta.getRotation().getDegrees(), 3.5)) {
+                    coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
+                    if (mArmAndExtender.isOnTarget()) {
+                        scoreFinishedTimer.start();
+                        coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
+                    }
+                }
+                break;
+            case PREP_SCORING:
+                coreIntakerPower = 0.0;
+                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget,
+                        scoreDirection);
+                DirectionalPose2d targetPose = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
+                if(wantAutoTracking && !autoTracking){
+                    pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(), targetPose.getTranslation());
+                    pathTrackingStartTimer.reset();
+                    pathTrackingStartTimer.stop();
+                    autoTracking = true;
+                } else if (!wantAutoTracking && autoTracking) {
+                    pathTrackingStartTimer.reset();
+                    pathTrackingStartTimer.stop();
+                    pathProvider.clear();
+                    autoTracking = false;
+                }
+
+                if(autoTracking) {
+                    pathProvider.getPath().ifPresentOrElse(path -> {
+                        pathTrackingStartTimer.start();
+                        coreDirectionalPose2d = new DirectionalPose2d(
+                            new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 2.0), targetPose.getRotation()),
+                            true, true, true);
+                    }, () -> {
+                        coreDirectionalPose2d = null;
+                    });
+                } else {
+                    
                 }
                 break;
             case COMMUTING:
                 coreIntakerPower = 0.0;
-                coreSuperstructureState = SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
+                coreSuperstructureState = SuperstructureStateBuilder
+                        .buildCommutingSuperstructureState(commuteDirection);
                 coreDirectionalPose2d = null;
                 break;
             case LOADING:
                 coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
-                coreSuperstructureState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadDirection);
+                coreSuperstructureState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
+                        loadDirection);
                 coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
                 break;
-            case PREP_SCORING:
-                coreIntakerPower = 0.0;
-                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget, scoreDirection);
-                coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
-                break;
+            
             case MANUAL:
                 break;
         }
@@ -254,48 +318,51 @@ public class Coordinator implements Updatable {
             setState(STATE.MANUAL);
             return;
         } else {
-            switch(state) {
+            switch (state) {
                 case PREP_SCORING:
-                    if(wantedAction == WANTED_ACTION.SCORE) {
-                        System.out.println("Command Get.");
+                    if (wantedAction == WANTED_ACTION.SCORE) {
                         setState(STATE.SCORING);
                     } else if (wantedAction == WANTED_ACTION.COMMUTE) {
                         setState(STATE.COMMUTING);
                     } else {
-                        System.out.println("Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        System.out.println(
+                                "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
                     }
                     break;
                 case SCORING:
-                    if(wantedAction == WANTED_ACTION.COMMUTE) {
-                        if(scoreFinishedTimer.get() > 0.5) {
+                    if (wantedAction == WANTED_ACTION.COMMUTE) {
+                        if (scoreFinishedTimer.get() > 0.5) {
                             scoreFinishedTimer.stop();
                             scoreFinishedTimer.reset();
                             setState(STATE.COMMUTING);
                         }
                     } else {
-                        System.out.println("Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        System.out.println(
+                                "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
                     }
                     break;
                 case COMMUTING:
-                    if(wantedAction == WANTED_ACTION.PREP_SCORE) {
+                    if (wantedAction == WANTED_ACTION.PREP_SCORE) {
                         setState(STATE.PREP_SCORING);
                     } else if (wantedAction == WANTED_ACTION.LOAD) {
                         setState(STATE.LOADING);
                     } else {
-                        System.out.println("Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        System.out.println(
+                                "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
                     }
                     break;
                 case LOADING:
-                    if(wantedAction == WANTED_ACTION.COMMUTE) {
+                    if (wantedAction == WANTED_ACTION.COMMUTE) {
                         setState(STATE.COMMUTING);
                     } else if (wantedAction == WANTED_ACTION.PREP_SCORE) {
                         setState(STATE.PREP_SCORING);
                     } else {
-                        System.out.println("Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        System.out.println(
+                                "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
                     }
                     break;
                 case MANUAL:
-                    if(wantedAction != WANTED_ACTION.MANUAL) {
+                    if (wantedAction != WANTED_ACTION.MANUAL) {
                         setState(STATE.COMMUTING);
                     } else {
                         coreSuperstructureState = mPeriodicIO.inCurrentSuperstructureState;
@@ -307,32 +374,31 @@ public class Coordinator implements Updatable {
         }
     }
 
-
     @Override
-    public synchronized void read(double time, double dt){
+    public synchronized void read(double time, double dt) {
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
         mPeriodicIO.inSwervePoseAssisted = mSwerve.getTargetPose();
-        if(!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
+        if (!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
             gotGamePieceRecord = true;
         }
         mPeriodicIO.inIntakerHasGamePiece = mIntaker.hasGamePiece();
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
     }
-    
+
     @Override
-    public synchronized void update(double time, double dt){
-        if(wantedActionChanged) {
+    public synchronized void update(double time, double dt) {
+        if (wantedActionChanged) {
             handleTransitions();
             wantedActionChanged = false;
         }
         updateDirections();
-        updateStates();
+        updateStates(dt);
         updateSwerve();
     }
-    
+
     @Override
-    public synchronized void write(double time, double dt){
+    public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
         mSwerve.setTargetPose(coreDirectionalPose2d);
         mIntaker.setIntakerPower(coreIntakerPower);
@@ -346,48 +412,47 @@ public class Coordinator implements Updatable {
                 mSwerve.getFollower().cancel();
                 mSwerve.setState(SJTUSwerveMK5Drivebase.STATE.DRIVE);
             }
-            
+
             mSwerve.setLockHeading(mPeriodicIO.outSwerveLockHeading);
             mSwerve.setHeadingTarget(mPeriodicIO.outSwerveHeadingTarget);
             mSwerve.drive(mPeriodicIO.outSwerveTranslation, mPeriodicIO.outSwerveRotation, true, false);
         }
 
     }
-    
+
     @Override
-    public synchronized void telemetry(){
+    public synchronized void telemetry() {
         Logger.getInstance().recordOutput("Coordinator/State", state.toString());
     }
-    
+
     @Override
-    public synchronized void start(){
+    public synchronized void start() {
         // Auto Generated Method
     }
-    
+
     @Override
-    public synchronized void stop(){
+    public synchronized void stop() {
         // Auto Generated Method
     }
 
     @Override
     public void simulate(double time, double dt) {
-        if(mControlBoard.getCommutePressed()) {
+        if (mControlBoard.getCommutePressed()) {
             setWantedAction(WANTED_ACTION.COMMUTE);
         }
-        if(mControlBoard.getLoadPressed()) {
+        if (mControlBoard.getLoadPressed()) {
             setWantedAction(WANTED_ACTION.LOAD);
         }
-        if(mControlBoard.getScorePressed()) {
+        if (mControlBoard.getScorePressed()) {
             setWantedAction(WANTED_ACTION.SCORE);
         }
-        if(mControlBoard.getPrepScorePressed()) {
+        if (mControlBoard.getPrepScorePressed()) {
             setWantedAction(WANTED_ACTION.PREP_SCORE);
         }
 
-
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
-        if(!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
+        if (!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
             gotGamePieceRecord = true;
         }
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
@@ -403,7 +468,7 @@ public class Coordinator implements Updatable {
     }
 
     public enum STATE {
-        //TODO: Add A* Auto Navigation
+        // TODO: Add A* Auto Navigation
         PREP_SCORING,
         SCORING,
         COMMUTING,

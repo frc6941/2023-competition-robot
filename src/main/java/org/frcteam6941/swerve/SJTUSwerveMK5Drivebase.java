@@ -36,14 +36,14 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     public static final double kLooperDt = Constants.LOOPER_DT;
 
     // Drivetrain Definitions
-    public static final double MAX_SPEED = Constants.SUBSYSTEM_SWERVE.DRIVE_MAX_VELOCITY;
+    public static final double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY;
 
     // Snap Rotation Controller
     private final ProfiledPIDController headingController = new ProfiledPIDController(
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KP,
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KI,
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_KD,
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KP,
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KI,
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KD,
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
     private boolean isLockHeading;
     private double headingTarget = 0.0;
 
@@ -52,12 +52,11 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             new PIDController(1.5, 0.0, 0.0),
             new PIDController(1.5, 0.0, 0.0),
             this.headingController,
-            Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_FEEDFORWARD);
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_FEEDFORWARD);
     // Pose Assist Controller
-    private final DirectionalPoseFollower poseAssistedFollower = new DirectionalPoseFollower(
-            new PIDController(3.0, 0.0, 0.0),
-            new PIDController(3.0, 0.0, 0.0),
-            this.headingController);
+    private final PIDController poseAssistXController = new PIDController(3.0, 0.0, 0.0);
+    private final PIDController poseAssistYController = new PIDController(3.0, 0.0, 0.0);
+    private final DirectionalPoseFollower poseAssistedFollower;
 
     // Swerve Kinematics and Odometry
     private final SwerveDriveKinematics swerveKinematics;
@@ -90,29 +89,32 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         // Swerve hardware configurations
         mSwerveMods = new SJTUSwerveModuleMK5[] {
                 new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.FRONT_LEFT_OFFSET,
+                        Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR,
+                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_LEFT_OFFSET,
                         false, true),
                 new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_FRONT_RIGHT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_RIGHT_STEER_MOTOR,
-                        Constants.SUBSYSTEM_SWERVE.FRONT_RIGHT_OFFSET, false, true),
+                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_RIGHT_OFFSET, false, true),
                 new SJTUSwerveModuleMK5(2, Constants.CANID.DRIVETRAIN_BACK_LEFT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_LEFT_OFFSET,
+                        Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR,
+                        Constants.SUBSYSTEM_DRIVETRAIN.BACK_LEFT_OFFSET,
                         false, true),
                 new SJTUSwerveModuleMK5(3, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
-                        Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR, Constants.SUBSYSTEM_SWERVE.BACK_RIGHT_OFFSET,
+                        Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR,
+                        Constants.SUBSYSTEM_DRIVETRAIN.BACK_RIGHT_OFFSET,
                         false, true)
         };
 
         // Module positions and swerve kinematics
         swerveModulePositions = new Translation2d[] {
-                new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
-                        Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
-                        -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
-                        Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0),
-                new Translation2d(-Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0,
-                        -Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_SIDE_WIDTH / 2.0) };
+                new Translation2d(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0),
+                new Translation2d(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        -Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0),
+                new Translation2d(-Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0),
+                new Translation2d(-Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0,
+                        -Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0) };
 
         swerveKinematics = new SwerveDriveKinematics(swerveModulePositions);
 
@@ -125,8 +127,12 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
         headingController.enableContinuousInput(0, 360.0); // Enable continuous rotation
         headingController.setTolerance(3.0);
+        headingController.setIntegratorRange(-20.0, 20.0);
+        poseAssistXController.setTolerance(0.05);
+        poseAssistYController.setTolerance(0.05);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
+        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController, headingController);
     }
 
     /**
@@ -232,7 +238,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             }
         } else {
             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
-                    Constants.SUBSYSTEM_SWERVE.DRIVE_MAX_VELOCITY);
+                    Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
             for (SwerveModuleBase mod : mSwerveMods) {
                 mod.setDesiredState(swerveModuleStates[mod.getModuleNumber()], false, false);
             }
@@ -287,7 +293,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     }
 
     /**
-     * Core method to set the target pose for the pose assisted follower.
+     * Core method to set the target pose for the pose assisted follower. If null is
+     * inputed, pose following will be automatically cleared.
      * 
      * @param targetPose The pose target with directional constraints.
      */
@@ -429,7 +436,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         if (isLockHeading && !poseAssistedFollower.isThetaRestricted()) {
             headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
             double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
-            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation, driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
+            driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation,
+                    driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
         }
 
         switch (state) {
@@ -440,7 +448,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 updateModules(driveSignal, dt);
                 break;
             case POSE_ASSISTED:
-                if(poseAssistedSignal.isPresent()) {
+                if (poseAssistedSignal.isPresent()) {
                     updateModules(driveSignal, dt);
                 } else {
                     setState(STATE.DRIVE);

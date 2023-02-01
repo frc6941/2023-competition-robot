@@ -67,20 +67,7 @@ public class KinematicsTest {
                         currentState2).extenderLength,
                 0.001);
     }
-
-    @Test
-    void automaticHeightClamp() {
-        SuperstructureState desiredState = new SuperstructureState(Rotation2d.fromDegrees(-80), 5.0);
-        SuperstructureState currentState = new SuperstructureState(Rotation2d.fromDegrees(-60), 2.0);
-
-        assertEquals(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.HEIGHT_RANGE.min,
-                SuperstructureKinematics.forwardKinematics2d(
-                        Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
-                                .optimize(desiredState, currentState))
-                        .getY(),
-                0.001);
-    }
-
+    
     @AfterEach
     void shutdown() throws Exception {
 

@@ -62,17 +62,7 @@ public class DirectionalPoseFollower {
                             true));
         }
     }
-
-    public boolean isOnTarget() {
-        if (targetPose == null) {
-            return false;
-        } else {
-            return (xController.atSetpoint() || !targetPose.isXRestricted())
-                    && (yController.atSetpoint() || !targetPose.isYRestricted())
-                    && (thetaController.atSetpoint() || !targetPose.isThetaRestricted());
-        }
-    }
-
+    
     public boolean isXRestricted() {
         return (targetPose == null ? false : targetPose.isXRestricted());
     }

@@ -22,11 +22,11 @@ import frc.robot.Constants;
  * This is a basic implementation of {@link SwerveModuleBase}.
  */
 public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
-    public static double MAX_SPEED = Constants.SUBSYSTEM_SWERVE.MODULE_MAX_VELOCITY;
-    public static double WHEEL_CIRCUMFERENCE = Constants.SUBSYSTEM_SWERVE.MODULE_WHEEL_CIRCUMFERENCE;
+    public static double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.MODULE_MAX_VELOCITY;
+    public static double WHEEL_CIRCUMFERENCE = Constants.SUBSYSTEM_DRIVETRAIN.MODULE_WHEEL_CIRCUMFERENCE;
 
-    public static double DRIVE_GEAR_RATIO = Constants.SUBSYSTEM_SWERVE.DRIVE_GEAR_RATIO;
-    public static double ANGLE_GEAR_RATIO = Constants.SUBSYSTEM_SWERVE.ANGLE_GEAR_RATIO;
+    public static double DRIVE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_GEAR_RATIO;
+    public static double ANGLE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.ANGLE_GEAR_RATIO;
 
     public static double DRIVE_KP = 0.01;
     public static double DRIVE_KI = 0.001;
