@@ -115,12 +115,12 @@ public class ArmAndExtender implements Updatable {
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
 
         extenderMotor.configFactoryDefault(50);
-        extenderMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
-        extenderMotor.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
-        extenderMotor.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
-        extenderMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
-        extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
-        extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        extenderMotor.config_kP(0, Constants.SUBSYSTEM_EXTENDER.KP, 100);
+        extenderMotor.config_kI(0, Constants.SUBSYSTEM_EXTENDER.KI, 100);
+        extenderMotor.config_kD(0, Constants.SUBSYSTEM_EXTENDER.KD, 100);
+        extenderMotor.config_kF(0, Constants.SUBSYSTEM_EXTENDER.KF, 100);
+        extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_EXTENDER.CRUISE_V, 100);
+        extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_EXTENDER.CRUIVE_ACC, 100);
 
         mechRoot.append(new MechanismLigament2d("Tower", 0.80, 260, 8, new Color8Bit(Color.kBlue)));
     }
@@ -229,7 +229,7 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (armMotorLeader.isFwdLimitSwitchClosed() == 1) {
+        if (armMotorLeader.isRevLimitSwitchClosed() == 1) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
@@ -398,10 +398,10 @@ public class ArmAndExtender implements Updatable {
                         simElevator.getVelocityMetersPerSecond(), Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE,
                         Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
 
-        if (simArm.wouldHitLowerLimit(simArm.getAngleRads() - 0.0001)) {
+        if (simArm.wouldHitLowerLimit(simArm.getAngleRads() - 0.0001) && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
-        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters() - 0.0001)) {
+        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters() - 0.0001) && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 

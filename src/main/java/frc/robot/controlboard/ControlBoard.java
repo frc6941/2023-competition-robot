@@ -89,21 +89,18 @@ public class ControlBoard {
     }
 
     public SWERVE_CARDINAL getSwerveSnapRotation() {
-        if (driver.getButton(Button.A)) {
+        int POV = driver.getController().getPOV();
+        if (POV == kDpadDown) {
             return SWERVE_CARDINAL.BACKWARDS;
-        } else if (driver.getButton(Button.X)) {
+        } else if (POV == kDpadRight) {
             return SWERVE_CARDINAL.RIGHT;
-        } else if (driver.getButton(Button.B)) {
+        } else if (POV == kDpadLeft) {
             return SWERVE_CARDINAL.LEFT;
-        } else if (driver.getButton(Button.Y)) {
+        } else if (POV == kDpadUp) {
             return SWERVE_CARDINAL.FORWARDS;
         } else {
             return SWERVE_CARDINAL.NONE;
         }
-    }
-
-    public boolean getAutomateProgressButtonPressed() {
-        return driver.getController().getAButtonPressed();
     }
 
     public boolean getCommutePressed() {

@@ -54,6 +54,11 @@
       "/SmartDashboard/Target Side": "String Chooser"
     },
     "windows": {
+      "/AdvantageKit/RealOutputs/Arm Mechanism": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Game Piece": {
         "window": {
           "visible": true
@@ -103,17 +108,19 @@
       "SmartDashboard": {
         "TunableNumbers": {
           "Commuting": {
-            "Far": {
-              "open": true
-            },
             "Near": {
               "open": true
-            },
+            }
+          },
+          "Loading": {
             "open": true
           },
           "Scoring": {
             "Cone": {
               "Far": {
+                "Low Row": {
+                  "open": true
+                },
                 "Mid Row": {
                   "open": true
                 },
@@ -121,6 +128,12 @@
               },
               "Near": {
                 "High Row": {
+                  "open": true
+                },
+                "Low Row": {
+                  "open": true
+                },
+                "Mid Row": {
                   "open": true
                 },
                 "open": true

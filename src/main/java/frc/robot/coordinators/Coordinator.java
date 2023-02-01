@@ -1,8 +1,6 @@
 package frc.robot.coordinators;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.frcteam6941.control.DirectionalPose2d;
@@ -15,7 +13,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
@@ -43,6 +40,7 @@ public class Coordinator implements Updatable {
         public boolean inSwerveBrake = false;
         public double inSwerveFieldHeadingAngle = 0.0;
         public double inSwerveAngularVelocity = 0.0;
+        public DirectionalPose2d inSwervePoseAssisted = null;
 
         public SuperstructureState inCurrentSuperstructureState = new SuperstructureState();
         public boolean inIntakerHasGamePiece = false;
@@ -125,9 +123,6 @@ public class Coordinator implements Updatable {
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
         }
-
-        if (mControlBoard.getAutomateProgressButtonPressed()) {
-        }
     }
 
 
@@ -140,7 +135,13 @@ public class Coordinator implements Updatable {
     public synchronized void updateSwerve() {
         mPeriodicIO.outSwerveTranslation = mPeriodicIO.inSwerveTranslation;
         mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
-        if (mPeriodicIO.inSwerveSnapRotation != SWERVE_CARDINAL.NONE) {
+        if (mPeriodicIO.inSwervePoseAssisted != null) {
+            if(mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
+                mPeriodicIO.outSwerveLockHeading = true;
+                mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
+                swerveSelfLockheadingRecord = null;
+            }
+        } else if (mPeriodicIO.inSwerveSnapRotation != SWERVE_CARDINAL.NONE) {
             mPeriodicIO.outSwerveLockHeading = true;
             mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwerveSnapRotation.degrees;
             swerveSelfLockheadingRecord = null;
@@ -303,6 +304,7 @@ public class Coordinator implements Updatable {
     public synchronized void read(double time, double dt){
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
+        mPeriodicIO.inSwervePoseAssisted = mSwerve.getTargetPose();
         if(!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
             gotGamePieceRecord = true;
         }
@@ -319,7 +321,6 @@ public class Coordinator implements Updatable {
         updateDirections();
         updateStates();
         updateSwerve();
-        SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
     }
     
     @Override

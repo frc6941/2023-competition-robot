@@ -29,6 +29,10 @@ public class DirectionalPoseFollower {
         this.targetPose = new DirectionalPose2d(targetPose, true, true, true);
     }
 
+    public DirectionalPose2d getTargetPose() {
+        return this.targetPose;
+    }
+
     public void clear() {
         this.targetPose = null;
     }
@@ -46,7 +50,6 @@ public class DirectionalPoseFollower {
             if (targetPose.isYRestricted()) {
                 y = yController.calculate(currentPose.getY(), targetPose.getY());
             }
-            // TODO: Fix Heading Controller Conflict & the resulting tweak
             if (targetPose.isThetaRestricted()) {
                 theta = thetaController.calculate(currentPose.getRotation().getDegrees(),
                         targetPose.getRotation().getDegrees());

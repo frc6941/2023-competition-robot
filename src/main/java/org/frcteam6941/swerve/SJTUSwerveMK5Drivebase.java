@@ -46,7 +46,6 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             Constants.SUBSYSTEM_SWERVE.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
     private boolean isLockHeading;
     private double headingTarget = 0.0;
-    private double headingFeedforward = 0.0;
 
     // Path Following Controller
     private final HolonomicTrajectoryFollower trajectoryFollower = new HolonomicTrajectoryFollower(
@@ -150,7 +149,6 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());
         }
         this.isLockHeading = status;
-        this.headingFeedforward = 0.0;
     }
 
     /**
@@ -304,6 +302,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         }
     }
 
+    public DirectionalPose2d getTargetPose() {
+        return poseAssistedFollower.getTargetPose();
+    }
+
     public void cancelPoseAssisit() {
         this.poseAssistedFollower.clear();
     }
@@ -427,7 +429,6 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         if (isLockHeading && !poseAssistedFollower.isThetaRestricted()) {
             headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
             double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
-            rotation += headingFeedforward;
             driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation, driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
         }
 
