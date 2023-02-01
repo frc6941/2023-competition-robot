@@ -239,6 +239,7 @@ public class Coordinator implements Updatable {
                     if (mArmAndExtender.isOnTarget()) {
                         scoreFinishedTimer.start();
                         coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
+                        setWantedAction(WANTED_ACTION.COMMUTE);
                     }
                 }
                 break;
@@ -269,7 +270,7 @@ public class Coordinator implements Updatable {
                         coreDirectionalPose2d = null;
                     });
                 } else {
-                    
+                    coreDirectionalPose2d = null;
                 }
                 break;
             case COMMUTING:
@@ -311,7 +312,7 @@ public class Coordinator implements Updatable {
                     break;
                 case SCORING:
                     if (wantedAction == WANTED_ACTION.COMMUTE) {
-                        if (scoreFinishedTimer.get() > 0.5) {
+                        if (scoreFinishedTimer.get() > 0.7) {
                             scoreFinishedTimer.stop();
                             scoreFinishedTimer.reset();
                             setState(STATE.COMMUTING);

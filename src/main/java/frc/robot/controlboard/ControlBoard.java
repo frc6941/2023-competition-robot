@@ -120,6 +120,6 @@ public class ControlBoard {
     }
 
     public boolean getAutoTracking() {
-        return driver.getController().getRightBumperPressed();
+        return driver.getController().getRightBumperPressed() || driver.getController().getRightBumperReleased();
     }
 }
