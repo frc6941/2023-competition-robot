@@ -54,11 +54,6 @@
       "/SmartDashboard/Target Side": "String Chooser"
     },
     "windows": {
-      "/AdvantageKit/RealOutputs/Arm Mechanism": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Game Piece": {
         "window": {
           "visible": true

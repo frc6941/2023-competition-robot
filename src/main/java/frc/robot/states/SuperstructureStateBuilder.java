@@ -156,13 +156,8 @@ public class SuperstructureStateBuilder {
                             Loading.shelfLengthFar.get());
                 }
             case GROUND:
-                if (direction == Direction.NEAR) {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
-                            Loading.groundLengthNear.get());
-                } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
-                            Loading.groundLengthFar.get());
-                }
+                return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
+                        Loading.groundLengthNear.get());
             default:
                 return null;
         }

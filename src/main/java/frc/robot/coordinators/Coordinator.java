@@ -192,41 +192,21 @@ public class Coordinator implements Updatable {
      */
     public void updateDirections() {
         if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
-            if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
-                loadDirection = Direction.NEAR;
-                commuteDirection = Direction.FAR;
-                scoreDirection = Direction.NEAR;
-            } else {
-                if (Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
-                    loadDirection = Direction.NEAR;
-                    commuteDirection = Direction.FAR;
-                    scoreDirection = Direction.NEAR;
-                } else {
-                    loadDirection = Direction.FAR;
-                    commuteDirection = Direction.NEAR;
-                    scoreDirection = Direction.NEAR;
-                }
-            }
+            loadDirection = Direction.NEAR;
+            commuteDirection = Direction.FAR;
+            scoreDirection = Direction.NEAR;
         } else if (gotGamePieceRecord) {
             gotGamePieceRecord = false;
             // Load on NEAR side
             if (mPeriodicIO.inCurrentSuperstructureState.armAngle.getCos() > 0.0) {
                 loadDirection = Direction.NEAR;
                 commuteDirection = Direction.FAR;
-                if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
-                    scoreDirection = Direction.NEAR;
-                } else {
-                    scoreDirection = Direction.FAR;
-                }
-                // Load on FAR side
+                scoreDirection = Direction.NEAR;
+            // Load on FAR side
             } else {
                 loadDirection = Direction.FAR;
                 commuteDirection = Direction.NEAR;
-                if (scoringTarget.getTargetGamePiece() == GamePiece.CONE) {
-                    scoreDirection = Direction.FAR;
-                } else {
-                    scoreDirection = Direction.NEAR;
-                }
+                scoreDirection = Direction.FAR;
             }
         } else {
             if (state == STATE.COMMUTING) {
