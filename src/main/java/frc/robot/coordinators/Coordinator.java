@@ -311,7 +311,7 @@ public class Coordinator implements Updatable {
                 coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
                 SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadDirection);
                 coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
-                if(gotGamePieceRecord) {
+                if(mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
                 }
                 coreSuperstructureState = tempState;
@@ -390,9 +390,6 @@ public class Coordinator implements Updatable {
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
         mPeriodicIO.inSwervePoseAssisted = mSwerve.getTargetPose();
-        if (!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
-            gotGamePieceRecord = true;
-        }
         mPeriodicIO.inIntakerHasGamePiece = mIntaker.hasGamePiece();
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
     }
@@ -463,9 +460,7 @@ public class Coordinator implements Updatable {
 
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
-        if (!mPeriodicIO.inIntakerHasGamePiece && mIntaker.hasGamePiece()) {
-            gotGamePieceRecord = true;
-        }
+        mPeriodicIO.inIntakerHasGamePiece = simulatedGotGamepiece.get();
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
 
         mPeriodicIO.inIntakerHasGamePiece = simulatedGotGamepiece.get();
@@ -479,7 +474,6 @@ public class Coordinator implements Updatable {
     }
 
     public enum STATE {
-        // TODO: Add A* Auto Navigation
         PREP_SCORING,
         SCORING,
         COMMUTING,

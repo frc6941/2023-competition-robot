@@ -3,6 +3,7 @@ package org.frcteam6941.swerve;
 import java.util.Optional;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.team254.lib.util.Util;
 
 import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.control.DirectionalPoseFollower;
@@ -54,8 +55,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             this.headingController,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_FEEDFORWARD);
     // Pose Assist Controller
-    private final PIDController poseAssistXController = new PIDController(3.0, 0.0, 0.0);
-    private final PIDController poseAssistYController = new PIDController(3.0, 0.0, 0.0);
+    private final PIDController poseAssistXController = new PIDController(5.0, 0.0, 0.0);
+    private final PIDController poseAssistYController = new PIDController(5.0, 0.0, 0.0);
     private final DirectionalPoseFollower poseAssistedFollower;
 
     // Swerve Kinematics and Odometry
@@ -513,8 +514,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 chassisSpeeds = new ChassisSpeeds(x, y, rotation);
             }
         }
+
+        ChassisSpeeds clampedSpeed = new ChassisSpeeds(Util.clamp(chassisSpeeds.vxMetersPerSecond, -4.0, 4.0), Util.clamp(chassisSpeeds.vyMetersPerSecond, -4.0, 4.0), Util.clamp(chassisSpeeds.omegaRadiansPerSecond, -3.14, 3.14));
         // TODO: Potential Bug: May produce zero [0 null] like result for this method
-        SwerveModuleState[] perfectModuleStates = swerveKinematics.toSwerveModuleStates(chassisSpeeds);
+        SwerveModuleState[] perfectModuleStates = swerveKinematics.toSwerveModuleStates(clampedSpeed);
         for (int i = 0; i < perfectModuleStates.length; i++) {
             swerveModsPositions[i] = new SwerveModulePosition(
                     swerveModsPositions[i].distanceMeters + perfectModuleStates[i].speedMetersPerSecond * dt,

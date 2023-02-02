@@ -59,7 +59,7 @@ public class DirectionalPoseFollower {
                             new Translation2d(x, y),
                             theta,
                             true,
-                            true));
+                            false));
         }
     }
     
