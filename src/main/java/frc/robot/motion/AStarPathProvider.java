@@ -32,17 +32,23 @@ public class AStarPathProvider implements PathProvider {
     }
 
     @Override
-    public void buildPath(Translation2d startingPoint, Translation2d endingPoint) {
-        path = executor.submit(new Callable<Path>() {
-            @Override
-            public Path call() throws Exception {
-                return FloydTrimming.trimPath(planner.plan(
-                startingPoint, endingPoint,
-                FieldObstacles.obstacleList,
-                0.07, 0.07,
-                2.5, 0.5));
-            }
-        });
+    public boolean buildPath(Translation2d startingPoint, Translation2d endingPoint) {
+        if(!planner.checkLegal(startingPoint, FieldObstacles.obstacleList) && !planner.checkLegal(endingPoint, FieldObstacles.obstacleList)) {
+            path = executor.submit(new Callable<Path>() {
+                @Override
+                public Path call() throws Exception {
+                    return FloydTrimming.trimPath(planner.plan(
+                    startingPoint, endingPoint,
+                    FieldObstacles.obstacleList,
+                    0.05, 0.05,
+                    2.5, 1.0));
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+        
     }
 
     @Override

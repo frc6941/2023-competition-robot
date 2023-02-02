@@ -152,6 +152,33 @@ public class Coordinator implements Updatable {
         }
     }
 
+    public synchronized void updateRumble() {
+        switch(state) {
+            case COMMUTING:
+                // Robot inverse notice
+                double cos = mSwerve.getLocalizer().getLatestPose().getRotation().getCos();
+                if((cos > 0 && scoreDirection == Direction.NEAR) || (cos <= 0 && scoreDirection == Direction.FAR)){
+                    mControlBoard.setDriverRumble(0.5, 0.5);
+                }
+                break;
+            case SCORING:
+                mControlBoard.setDriverRumble(0.0, 0.0);
+                break;
+            case PREP_SCORING:
+                mControlBoard.setDriverRumble(0.0, 0.0);
+                break;
+            case LOADING:
+                if(mPeriodicIO.inIntakerHasGamePiece) {
+                    mControlBoard.setDriverRumble(0.7, 0.0);
+                } else {
+                    mControlBoard.setDriverRumble(0.0, 0.0);
+                }
+                break;
+            case MANUAL:
+                break;
+        }
+    }
+
     /**
      * Update Swerve status.
      * 
@@ -249,10 +276,11 @@ public class Coordinator implements Updatable {
                         scoreDirection);
                 DirectionalPose2d targetPose = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
                 if(wantAutoTracking && !autoTracking){
-                    pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(), targetPose.getTranslation());
                     pathTrackingStartTimer.reset();
                     pathTrackingStartTimer.stop();
-                    autoTracking = true;
+                    if(pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(), targetPose.getTranslation())) {
+                        autoTracking = true;
+                    }
                 } else if (!wantAutoTracking && autoTracking) {
                     pathTrackingStartTimer.reset();
                     pathTrackingStartTimer.stop();
@@ -264,7 +292,7 @@ public class Coordinator implements Updatable {
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
-                            new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 2.0), targetPose.getRotation()),
+                            new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 3.0), targetPose.getRotation()),
                             true, true, true);
                     }, () -> {
                         coreDirectionalPose2d = null;
@@ -281,11 +309,13 @@ public class Coordinator implements Updatable {
                 break;
             case LOADING:
                 coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
-                coreSuperstructureState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
-                        loadDirection);
+                SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadDirection);
                 coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
+                if(gotGamePieceRecord) {
+                    tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
+                }
+                coreSuperstructureState = tempState;
                 break;
-            
             case MANUAL:
                 break;
         }

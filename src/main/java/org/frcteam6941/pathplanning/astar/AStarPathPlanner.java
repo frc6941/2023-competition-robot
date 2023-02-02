@@ -101,6 +101,20 @@ public class AStarPathPlanner {
         return false;
     }
 
+    public boolean checkLegal(Translation2d translation, Obstacle[] obstacles) {
+        if (obstacles == null) {
+            return false;
+        }
+        for (Obstacle obstacle : obstacles) {
+            if (obstacle.isInObstacle(translation.getX(), translation.getY())) {
+                return true;
+            } else {
+
+            }
+        }
+        return false;
+    }
+
     private void searchNear(Node minimalNode, Translation2d destination, Obstacle[] obstacles, double stepx,
             double stepy, double hGain) {
         // End if the node is not in the first quadrant
