@@ -288,6 +288,7 @@ public class ArmAndExtender implements Updatable {
     public synchronized void write(double time, double dt) {
         switch (armState) {
             case HOMING:
+            case PERCENTAGE:
                 armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
                         mPeriodicIO.armFeedforward);
                 break;
@@ -295,10 +296,6 @@ public class ArmAndExtender implements Updatable {
                 armMotorLeader.set(ControlMode.MotionMagic,
                         Conversions.degreesToFalcon(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.GEAR_RATIO),
                         DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
-                break;
-            case PERCENTAGE:
-                armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
                         mPeriodicIO.armFeedforward);
                 break;
             default:

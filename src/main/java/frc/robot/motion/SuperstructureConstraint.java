@@ -8,11 +8,11 @@ import frc.robot.Constants;
 import frc.robot.states.SuperstructureState;
 
 public class SuperstructureConstraint {
-    private Range heightRange;
-    private Range armRange;
-    private Range extenderRange;
-    private Range dangerousPositiveArmRange;
-    private Range dangerousNegativeArmRange;
+    private final Range heightRange;
+    private final Range armRange;
+    private final Range extenderRange;
+    private final Range dangerousPositiveArmRange;
+    private final Range dangerousNegativeArmRange;
 
     public SuperstructureConstraint(Range heightRange, Range armRange, Range extenderRange,
             Range dangerousPositiveArmRange, Range dangerousNegativeArmRange) {
@@ -27,7 +27,8 @@ public class SuperstructureConstraint {
         // Clamp state into max and min
         SuperstructureState clampedDesiredState = new SuperstructureState(
                 Rotation2d.fromDegrees(this.armRange.clamp(desiredState.armAngle.getDegrees())),
-                this.extenderRange.clamp(desiredState.extenderLength));
+                this.extenderRange.clamp(desiredState.extenderLength)
+        );
 
         // Judge dangerous positive and negative, retract if needed
         if (dangerousPositiveArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
