@@ -133,7 +133,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         poseAssistYController.setTolerance(0.05);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
-        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController, headingController);
+        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController,
+                headingController);
     }
 
     /**
@@ -515,8 +516,9 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             }
         }
 
-        ChassisSpeeds clampedSpeed = new ChassisSpeeds(Util.clamp(chassisSpeeds.vxMetersPerSecond, -4.0, 4.0), Util.clamp(chassisSpeeds.vyMetersPerSecond, -4.0, 4.0), Util.clamp(chassisSpeeds.omegaRadiansPerSecond, -3.14, 3.14));
-        // TODO: Potential Bug: May produce zero [0 null] like result for this method
+        ChassisSpeeds clampedSpeed = new ChassisSpeeds(Util.clamp(chassisSpeeds.vxMetersPerSecond, -4.0, 4.0),
+                Util.clamp(chassisSpeeds.vyMetersPerSecond, -4.0, 4.0),
+                Util.clamp(chassisSpeeds.omegaRadiansPerSecond, -3.14, 3.14));
         SwerveModuleState[] perfectModuleStates = swerveKinematics.toSwerveModuleStates(clampedSpeed);
         for (int i = 0; i < perfectModuleStates.length; i++) {
             swerveModsPositions[i] = new SwerveModulePosition(
@@ -536,8 +538,9 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
      * 1. BRAKE: Make all the wheels to appear in X shape.
      * 2. DRIVE: Normal drive mode. The rotation will get overrided if there's lock
      * heading.
-     * 3. POSE_ASSISTED: Go to a specific
-     * 3. PATH_FOLLOWING: Path following mode. The rotation will get overrided if
+     * 3. POSE_ASSISTED: Go to a specific pose, with restriction on X, Y, or
+     * Rotational axises.
+     * 4. PATH_FOLLOWING: Path following mode. The rotation will get overrided if
      * there's lock heading.
      */
     public enum STATE {
