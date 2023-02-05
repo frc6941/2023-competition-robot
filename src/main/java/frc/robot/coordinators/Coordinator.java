@@ -246,7 +246,7 @@ public class Coordinator implements Updatable {
         }
     }
 
-    public void updateStates(double dt) {
+    public void updateStates() {
         if(state != STATE.PREP_SCORING) {
             autoTracking = false;
             wantAutoTracking = false;
@@ -401,7 +401,7 @@ public class Coordinator implements Updatable {
             wantedActionChanged = false;
         }
         updateDirections();
-        updateStates(dt);
+        updateStates();
         updateSwerve();
     }
 
