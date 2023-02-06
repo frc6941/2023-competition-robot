@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.frcteam6941.control.DirectionalPose2d;
+import org.frcteam6941.led.AddressableLEDPattern;
+import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 import org.littletonrobotics.junction.Logger;
@@ -34,6 +36,7 @@ import frc.robot.states.ScoringTarget.SCORING_ROW;
 import frc.robot.states.ScoringTarget.SCORING_SIDE;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
+import frc.robot.utils.Lights;
 
 public class Coordinator implements Updatable {
     public static class PeriodicIO {
@@ -64,8 +67,8 @@ public class Coordinator implements Updatable {
     private final SJTUSwerveMK5Drivebase mSwerve = SJTUSwerveMK5Drivebase.getInstance();
     private final Intaker mIntaker = Intaker.getInstance();
     private final ArmAndExtender mArmAndExtender = ArmAndExtender.getInstance();
-
-    // Core control variabls
+    private final AddressableLEDWrapper mIndicator = new AddressableLEDWrapper(0,20 );
+    // Core control variablE
     public SuperstructureState coreSuperstructureState;
     public double coreIntakerPower;
     public DirectionalPose2d coreDirectionalPose2d;
@@ -94,6 +97,11 @@ public class Coordinator implements Updatable {
     // Swerve setting related variables
     private boolean swerveSelfLocking = false;
     private Double swerveSelfLockheadingRecord;
+
+    // LED related variables
+    private AddressableLEDPattern ledState = Lights.INITIAL_COLOR;
+    
+    
 
     // TODO: Change this to physical button and trigger board after simulation
     private LoggedDashboardChooser<GamePiece> simulatedTargetGamepiece = new LoggedDashboardChooser<GamePiece>(
@@ -177,6 +185,50 @@ public class Coordinator implements Updatable {
             case MANUAL:
                 break;
         }
+    }
+
+    public void updateIndicator(){
+        switch (state) {
+            case PREP_SCORING:
+                ledState = Lights.PREPARE; 
+                break;
+            case SCORING:
+                switch (scoringTarget.getTargetGamePiece()) {
+                    case CONE:
+                        ledState = Lights.SCORE_CONE;
+                        break;
+                    case CUBE:
+                        ledState = Lights.SCORE_CUBE;
+                        break;
+                }
+                break;
+            case COMMUTING:
+                switch (loadingTarget.getTargetGamePiece()) {
+                    case CONE:
+                        ledState = Lights.COMMUTE_CONE;
+                        break;
+                    case CUBE :
+                        ledState = Lights.COMMUTE_CUBE;    
+                        break;
+                }
+                break;
+            case LOADING:
+                switch (loadingTarget.getTargetGamePiece()) {
+                    case CONE:
+                        ledState = Lights.LOAD_CONE;   
+                        break;
+                
+                    case CUBE :
+                        ledState = Lights.LOAD_CUBE;
+                        break;
+                }
+
+                break;
+            case MANUAL:
+                ledState = Lights.MANUAL;
+                break;
+        }
+        mIndicator.setPattern(ledState);
     }
 
     /**
@@ -403,6 +455,7 @@ public class Coordinator implements Updatable {
         updateDirections();
         updateStates(dt);
         updateSwerve();
+        updateIndicator();
     }
 
     @Override
