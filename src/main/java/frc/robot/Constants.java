@@ -177,6 +177,12 @@ public final class Constants {
                 HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
             );
         }
+
+        // Manual Deltas
+        public static class MANUAL_DELTA {
+            public static double ANGLE_CHANGE_DELTA = 1.0;
+            public static double LENGTH_CHANGE_DELTA = 0.01;
+        }
     }
 
     // Controller

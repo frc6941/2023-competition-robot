@@ -122,4 +122,41 @@ public class ControlBoard {
     public boolean getAutoTracking() {
         return driver.getController().getRightBumperPressed() || driver.getController().getRightBumperReleased();
     }
+
+
+
+    /* OPERATOR METHODS */
+    public boolean getWantManual() {
+        return operator.getController().getAButtonPressed();
+    }
+
+    public boolean getExitManual() {
+        return operator.getController().getBButtonPressed();
+    }
+
+    public boolean getManualWantAngleIncrease() {
+        return operator.getController().getPOV() == kDpadLeft;
+    }
+
+    public boolean getManualWantAngleDecrease() {
+        return operator.getController().getPOV() == kDpadRight;
+    }
+
+    public boolean getManualWantLengthIncrease() {
+        return operator.getController().getPOV() == kDpadUp;
+    }
+
+    public boolean getManualWantLengthDecrease() {
+        return operator.getController().getPOV() == kDpadDown;
+    }
+
+    public double getManualIntakerPercentage() {
+        if(operator.getController().getXButton()) {
+            return Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
+        } else if (operator.getController().getYButton()) {
+            return Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
+        } else {
+            return 0.0;
+        }
+    }
 }

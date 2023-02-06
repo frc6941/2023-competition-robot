@@ -48,6 +48,10 @@ public class Coordinator implements Updatable {
         public DirectionalPose2d inSwervePoseAssisted = null;
 
         public SuperstructureState inCurrentSuperstructureState = new SuperstructureState();
+        public double inSupertructureManualAngleDelta = 0.0;
+        public double inSupertructureManualLengthDelta = 0.0;
+        public double inManualIntakerPercentage = 0.0;
+
         public boolean inIntakerHasGamePiece = false;
 
         /** OUTPUTS */
@@ -90,6 +94,7 @@ public class Coordinator implements Updatable {
     public STATE state = STATE.COMMUTING;
     public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
     public boolean wantedActionChanged = false;
+    public boolean inManual = false;
 
     // Swerve setting related variables
     private boolean swerveSelfLocking = false;
@@ -317,6 +322,16 @@ public class Coordinator implements Updatable {
                 coreSuperstructureState = tempState;
                 break;
             case MANUAL:
+                SuperstructureState currentState = mPeriodicIO.inCurrentSuperstructureState;
+                coreSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT.optimize(
+                    new SuperstructureState(
+                        Rotation2d.fromDegrees(currentState.armAngle.getDegrees() + mPeriodicIO.inSupertructureManualAngleDelta),
+                        currentState.extenderLength + mPeriodicIO.inSupertructureManualLengthDelta
+                    ),
+                    currentState
+                );
+                coreDirectionalPose2d = null;
+                coreIntakerPower = mPeriodicIO.inManualIntakerPercentage;
                 break;
         }
     }
@@ -326,6 +341,10 @@ public class Coordinator implements Updatable {
      */
     public void handleTransitions() {
         if (wantedAction == WANTED_ACTION.MANUAL && state != STATE.MANUAL) {
+            // Cancel all control, and fix the superstrucutre in the current position
+            coreSuperstructureState = mPeriodicIO.inCurrentSuperstructureState;
+            coreDirectionalPose2d = null;
+            coreIntakerPower = 0.0;
             setState(STATE.MANUAL);
             return;
         } else {
@@ -375,10 +394,6 @@ public class Coordinator implements Updatable {
                 case MANUAL:
                     if (wantedAction != WANTED_ACTION.MANUAL) {
                         setState(STATE.COMMUTING);
-                    } else {
-                        coreSuperstructureState = mPeriodicIO.inCurrentSuperstructureState;
-                        coreIntakerPower = 0.0;
-                        coreDirectionalPose2d = null;
                     }
                     break;
             }
@@ -445,17 +460,53 @@ public class Coordinator implements Updatable {
 
     @Override
     public void simulate(double time, double dt) {
-        if (mControlBoard.getCommutePressed()) {
-            setWantedAction(WANTED_ACTION.COMMUTE);
+        if(mControlBoard.getWantManual() && !inManual) {
+            inManual = true;
         }
-        if (mControlBoard.getLoadPressed()) {
-            setWantedAction(WANTED_ACTION.LOAD);
+        if(mControlBoard.getExitManual() && inManual) {
+            inManual = false;
         }
-        if (mControlBoard.getScorePressed()) {
-            setWantedAction(WANTED_ACTION.SCORE);
+
+        if (inManual) {
+            setWantedAction(WANTED_ACTION.MANUAL);
+            if(mControlBoard.getManualWantAngleIncrease()) {
+                mPeriodicIO.inSupertructureManualAngleDelta = Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA;
+            } else if(mControlBoard.getManualWantAngleDecrease()) {
+                mPeriodicIO.inSupertructureManualAngleDelta = -Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA;
+            } else {
+                mPeriodicIO.inSupertructureManualAngleDelta = 0.0;
+            }
+
+            if(mControlBoard.getManualWantLengthIncrease()) {
+                mPeriodicIO.inSupertructureManualLengthDelta = Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.LENGTH_CHANGE_DELTA;
+            } else if(mControlBoard.getManualWantLengthDecrease()) {
+                mPeriodicIO.inSupertructureManualLengthDelta = -Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.LENGTH_CHANGE_DELTA;
+            } else {
+                mPeriodicIO.inSupertructureManualLengthDelta = 0.0;
+            }
+            mPeriodicIO.inManualIntakerPercentage = mControlBoard.getManualIntakerPercentage();
+
+        } else {
+            mPeriodicIO.inSupertructureManualLengthDelta = 0.0;
+            mPeriodicIO.inSupertructureManualAngleDelta = 0.0;
+            mPeriodicIO.inManualIntakerPercentage = 0.0;
+            
+            if (mControlBoard.getCommutePressed()) {
+                setWantedAction(WANTED_ACTION.COMMUTE);
+            }
+            if (mControlBoard.getLoadPressed()) {
+                setWantedAction(WANTED_ACTION.LOAD);
+            }
+            if (mControlBoard.getScorePressed()) {
+                setWantedAction(WANTED_ACTION.SCORE);
+            }
+            if (mControlBoard.getPrepScorePressed()) {
+                setWantedAction(WANTED_ACTION.PREP_SCORE);
+            }
         }
-        if (mControlBoard.getPrepScorePressed()) {
-            setWantedAction(WANTED_ACTION.PREP_SCORE);
+
+        if (mControlBoard.getSwerveBrake()) {
+            mPeriodicIO.inSwerveBrake = true;
         }
 
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
