@@ -44,8 +44,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotInit() {
         updateManager = new UpdateManager(
-                Intaker.getInstance(),
-                ArmAndExtender.getInstance(),
+                // Intaker.getInstance(),
+                // ArmAndExtender.getInstance(),
                 SJTUSwerveMK5Drivebase.getInstance(),
                 Coordinator.getInstance()
         );
@@ -63,7 +63,7 @@ public class Robot extends LoggedRobot {
         }
 
         logger.start();
-        CameraServer.startAutomaticCapture();
+        // CameraServer.startAutomaticCapture();
         if (Constants.AUTO_TUNING) {
             PathPlannerServer.startServer(6941);
         }
@@ -125,6 +125,7 @@ public class Robot extends LoggedRobot {
         } else {
             updateManager.startSimulateLoop(Constants.LOOPER_DT);
         }
+        updateManager.invokeStart();
     }
 
     /** This function is called periodically during operator control. */

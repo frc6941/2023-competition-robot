@@ -92,10 +92,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.FRONT_LEFT_OFFSET,
-                        false, true),
+                        true, false),
                 new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_FRONT_RIGHT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_RIGHT_STEER_MOTOR,
-                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_RIGHT_OFFSET, false, true),
+                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_RIGHT_OFFSET, true, false),
                 new SJTUSwerveModuleMK5(2, Constants.CANID.DRIVETRAIN_BACK_LEFT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.BACK_LEFT_OFFSET,
@@ -103,8 +103,9 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                 new SJTUSwerveModuleMK5(3, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.BACK_RIGHT_OFFSET,
-                        false, true)
+                        true, false)
         };
+
 
         // Module positions and swerve kinematics
         swerveModulePositions = new Translation2d[] {

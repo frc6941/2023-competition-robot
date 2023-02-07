@@ -77,7 +77,7 @@ public final class UpdateManager {
 	}
 
 	public void startEnableLoop(double period) {
-		updatables.forEach(s -> s.start());
+		updaterEnableThread.startPeriodic(period);
 	}
 
 	public void stopEnableLoop() {

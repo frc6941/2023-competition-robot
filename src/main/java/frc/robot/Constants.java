@@ -92,10 +92,10 @@ public final class Constants {
         public static final double DRIVETRAIN_SIDE_WIDTH_BUMPERED = 0.818;
         public static final Translation2d DRIVETRAIN_CENTER_OF_ROTATION = new Translation2d(0.0, 0.0);
 
-        public static final double FRONT_LEFT_OFFSET = -3339.755859 + 59.677734 + 180.0;
-        public static final double FRONT_RIGHT_OFFSET = -2304.580078 + 180.0;
-        public static final double BACK_LEFT_OFFSET = -2758.623047 + 180.0;
-        public static final double BACK_RIGHT_OFFSET = -2914.277344 + 180.0;
+        public static final double FRONT_LEFT_OFFSET = -74.091796875 + 90.0;
+        public static final double FRONT_RIGHT_OFFSET = -128.84765625 + 90.0;
+        public static final double BACK_LEFT_OFFSET = -249.43359375000003 + 90.0 + 180.0;
+        public static final double BACK_RIGHT_OFFSET = -49.21875 + 90.0 + 180.0;
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
@@ -170,7 +170,7 @@ public final class Constants {
         public static class CONSTRAINTS {
             public static Range ARM_RANGE = new Range(-100.0, 250.0);
             public static Range EXTENDER_RANGE = new Range(0.80, 1.40);
-            public static Range HEIGHT_RANGE = new Range(0.10, 1.80);
+            public static Range HEIGHT_RANGE = new Range(0.10, 2.00);
             public static Range DANGEROUS_POSITIVE = new Range(220, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
             public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -80.0); // TODO: Need reconfirmation
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
@@ -193,7 +193,7 @@ public final class Constants {
         public static final boolean CONTROLLER_INVERT_X = false;
         public static final boolean CONTROLLER_INVERT_Y = false;
         public static final boolean CONTROLLER_INVERT_R = false;
-        public static final double CONTROLLER_PEDAL = 0.3;
+        public static final double CONTROLLER_PEDAL = 0.8;
 
         public static final int OPERATOR_CONTROLLER_PORT = 1;
     }
