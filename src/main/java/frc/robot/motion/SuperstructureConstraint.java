@@ -75,8 +75,4 @@ public class SuperstructureConstraint {
 
         return clampedDesiredState;
     }
-
-    public static void main(String[] args) {
-
-    }
 }
