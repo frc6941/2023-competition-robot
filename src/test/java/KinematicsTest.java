@@ -18,7 +18,7 @@ public class KinematicsTest {
 
     @Test
     void testForwardAndInverseKinematicsMatch() {
-        SuperstructureState[] testStatesArray = new SuperstructureState[] {
+        SuperstructureState[] testStates = new SuperstructureState[] {
                 new SuperstructureState(Rotation2d.fromDegrees(-90), 5.0),
                 new SuperstructureState(Rotation2d.fromDegrees(100.51), 2.46516),
                 new SuperstructureState(Rotation2d.fromDegrees(-171.52), 254.9711678)
@@ -26,7 +26,7 @@ public class KinematicsTest {
 
         Pose2d drivetrainPose = new Pose2d(0, 0, new Rotation2d());
 
-        for (SuperstructureState testState : testStatesArray) {
+        for (SuperstructureState testState : testStates) {
             Translation3d endPosition = SuperstructureKinematics
                     .forwardKinematics(testState, drivetrainPose)
                     .getTranslation();

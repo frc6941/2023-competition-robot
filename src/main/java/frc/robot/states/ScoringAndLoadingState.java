@@ -45,13 +45,24 @@ public class ScoringAndLoadingState {
     public LOADING_SIDE loadingSide = LOADING_SIDE.NONE;
 
 
-    public ScoringAndLoadingState(GAME_PIECE gamePiece, SCORING_ROW scoringRow, SCORING_SIDE scoringSide, SCORING_GRID scoringGrid, LOADING_LOCATION loadingLocation, LOADING_SIDE loadingSide) {
+    public ScoringAndLoadingState(
+            GAME_PIECE gamePiece,
+            SCORING_ROW scoringRow,
+            SCORING_SIDE scoringSide,
+            SCORING_GRID scoringGrid,
+            LOADING_LOCATION loadingLocation,
+            LOADING_SIDE loadingSide
+    ) {
         this.gamePiece = gamePiece;
         this.scoringRow = scoringRow;
         this.scoringSide = scoringSide;
         this.scoringGrid = scoringGrid;
         this.loadingLocation = loadingLocation;
         this.loadingSide = loadingSide;
+    }
+
+    public ScoringAndLoadingState() {
+
     }
 
 }

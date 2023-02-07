@@ -27,7 +27,7 @@ public class SuperstructureState {
     }
 
     public boolean hasChangedScoringGoal(SuperstructureState other) {
-        return other.armAngle == armAngle && other.extenderLength == this.extenderLength;
+        return other.armAngle == armAngle && other.extenderLength == extenderLength;
     }
 
     public boolean isOnTarget(SuperstructureState desiredState, double armThreshold, double extenderThreshold) {
@@ -51,7 +51,7 @@ public class SuperstructureState {
         if (!(o instanceof SuperstructureState)) {
             return false;
         }
-         
+
         SuperstructureState c = (SuperstructureState) o;
         return c.armAngle.equals(c.armAngle) && c.extenderLength == extenderLength;
     }
