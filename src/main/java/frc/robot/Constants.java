@@ -115,16 +115,16 @@ public final class Constants {
 
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
-        public static final double MASS = 5.0;
+        public static final double MASS = 8.0;
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
-        public static final double HOME_ANGLE = -100.0;
+        public static final double HOME_ANGLE = -98.2;
 
-        public static final double KP = 0.4;
-        public static final double KI = 0.001;
-        public static final double KD = 0.01;
+        public static final double KP = 0.2;
+        public static final double KI = 0.00;
+        public static final double KD = 0.00;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
-        public static final double IZONE = 1000.0;
-        public static final double CRUISE_V = 30000.0;
+        public static final double IZONE = 0.0;
+        public static final double CRUISE_V = 20000.0;
         public static final double CRUIVE_ACC = 60000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0, 0);
@@ -133,15 +133,15 @@ public final class Constants {
     // Extender Constants
     public static final class SUBSYSTEM_EXTENDER {
         public static final double GEAR_RATIO = 40.0;
-        public static final double WHEEL_CIRCUMFERENCE = Math.PI * 0.06;
-        public static final double HOME_LENGTH = 0.80;
+        public static final double WHEEL_CIRCUMFERENCE = 24 * 0.005;
+        public static final double HOME_LENGTH = 0.884;
 
         public static final double KP = 0.3;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
-        public static final double CRUISE_V = 30000.0;
-        public static final double CRUIVE_ACC = 60000.0;
+        public static final double CRUISE_V = 20000.0;
+        public static final double CRUIVE_ACC = 40000.0;
     }
 
     // Intake Constants
@@ -168,11 +168,11 @@ public final class Constants {
 
         // Constraints
         public static class CONSTRAINTS {
-            public static Range ARM_RANGE = new Range(-100.0, 250.0);
-            public static Range EXTENDER_RANGE = new Range(0.80, 1.40);
-            public static Range HEIGHT_RANGE = new Range(0.10, 2.00);
-            public static Range DANGEROUS_POSITIVE = new Range(220, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
-            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -80.0); // TODO: Need reconfirmation
+            public static Range ARM_RANGE = new Range(-98.0, 237.0);
+            public static Range EXTENDER_RANGE = new Range(0.885, 0.884 + 0.490);
+            public static Range HEIGHT_RANGE = new Range(0.10, 1.90);
+            public static Range DANGEROUS_POSITIVE = new Range(230, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -70.0);
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
                 HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE
             );

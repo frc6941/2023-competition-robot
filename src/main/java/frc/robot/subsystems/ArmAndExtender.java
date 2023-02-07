@@ -7,6 +7,8 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.team254.lib.drivers.LazyTalonFX;
 import com.team254.lib.util.Util;
@@ -105,6 +107,7 @@ public class ArmAndExtender implements Updatable {
 
     private ArmAndExtender() {
         armMotorLeader.configFactoryDefault(50);
+        armMotorLeader.setNeutralMode(NeutralMode.Brake);
         armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
         armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
@@ -112,6 +115,9 @@ public class ArmAndExtender implements Updatable {
         armMotorLeader.config_IntegralZone(0, Constants.SUBSYSTEM_ARM.IZONE, 100);
         armMotorLeader.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        armMotorFollower.configFactoryDefault(50);
+        armMotorFollower.setNeutralMode(NeutralMode.Brake);
+        armMotorFollower.setInverted(InvertType.FollowMaster);
 
         extenderMotor.configFactoryDefault(50);
         extenderMotor.config_kP(0, Constants.SUBSYSTEM_EXTENDER.KP, 100);
@@ -185,6 +191,10 @@ public class ArmAndExtender implements Updatable {
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);
     }
 
+    public boolean isHomed() {
+        return armIsHomed && extenderIsHomed;
+    }
+
     public void homeArm(double homingAngle) {
         armMotorLeader.setSelectedSensorPosition(
                 Conversions.degreesToFalcon(homingAngle, Constants.SUBSYSTEM_ARM.GEAR_RATIO));
@@ -206,10 +216,6 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
-        mPeriodicIO.armTrajectoryVelocitySetPoint = Units
-                .rotationsPerMinuteToRadiansPerSecond(
-                        Conversions.falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(),
-                                Constants.SUBSYSTEM_ARM.GEAR_RATIO));
 
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
@@ -228,11 +234,11 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (armMotorLeader.isRevLimitSwitchClosed() == 1) {
+        if (armMotorLeader.isRevLimitSwitchClosed() == 1 && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
-        if (extenderMotor.isRevLimitSwitchClosed() == 1) {
+        if (mPeriodicIO.extenderCurrent > 8.0 && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
