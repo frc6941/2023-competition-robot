@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
 import frc.robot.Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE;
 import frc.robot.states.SuperstructureState;
 
@@ -22,7 +23,8 @@ public class SuperstructureKinematics {
                 .plus(transformFromArmPivotToEffector);
     }
 
-    public static final SuperstructureState inverseKinematics(Translation3d endEffectorPosition, Pose2d drivetrainPose) {
+    public static final SuperstructureState inverseKinematics(Translation3d endEffectorPosition,
+            Pose2d drivetrainPose) {
         Pose3d drivetrainPose3d = new Pose3d(drivetrainPose);
         Pose3d topTowerPivot = drivetrainPose3d
                 .plus(STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT);
@@ -39,9 +41,21 @@ public class SuperstructureKinematics {
 
     public static final SuperstructureState inverseKinematics2d(Translation2d endEffectorPosition) {
         Translation2d highPivotToEndEffector = endEffectorPosition.minus(STRUCTURE.HIGH_PIVOT_2D_LOCATION);
+        // Get angle in correct range - ~-100 deg to ~250 deg for our robot
+        // As the method may return negative angle when exceeding 180.0 deg, scope
+        // referencing is important
+        // Adding or minusing 360.0 to get the correct angle in the scope
+        double angle = highPivotToEndEffector.getAngle().getDegrees();
+        while (!Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.inRange(angle)) {
+            if(angle < Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.min) {
+                angle += 360.0;
+            } else {
+                angle -= 360.0;
+            }
+        }
+
         return new SuperstructureState(
-                highPivotToEndEffector.getAngle(),
-                highPivotToEndEffector.getNorm()
-        );
+                Rotation2d.fromDegrees(angle),
+                highPivotToEndEffector.getNorm());
     }
 }
