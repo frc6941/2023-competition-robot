@@ -46,7 +46,7 @@ public class Robot extends LoggedRobot {
         updateManager = new UpdateManager(
                 Intaker.getInstance(),
                 ArmAndExtender.getInstance(),
-                // SJTUSwerveMK5Drivebase.getInstance(),
+                SJTUSwerveMK5Drivebase.getInstance(),
                 Coordinator.getInstance()
         );
 

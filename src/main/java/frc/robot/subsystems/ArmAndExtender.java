@@ -36,6 +36,7 @@ public class ArmAndExtender implements Updatable {
         public double armTemperature = 0.0;
         public double armAngle = 0.0;
         public double armTrajectoryVelocitySetPoint = 0.0;
+        public double armTrajectoryAccelerationSetPoint = 0.0;
 
         public double extenderCurrent = 0.0;
         public double extenderVoltage = 0.0;
@@ -108,6 +109,7 @@ public class ArmAndExtender implements Updatable {
     private ArmAndExtender() {
         armMotorLeader.configFactoryDefault(50);
         armMotorLeader.setNeutralMode(NeutralMode.Brake);
+        armMotorLeader.configNeutralDeadband(0.05);
         armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
         armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
@@ -169,6 +171,7 @@ public class ArmAndExtender implements Updatable {
     }
 
     public void setSuperstructureState(SuperstructureState superstructureState) {
+        
         setAngle(superstructureState.armAngle.getDegrees());
         setLength(superstructureState.extenderLength);
     }
@@ -216,6 +219,8 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
+        mPeriodicIO.armTrajectoryVelocitySetPoint = Conversions
+                .falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(0), Constants.SUBSYSTEM_ARM.GEAR_RATIO);
 
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
@@ -260,14 +265,16 @@ public class ArmAndExtender implements Updatable {
         // Determine Outputs
         switch (armState) {
             case HOMING:
-                mPeriodicIO.armDemand = -0.2;
+                mPeriodicIO.armDemand = -0.15;
                 mPeriodicIO.armFeedforward = 0.0;
                 break;
             case ANGLE:
                 mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE
                         .clamp(mPeriodicIO.armDemand);
                 mPeriodicIO.armFeedforward = Constants.SUBSYSTEM_ARM.FEEDFORWARD.calculate(
-                        Units.degreesToRadians(getAngle()), mPeriodicIO.armTrajectoryVelocitySetPoint) / 12.0;
+                    Units.degreesToRadians(getAngle() + Constants.SUBSYSTEM_ARM.ANGLE_OFFSET_TO_HORIZONTAL),
+                    mPeriodicIO.armTrajectoryVelocitySetPoint
+                ) / 12.0;
                 break;
             case PERCENTAGE:
                 mPeriodicIO.armDemand = Util.clamp(mPeriodicIO.armDemand, -1.0, 1.0);
@@ -284,8 +291,12 @@ public class ArmAndExtender implements Updatable {
                 mPeriodicIO.extenderFeedforward = 0.0;
                 break;
             case LENGTH:
-                mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
+                if(!Util.epsilonEquals(mPeriodicIO.armDemand, mPeriodicIO.armAngle, 10.0)){
+                    mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
+                } else {
+                    mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
                         .clamp(mPeriodicIO.extenderDemand);
+                }
                 mPeriodicIO.extenderFeedforward = 0.0;
                 break;
             case PERCENTAGE:

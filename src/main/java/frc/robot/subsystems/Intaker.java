@@ -38,7 +38,9 @@ public class Intaker implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.setIdleMode(IdleMode.kCoast);
+        intakerMotor.restoreFactoryDefaults();
+        intakerMotor.setIdleMode(IdleMode.kBrake);
+        intakerMotor.setSmartCurrentLimit(25, 15);
     }
 
     public void setIntakerPower(double power) {
@@ -56,7 +58,7 @@ public class Intaker implements Updatable{
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
-        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
+        mPeriodicIO.hasGamePiece = false;
     }
     
     @Override

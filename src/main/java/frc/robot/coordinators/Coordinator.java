@@ -69,15 +69,19 @@ public class Coordinator implements Updatable {
     private final Intaker mIntaker = Intaker.getInstance();
     private final ArmAndExtender mArmAndExtender = ArmAndExtender.getInstance();
 
+    // Overall state settings
+    public boolean requirePoseAssist = false;
+    public boolean autoDirectionDetermine = false;
+
     // Core control variables
     public SuperstructureState coreSuperstructureState = new SuperstructureState();
     public double coreIntakerPower = 0.0;
     public DirectionalPose2d coreDirectionalPose2d = null;
 
-    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
-    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.MID, SCORING_GRID.OUTER,
+    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CUBE, LOADING_LOCATION.GROUND);
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CUBE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
             SCORING_SIDE.OUTER);
-    public Direction loadDirection = Direction.NEAR;
+    public Direction loadDirection = Direction.FAR;
     public Direction commuteDirection = Direction.FAR;
     public Direction scoreDirection = Direction.NEAR;
 
@@ -91,10 +95,10 @@ public class Coordinator implements Updatable {
     public boolean wantAutoTracking = false;
 
     // State machine related
-    public STATE state = STATE.MANUAL;
-    public WANTED_ACTION wantedAction = WANTED_ACTION.MANUAL;
+    public STATE state = STATE.COMMUTING;
+    public WANTED_ACTION wantedAction = WANTED_ACTION.COMMUTE;
     public boolean wantedActionChanged = false;
-    public boolean inManual = true;
+    public boolean inManual = false;
 
     public SuperstructureState desiredManualSuperstructureState = null;
 
@@ -148,8 +152,6 @@ public class Coordinator implements Updatable {
 
         if (mControlBoard.zeroGyro()) {
             mSwerve.resetYaw(0.0);
-            Pose2d currentPose = mSwerve.getPose();
-            mSwerve.getLocalizer().reset(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
         }
@@ -319,10 +321,14 @@ public class Coordinator implements Updatable {
             case SCORING:
                 coreIntakerPower = 0.0;
                 coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget, scoreDirection);
-                coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
-                Transform2d delta = coreDirectionalPose2d.minus(mSwerve.getLocalizer().getLatestPose());
-                if (Util.epsilonEquals(0, delta.getX(), 0.05) && Util.epsilonEquals(0, delta.getY(), 0.05) && Util.epsilonEquals(0, delta.getRotation().getDegrees(), 3.5)) {
-                    coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
+                if(requirePoseAssist) {
+                    coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
+                } else {
+                    coreDirectionalPose2d = null;
+                }
+
+                // TODO: Change logic to supprot pose assist
+                if(!requirePoseAssist) {
                     if (mArmAndExtender.isOnTarget()) {
                         scoreFinishedTimer.start();
                         coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
@@ -348,7 +354,7 @@ public class Coordinator implements Updatable {
                     autoTracking = false;
                 }
 
-                if(autoTracking) {
+                if(autoTracking && requirePoseAssist) {
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
@@ -370,7 +376,11 @@ public class Coordinator implements Updatable {
             case LOADING:
                 coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
                 SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadDirection);
-                coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
+                if(requirePoseAssist) {
+                    coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
+                } else {
+                    coreDirectionalPose2d = null;
+                }
                 if(mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
                 }
@@ -389,6 +399,8 @@ public class Coordinator implements Updatable {
                         );
 
                     coreSuperstructureState = desiredManualSuperstructureState;
+                    coreIntakerPower = mPeriodicIO.inManualIntakerPercentage;
+                    coreDirectionalPose2d = null;
                 }  
         }
     }
@@ -473,7 +485,9 @@ public class Coordinator implements Updatable {
             handleTransitions();
             wantedActionChanged = false;
         }
-        updateDirections();
+        if (autoDirectionDetermine) {
+            updateDirections();
+        }
         updateStates();
         updateSwerve();
     }
@@ -481,7 +495,11 @@ public class Coordinator implements Updatable {
     @Override
     public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
-        // mSwerve.setTargetPose(coreDirectionalPose2d);
+        if(requirePoseAssist) {
+            mSwerve.setTargetPose(coreDirectionalPose2d);
+        } else {
+            mSwerve.setTargetPose(null);
+        }
         mIntaker.setIntakerPower(coreIntakerPower);
 
         // Swerve Drive Logic
@@ -508,7 +526,8 @@ public class Coordinator implements Updatable {
 
     @Override
     public synchronized void start() {
-        // Auto Generated Method
+        desiredManualSuperstructureState = null;
+        setState(STATE.COMMUTING);
     }
 
     @Override
@@ -569,7 +588,7 @@ public class Coordinator implements Updatable {
 
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
         mPeriodicIO.inSwerveAngularVelocity = mSwerve.getLocalizer().getMeasuredVelocity().getRotation().getDegrees();
-        mPeriodicIO.inIntakerHasGamePiece = simulatedGotGamepiece.get();
+        mPeriodicIO.inIntakerHasGamePiece = false;
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
 
         mPeriodicIO.inIntakerHasGamePiece = simulatedGotGamepiece.get();
