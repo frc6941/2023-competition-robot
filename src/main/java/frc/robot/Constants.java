@@ -5,6 +5,7 @@
 package frc.robot;
 
 import org.frcteam6941.utils.Range;
+import org.frcteam6941.vision.CameraConstants;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -184,6 +185,14 @@ public final class Constants {
             public static double ANGLE_CHANGE_DELTA = 0.5;
             public static double LENGTH_CHANGE_DELTA = 0.01;
         }
+    }
+
+    // Vision Constants
+    public static final class SUBSYSTEM_VISION {
+        public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
+            new CameraConstants("test-camera", new Pose3d(0.118, 0, 0.774, 
+            new Rotation3d(0.0, Units.degreesToRadians(110.6 - 90.0), 0.0)))
+        };
     }
 
     // Controller

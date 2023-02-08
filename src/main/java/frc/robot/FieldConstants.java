@@ -7,12 +7,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -175,8 +179,10 @@ public final class FieldConstants {
         public static final double singleSubstationCenterZ = singleSubstationLowZ + (singleSubstationHeight / 2.0);
         public static final double singleSubstationHighZ = singleSubstationLowZ + singleSubstationHeight;
 
-        public static final Translation2d outerLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX, LoadingZone.leftQuaterY);
-        public static final Translation2d innterLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX, LoadingZone.rightQuaterY);
+        public static final Translation2d outerLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX,
+                LoadingZone.leftQuaterY);
+        public static final Translation2d innterLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX,
+                LoadingZone.rightQuaterY);
     }
 
     // Locations of staged game pieces
@@ -244,7 +250,16 @@ public final class FieldConstants {
                     Units.inchesToMeters(42.19),
                     Units.inchesToMeters(18.22),
                     new Rotation3d()));
-    
+
+    public static final ArrayList<AprilTag> TAGS = new ArrayList<>();
+    public static final AprilTagFieldLayout LAYOUT;
+
+    static {
+        for (int id : aprilTags.keySet()) {
+            TAGS.add(new AprilTag(id, aprilTags.get(id)));
+        }
+        LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);
+    }
 
     public static Pose2d allianceFlip(Pose2d original) {
         return original;

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.coordinators.Coordinator;
+import frc.robot.coordinators.RobotStateEstimator;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 
@@ -47,6 +48,7 @@ public class Robot extends LoggedRobot {
                 Intaker.getInstance(),
                 ArmAndExtender.getInstance(),
                 SJTUSwerveMK5Drivebase.getInstance(),
+                RobotStateEstimator.getInstance(),
                 Coordinator.getInstance()
         );
 
