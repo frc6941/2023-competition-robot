@@ -4,10 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.states.SuperstructureState;
-import org.frcteam6941.utils.Peer;
 import org.frcteam6941.utils.Range;
-
-import java.util.List;
 
 public class SuperstructureConstraint {
     private final Range heightRange;

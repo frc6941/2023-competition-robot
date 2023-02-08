@@ -85,7 +85,7 @@ public class ConstraintTest {
                 10
         );
         SuperstructureState optimizedState = new SuperstructureState(
-                Rotation2d.fromDegrees(4),
+                Rotation2d.fromDegrees(3),
                 3
         );
         assertEquals(optimizedState, superstructureConstraint.optimize(desiredState, currentState));
@@ -112,7 +112,7 @@ public class ConstraintTest {
                 3
         );
         SuperstructureState optimizedState = new SuperstructureState(
-                Rotation2d.fromDegrees(-4),
+                Rotation2d.fromDegrees(-5),
                 3
         );
         assertEquals(optimizedState, superstructureConstraint.optimize(desiredState, currentState));
