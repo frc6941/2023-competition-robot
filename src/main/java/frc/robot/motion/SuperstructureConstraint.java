@@ -34,7 +34,7 @@ public class SuperstructureConstraint {
 
         DangerousArmRangeStrategies strategies = new DangerousArmRangeStrategies(
                 dangerousPositiveArmRange,
-                dangerousPositiveArmRange
+                dangerousNegativeArmRange
         );
 
         // Clamp state into max and min
