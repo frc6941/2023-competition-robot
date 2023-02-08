@@ -328,8 +328,7 @@ public class Coordinator implements Updatable {
                 } else {
                     coreDirectionalPose2d = null;
                 }
-
-                // TODO: Change logic to supprot pose assist
+                
                 if (!requirePoseAssist) {
                     if (mArmAndExtender.isOnTarget()) {
                         scoreFinishedTimer.start();

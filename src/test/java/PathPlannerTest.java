@@ -66,9 +66,9 @@ public class PathPlannerTest {
         assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.0, 0.5));
         assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 1.5, 0.5));
         assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.1, 0.1, 2.0, 0.5));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.0, 0.5));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.5, 0.5));
-        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 2.0, 0.5));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.0, 1.0));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 1.5, 1.0));
+        assertNotEquals(null, pathPlanner.plan(proposedPoint, targetPoint, obstacles, 0.05, 0.05, 2.0, 1.0));
     }
 
     @Test
