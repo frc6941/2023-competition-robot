@@ -12,25 +12,17 @@ import frc.robot.Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE;
 import frc.robot.states.SuperstructureState;
 
 public class SuperstructureKinematics {
-    public static Pose3d forwardKinematics(SuperstructureState q, Pose2d drivetrainPose) {
+    public static final Pose3d forwardKinematics(SuperstructureState q, Pose2d drivetrainPose) {
         Transform3d transformFromArmPivotToEffector = new Transform3d(
-                new Translation3d(
-                        q.extenderLength,
-                        new Rotation3d(0.0, q.armAngle.getRadians(), 0.0)
-                ),
-                new Rotation3d(
-                        0.0,
-                        Units.degreesToRadians(q.armAngle.getRadians()),
-                        0.0
-                )
-        );
+                new Translation3d(q.extenderLength, new Rotation3d(0.0, q.armAngle.getRadians(), 0.0)),
+                new Rotation3d(0.0, Units.degreesToRadians(q.armAngle.getRadians()), 0.0));
         Pose3d drivetrainPose3d = new Pose3d(drivetrainPose);
         return drivetrainPose3d
                 .plus(STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT)
                 .plus(transformFromArmPivotToEffector);
     }
 
-    public static SuperstructureState inverseKinematics(Translation3d endEffectorPosition, Pose2d drivetrainPose) {
+    public static final SuperstructureState inverseKinematics(Translation3d endEffectorPosition, Pose2d drivetrainPose) {
         Pose3d drivetrainPose3d = new Pose3d(drivetrainPose);
         Pose3d topTowerPivot = drivetrainPose3d
                 .plus(STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT);
@@ -40,12 +32,12 @@ public class SuperstructureKinematics {
         return new SuperstructureState(armAngle, extenderLength);
     }
 
-    public static Translation2d forwardKinematics2d(SuperstructureState q) {
+    public static final Translation2d forwardKinematics2d(SuperstructureState q) {
         Translation2d highPivotToEndEffector = new Translation2d(q.extenderLength, q.armAngle);
         return STRUCTURE.HIGH_PIVOT_2D_LOCATION.plus(highPivotToEndEffector);
     }
 
-    public static SuperstructureState inverseKinematics2d(Translation2d endEffectorPosition) {
+    public static final SuperstructureState inverseKinematics2d(Translation2d endEffectorPosition) {
         Translation2d highPivotToEndEffector = endEffectorPosition.minus(STRUCTURE.HIGH_PIVOT_2D_LOCATION);
         return new SuperstructureState(
                 highPivotToEndEffector.getAngle(),
