@@ -261,6 +261,24 @@ public final class FieldConstants {
         LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);
     }
 
+    public static final ArrayList<AprilTag> TEST_TAGS = new ArrayList<>();
+    public static final AprilTagFieldLayout TEST_LAYOUT;
+
+    static {
+        TEST_TAGS.add(
+            new AprilTag(1, 
+            new Pose3d(0.00, 0.37, 1.10,
+            new Rotation3d(0.0, 0.0, -Math.PI)))
+        );
+        TEST_TAGS.add(
+            new AprilTag(2, 
+            new Pose3d(0.0, 0.37 + 0.80, 1.10,
+            new Rotation3d(0.0, 0.0, -Math.PI)))
+        );
+        TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 4.3, 3.0);
+    }
+
+
     public static Pose2d allianceFlip(Pose2d original) {
         return original;
     }

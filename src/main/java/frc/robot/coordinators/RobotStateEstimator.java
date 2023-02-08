@@ -30,7 +30,7 @@ public class RobotStateEstimator implements Updatable {
 
     private RobotStateEstimator() {
         for (CameraConstants camera : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
-            providers.add(new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT));
+            providers.add(new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.TEST_LAYOUT));
         }
     }
 
@@ -47,7 +47,7 @@ public class RobotStateEstimator implements Updatable {
                         .ifPresentOrElse(estimate -> {
                             localizer.addMeasurement(estimate.timestampSeconds,
                                     estimate.estimatedPose.toPose2d(),
-                                    new Pose2d(0.02, 0.02, Rotation2d.fromDegrees(1.0)));
+                                    new Pose2d(0.20, 0.20, Rotation2d.fromDegrees(20.0)));
                             Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                     estimate.estimatedPose.toPose2d());
                         },

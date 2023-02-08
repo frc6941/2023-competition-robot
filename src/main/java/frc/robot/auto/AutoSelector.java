@@ -39,7 +39,7 @@ public class AutoSelector {
     }
 
     public void resetStartingPosition(Pose2d pose) {
-        SJTUSwerveMK5Drivebase.getInstance().getLocalizer().reset(pose);
+        SJTUSwerveMK5Drivebase.getInstance().resetPose(pose);
     }
 
     public Optional<AutoModeBase> getAutoMode() {

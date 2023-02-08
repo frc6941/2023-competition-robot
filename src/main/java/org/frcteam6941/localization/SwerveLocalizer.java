@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.Timer;
 
 public class SwerveLocalizer implements Localizer {
     private SwerveDrivePoseEstimator poseEstimator;
@@ -115,7 +116,10 @@ public class SwerveLocalizer implements Localizer {
     }
 
     @Override
-    public void reset(Pose2d resetPose) {
-        poseEstimator.resetPosition(resetPose.getRotation(), new SwerveModulePosition[] {}, resetPose);
+    public void reset(Pose2d resetPose, SwerveModulePosition[] modulePositions) {
+        poseEstimator.resetPosition(resetPose.getRotation(), modulePositions, resetPose);
+        previousPose = null;
+        fieldToVehicle.clear();
+        fieldToVehicle.put(Timer.getFPGATimestamp(), resetPose);
     }
 }

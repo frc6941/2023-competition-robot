@@ -105,7 +105,6 @@ public class Robot extends LoggedRobot {
 
         Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
         autoMode.ifPresent(autoModeBase -> {
-            SJTUSwerveMK5Drivebase.getInstance().getLocalizer().reset(autoModeBase.getStartingPose());
             if (autoModeBase.getAutoCommand() != null) {
                 autoModeBase.getAutoCommand().schedule();
             }

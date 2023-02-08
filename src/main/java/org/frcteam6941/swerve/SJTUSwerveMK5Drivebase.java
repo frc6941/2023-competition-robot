@@ -320,6 +320,10 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         this.poseAssistedFollower.clear();
     }
 
+    public void resetPose(Pose2d resetPose) {
+        swerveLocalizer.reset(resetPose, getModulePositions());
+    }
+
     /**
      * Set the state of the module independently.
      * 

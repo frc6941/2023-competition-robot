@@ -1,5 +1,6 @@
 package frc.robot.controlboard;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
 import frc.robot.controlboard.CustomXboxController.Axis;
@@ -27,6 +28,9 @@ public class ControlBoard {
     private final CustomXboxController driver;
     private final CustomXboxController operator;
 
+    private final SlewRateLimiter xLimit = new SlewRateLimiter(2);
+    private final SlewRateLimiter yLimit = new SlewRateLimiter(2);
+
     private ControlBoard() {
         driver = new CustomXboxController(Constants.CONTROLBOARD.DRIVER_CONTROLLER_PORT);
         operator = new CustomXboxController(Constants.CONTROLBOARD.OPERATOR_CONTROLLER_PORT);
@@ -50,8 +54,8 @@ public class ControlBoard {
 
     /* DRIVER METHODS */
     public Translation2d getSwerveTranslation() {
-        double forwardAxis = driver.getAxis(Side.LEFT, Axis.Y);
-        double strafeAxis = driver.getAxis(Side.LEFT, Axis.X);
+        double forwardAxis = yLimit.calculate(driver.getAxis(Side.LEFT, Axis.Y));
+        double strafeAxis = xLimit.calculate(driver.getAxis(Side.LEFT, Axis.X));
         double pedal = driver.getTrigger(Side.RIGHT);
         double breaker = driver.getTrigger(Side.LEFT);
 

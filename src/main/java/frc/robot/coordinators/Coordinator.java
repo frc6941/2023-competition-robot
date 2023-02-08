@@ -75,10 +75,10 @@ public class Coordinator implements Updatable {
     public double coreIntakerPower = 0.0;
     public DirectionalPose2d coreDirectionalPose2d = null;
 
-    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CUBE, LOADING_LOCATION.GROUND);
-    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CUBE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
+    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
             SCORING_SIDE.OUTER);
-    public Direction loadDirection = Direction.FAR;
+    public Direction loadDirection = Direction.NEAR;
     public Direction commuteDirection = Direction.FAR;
     public Direction scoreDirection = Direction.NEAR;
 
@@ -151,6 +151,9 @@ public class Coordinator implements Updatable {
             mSwerve.resetYaw(0.0);
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
+            mSwerve.resetPose(new Pose2d(-1.70 - 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
+                            0.50 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
+                            new Rotation2d()));
         }
 
         if (mControlBoard.getAutoTracking()) {
@@ -302,7 +305,7 @@ public class Coordinator implements Updatable {
     }
 
     public void updateStates() {
-        if(state != STATE.PREP_SCORING) {
+        if (state != STATE.PREP_SCORING) {
             autoTracking = false;
             wantAutoTracking = false;
             pathTrackingStartTimer.reset();
@@ -310,22 +313,24 @@ public class Coordinator implements Updatable {
             pathProvider.clear();
         }
 
-        if(state != STATE.MANUAL) {
+        if (state != STATE.MANUAL) {
             desiredManualSuperstructureState = null;
         }
 
         switch (state) {
             case SCORING:
                 coreIntakerPower = 0.0;
-                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget, scoreDirection);
-                if(requirePoseAssist) {
-                    coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
+                coreSuperstructureState = SuperstructureStateBuilder
+                        .buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
+                if (requirePoseAssist) {
+                    coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
+                            scoreDirection);
                 } else {
                     coreDirectionalPose2d = null;
                 }
 
                 // TODO: Change logic to supprot pose assist
-                if(!requirePoseAssist) {
+                if (!requirePoseAssist) {
                     if (mArmAndExtender.isOnTarget()) {
                         scoreFinishedTimer.start();
                         coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
@@ -337,11 +342,13 @@ public class Coordinator implements Updatable {
                 coreIntakerPower = 0.0;
                 coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget,
                         scoreDirection);
-                DirectionalPose2d targetPose = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget, scoreDirection);
-                if(wantAutoTracking && !autoTracking){
+                DirectionalPose2d targetPose = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
+                        scoreDirection);
+                if (wantAutoTracking && !autoTracking) {
                     pathTrackingStartTimer.reset();
                     pathTrackingStartTimer.stop();
-                    if(pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(), targetPose.getTranslation())) {
+                    if (pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(),
+                            targetPose.getTranslation())) {
                         autoTracking = true;
                     }
                 } else if (!wantAutoTracking && autoTracking) {
@@ -351,12 +358,13 @@ public class Coordinator implements Updatable {
                     autoTracking = false;
                 }
 
-                if(autoTracking && requirePoseAssist) {
+                if (autoTracking && requirePoseAssist) {
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
-                            new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 3.0), targetPose.getRotation()),
-                            true, true, true);
+                                new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 3.0),
+                                        targetPose.getRotation()),
+                                true, true, true);
                     }, () -> {
                         coreDirectionalPose2d = null;
                     });
@@ -372,33 +380,39 @@ public class Coordinator implements Updatable {
                 break;
             case LOADING:
                 coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
-                SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadDirection);
-                if(requirePoseAssist) {
-                    coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
+                SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
+                        loadDirection);
+                if (requirePoseAssist) {
+                    coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget,
+                            loadDirection);
                 } else {
                     coreDirectionalPose2d = null;
                 }
-                if(mPeriodicIO.inIntakerHasGamePiece) {
+                if (mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
                 }
                 coreSuperstructureState = tempState;
                 break;
             case MANUAL:
-                if(mArmAndExtender.isHomed()) {
-                    if(desiredManualSuperstructureState == null) {
-                        // Case of starting with manual mode, then give the desired state a initial value
+                if (mArmAndExtender.isHomed()) {
+                    if (desiredManualSuperstructureState == null) {
+                        // Case of starting with manual mode, then give the desired state a initial
+                        // value
                         desiredManualSuperstructureState = mPeriodicIO.inCurrentSuperstructureState;
                     }
 
                     desiredManualSuperstructureState = new SuperstructureState(
-                            Rotation2d.fromDegrees(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.clamp(desiredManualSuperstructureState.armAngle.getDegrees() + mPeriodicIO.inSupertructureManualAngleDelta)),
-                            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.clamp(desiredManualSuperstructureState.extenderLength + mPeriodicIO.inSupertructureManualLengthDelta)
-                        );
+                            Rotation2d.fromDegrees(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE
+                                    .clamp(desiredManualSuperstructureState.armAngle.getDegrees()
+                                            + mPeriodicIO.inSupertructureManualAngleDelta)),
+                            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE
+                                    .clamp(desiredManualSuperstructureState.extenderLength
+                                            + mPeriodicIO.inSupertructureManualLengthDelta));
 
                     coreSuperstructureState = desiredManualSuperstructureState;
                     coreIntakerPower = mPeriodicIO.inManualIntakerPercentage;
                     coreDirectionalPose2d = null;
-                }  
+                }
         }
     }
 
@@ -492,7 +506,7 @@ public class Coordinator implements Updatable {
     @Override
     public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
-        if(requirePoseAssist) {
+        if (requirePoseAssist) {
             mSwerve.setTargetPose(coreDirectionalPose2d);
         } else {
             mSwerve.setTargetPose(null);

@@ -70,7 +70,7 @@ public class Intaker implements Updatable{
         if(mPeriodicIO.intakerMotorDemand < 0.0 || !mPeriodicIO.hasGamePiece){
             intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         } else if (mPeriodicIO.hasGamePiece) {
-            intakerMotor.set(0.3);
+            intakerMotor.set(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE);
         } else {
             intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         }

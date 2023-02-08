@@ -184,22 +184,22 @@ public class SuperstructureStateBuilder {
     static {
         /* Scoring */
         // High Row - Near Side
-        Scoring.highRowConeAngleNear.initDefault(10);
+        Scoring.highRowConeAngleNear.initDefault(25);
         Scoring.highRowConeLengthNear.initDefault(1.40);
         Scoring.highRowCubeAngleNear.initDefault(0);
         Scoring.highRowCubeLengthNear.initDefault(1.40);
 
         // Mid Row - Near Side
-        Scoring.midRowConeAngleNear.initDefault(-20.0);
-        Scoring.midRowConeLengthNear.initDefault(0.90);
-        Scoring.midRowCubeAngleNear.initDefault(-25.0);
-        Scoring.midRowConeLengthNear.initDefault(0.80);
+        Scoring.midRowConeAngleNear.initDefault(5);
+        Scoring.midRowConeLengthNear.initDefault(1.20);
+        Scoring.midRowCubeAngleNear.initDefault(0.0);
+        Scoring.midRowConeLengthNear.initDefault(1.20);
 
         // Low Row - Near Side
-        Scoring.lowRowConeAngleNear.initDefault(-65.0);
-        Scoring.lowRowConeLengthNear.initDefault(1.20);
-        Scoring.lowRowCubeAngleNear.initDefault(-65.0);
-        Scoring.lowRowConeLengthNear.initDefault(1.20);
+        Scoring.lowRowConeAngleNear.initDefault(-60.0);
+        Scoring.lowRowConeLengthNear.initDefault(1.00);
+        Scoring.lowRowCubeAngleNear.initDefault(-62.0);
+        Scoring.lowRowConeLengthNear.initDefault(1.00);
 
         // Mid Row - Far Side
         Scoring.midRowConeAngleFar.initDefault(200);
@@ -214,14 +214,14 @@ public class SuperstructureStateBuilder {
         Scoring.lowRowConeLengthFar.initDefault(1.40);
 
         // Delta
-        Scoring.delta.initDefault(5);
+        Scoring.delta.initDefault(15);
 
 
 
         /* Loading */
         // Loading - Double Substation - Near Side
-        Loading.shelfAngleNear.initDefault(0);
-        Loading.shelfLengthNear.initDefault(1.40);
+        Loading.shelfAngleNear.initDefault(3.0);
+        Loading.shelfLengthNear.initDefault(1.10);
 
         // Loading - Double Substation - Far Side
         Loading.shelfAngleFar.initDefault(180.0);
