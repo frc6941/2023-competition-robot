@@ -9,6 +9,10 @@ public class Peer<K, V> {
         this.value = value;
     }
 
+    public static Peer<Range, Double> ofRangeStrategy(Range key, double value) {
+        return new Peer<>(key, value);
+    }
+
     public V getValue() {
         return value;
     }

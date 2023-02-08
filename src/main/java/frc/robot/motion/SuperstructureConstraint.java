@@ -32,9 +32,9 @@ public class SuperstructureConstraint {
 
     public SuperstructureState optimize(SuperstructureState desiredState, SuperstructureState currentState) {
 
-        List<Peer<Range, Double>> dangerousArmRangeStrategies = List.of(
-            new Peer<>(dangerousPositiveArmRange, dangerousPositiveArmRange.min),
-            new Peer<>(dangerousNegativeArmRange, dangerousNegativeArmRange.max)
+        DangerousArmRangeStrategies strategies = new DangerousArmRangeStrategies(
+                dangerousPositiveArmRange,
+                dangerousPositiveArmRange
         );
 
         // Clamp state into max and min
@@ -43,21 +43,18 @@ public class SuperstructureConstraint {
                 this.extenderRange.clamp(desiredState.extenderLength)
         );
 
-        // Match dangerous ranges.
-        for (Peer<Range, Double> strategy : dangerousArmRangeStrategies) {
-            if (!strategy.getKey().inRange(desiredState.armAngle.getDegrees())) {
-                continue;
-            }
+        var strategyMatched = strategies.matchStrategy(desiredState.armAngle.getDegrees());
 
+        if (strategyMatched.isPresent()) {
             clampedDesiredState.extenderLength = extenderRange.min;
+
             if (!currentState.isExtenderOnTarget(clampedDesiredState,
                     Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)
-            ) clampedDesiredState.armAngle = Rotation2d.fromDegrees(strategy.getValue());
+            ) clampedDesiredState.armAngle = Rotation2d.fromDegrees(strategyMatched.get());
 
             return clampedDesiredState;
         }
 
-        // If not match any dangerous range, the code will go here.
         // Use forward kinematics to determine final position, then clamp height to
         // limited zone
         Translation2d finalPosition = SuperstructureKinematics.forwardKinematics2d(clampedDesiredState);
@@ -72,7 +69,6 @@ public class SuperstructureConstraint {
                 Rotation2d.fromDegrees(this.armRange.clamp(clampedDesiredState.armAngle.getDegrees())),
                 this.extenderRange.clamp(clampedDesiredState.extenderLength)
         );
-
         return clampedDesiredState;
     }
 }
