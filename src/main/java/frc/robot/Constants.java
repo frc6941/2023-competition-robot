@@ -125,7 +125,7 @@ public final class Constants {
         public static final double KD = 0.26013;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 0.0;
-        public static final double CRUISE_V = 24000.0;
+        public static final double CRUISE_V = 23000.0;
         public static final double CRUIVE_ACC = 15000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
@@ -143,7 +143,7 @@ public final class Constants {
         public static final double KD = 0.0;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double CRUISE_V = 28000.0;
-        public static final double CRUIVE_ACC = 80000.0;
+        public static final double CRUIVE_ACC = 40000.0;
     }
 
     // Intake Constants
@@ -172,7 +172,7 @@ public final class Constants {
         public static class CONSTRAINTS {
             public static Range ARM_RANGE = new Range(-98.0, 237.0);
             public static Range EXTENDER_RANGE = new Range(0.885, 1.37);
-            public static Range HEIGHT_RANGE = new Range(0.10, 1.50);
+            public static Range HEIGHT_RANGE = new Range(0.05, 1.50);
             public static Range DANGEROUS_POSITIVE = new Range(230, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
             public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -70.0);
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
@@ -190,7 +190,7 @@ public final class Constants {
     // Vision Constants
     public static final class SUBSYSTEM_VISION {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
-            new CameraConstants("test-camera", new Pose3d(0.118, 0, 0.774, 
+            new CameraConstants("Test Camera", new Pose3d(0.118, 0, 0.774, 
             new Rotation3d(0.0, Units.degreesToRadians(110.6 - 90.0), 0.0)))
         };
     }

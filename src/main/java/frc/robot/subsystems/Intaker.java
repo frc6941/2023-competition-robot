@@ -58,7 +58,7 @@ public class Intaker implements Updatable{
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
-        mPeriodicIO.hasGamePiece = false;
+        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
     }
     
     @Override
@@ -67,10 +67,12 @@ public class Intaker implements Updatable{
     
     @Override
     public synchronized void write(double time, double dt){
-        if(!mPeriodicIO.hasGamePiece || (mPeriodicIO.hasGamePiece && mPeriodicIO.intakerMotorDemand <= 0.0)){
+        if(mPeriodicIO.intakerMotorDemand < 0.0 || !mPeriodicIO.hasGamePiece){
             intakerMotor.set(mPeriodicIO.intakerMotorDemand);
+        } else if (mPeriodicIO.hasGamePiece) {
+            intakerMotor.set(0.3);
         } else {
-            intakerMotor.set(0.0);
+            intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         }
     }
     

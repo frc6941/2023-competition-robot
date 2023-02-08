@@ -386,7 +386,7 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void start() {
-        // Auto Generated Method
+        extenderIsHomed = false;
     }
 
     @Override

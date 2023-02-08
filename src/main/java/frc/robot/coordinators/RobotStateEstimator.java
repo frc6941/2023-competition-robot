@@ -17,7 +17,7 @@ import frc.robot.FieldConstants;
 
 public class RobotStateEstimator implements Updatable {
     private Localizer localizer = SJTUSwerveMK5Drivebase.getInstance().getLocalizer();
-    private ArrayList<EstimatedPoseProvider> providers;
+    private ArrayList<EstimatedPoseProvider> providers = new ArrayList<>();
 
     private static RobotStateEstimator instance;
 
@@ -30,8 +30,7 @@ public class RobotStateEstimator implements Updatable {
 
     private RobotStateEstimator() {
         for (CameraConstants camera : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
-            providers.add(
-                    new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT));
+            providers.add(new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT));
         }
     }
 
@@ -45,16 +44,18 @@ public class RobotStateEstimator implements Updatable {
         for (EstimatedPoseProvider poseProvider : providers) {
             try {
                 poseProvider.getEstimatedPose(localizer.getPoseAtTime(time))
-                        .ifPresent(estimate -> {
+                        .ifPresentOrElse(estimate -> {
                             localizer.addMeasurement(estimate.timestampSeconds,
                                     estimate.estimatedPose.toPose2d(),
                                     new Pose2d(0.02, 0.02, Rotation2d.fromDegrees(1.0)));
-                            Logger.getInstance().recordOutput(poseProvider.getName() + " Estimate",
+                            Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                     estimate.estimatedPose.toPose2d());
-                        });
+                        },
+                        () -> Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
+                                    new Pose2d(-1000.0, -1000.0, Rotation2d.fromDegrees(0.0))));
 
             } catch (Exception e) {
-                Logger.getInstance().recordOutput(poseProvider.getName() + " Estimate",
+                Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                     new Pose2d(-1000.0, -1000.0, Rotation2d.fromDegrees(0.0)));
                 throw e;
             }
