@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.frcteam6941.control.DirectionalPose2d;
+import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 import org.littletonrobotics.junction.Logger;
@@ -12,6 +13,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
@@ -31,6 +33,7 @@ import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
+import frc.robot.utils.Lights;
 
 public class Coordinator implements Updatable {
     public static class PeriodicIO {
@@ -65,6 +68,7 @@ public class Coordinator implements Updatable {
     private final SJTUSwerveMK5Drivebase mSwerve = SJTUSwerveMK5Drivebase.getInstance();
     private final Intaker mIntaker = Intaker.getInstance();
     private final ArmAndExtender mArmAndExtender = ArmAndExtender.getInstance();
+    private final AddressableLEDWrapper mIndicator = new AddressableLEDWrapper(0, 3);
 
     // Overall state settings
     public boolean requirePoseAssist = false;
@@ -152,8 +156,8 @@ public class Coordinator implements Updatable {
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
             mSwerve.resetPose(new Pose2d(0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
-                            0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
-                            new Rotation2d()));
+                    0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
+                    new Rotation2d()));
         }
 
         if (mControlBoard.getAutoTracking()) {
@@ -480,6 +484,61 @@ public class Coordinator implements Updatable {
         }
     }
 
+    public void updateIndicator() {
+        if (DriverStation.isEnabled()) {
+            switch (state) {
+                case PREP_SCORING:
+                case SCORING:
+                    switch (scoringTarget.getTargetGamePiece()) {
+                        case CONE:
+                            mIndicator.setPattern(Lights.SCORE_CONE);
+                            break;
+                        case CUBE:
+                            mIndicator.setPattern(Lights.SCORE_CUBE);
+                            break;
+                    }
+                    break;
+                case COMMUTING:
+                    switch (loadingTarget.getTargetGamePiece()) {
+                        case CONE:
+                            mIndicator.setPattern(Lights.COMMUTE_CONE);
+                            break;
+                        case CUBE:
+                            mIndicator.setPattern(Lights.COMMUTE_CUBE);
+                            break;
+                    }
+                    break;
+                case LOADING:
+                    switch (loadingTarget.getTargetGamePiece()) {
+                        case CONE:
+                            mIndicator.setPattern(Lights.LOAD_CONE);
+                            break;
+
+                        case CUBE:
+                            mIndicator.setPattern(Lights.LOAD_CUBE);
+                            break;
+                    }
+
+                    break;
+                case MANUAL:
+                    mIndicator.setPattern(Lights.MANUAL);
+                    break;
+            }
+        } else {
+            switch(DriverStation.getAlliance()) {
+                case Red:
+                    mIndicator.setPattern(Lights.ALLIANCE_RED);
+                    break;
+                case Blue:
+                    mIndicator.setPattern(Lights.ALLIANCE_BLUE);
+                    break;
+                default:
+                    mIndicator.setPattern(Lights.CONNECTING);
+                    break;
+            }
+        }
+    }
+
     @Override
     public synchronized void read(double time, double dt) {
         mPeriodicIO.inSwerveFieldHeadingAngle = mSwerve.getYaw();
@@ -500,6 +559,7 @@ public class Coordinator implements Updatable {
         }
         updateStates();
         updateSwerve();
+        updateIndicator();
     }
 
     @Override

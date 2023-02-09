@@ -222,9 +222,10 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
-        mPeriodicIO.armTrajectoryVelocitySetPoint = Conversions
+        if(armMotorLeader.getControlMode() == ControlMode.MotionMagic) {
+            mPeriodicIO.armTrajectoryVelocitySetPoint = Conversions
                 .falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(0), Constants.SUBSYSTEM_ARM.GEAR_RATIO);
-
+        }
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
                 * Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE;
