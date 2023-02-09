@@ -117,6 +117,9 @@ public class ArmAndExtender implements Updatable {
         armMotorLeader.config_IntegralZone(0, Constants.SUBSYSTEM_ARM.IZONE, 100);
         armMotorLeader.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        armMotorLeader.enableVoltageCompensation(true);
+        armMotorLeader.configVoltageCompSaturation(12.0);
+
         armMotorFollower.configFactoryDefault(50);
         armMotorFollower.setNeutralMode(NeutralMode.Brake);
         armMotorFollower.setInverted(InvertType.FollowMaster);

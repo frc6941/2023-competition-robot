@@ -136,6 +136,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
         poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController,
                 headingController);
+        gyro.setYaw(0.0);
+        swerveLocalizer.reset(new Pose2d(), getModulePositions());
     }
 
     /**
@@ -321,6 +323,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     }
 
     public void resetPose(Pose2d resetPose) {
+        gyro.setYaw(resetPose.getRotation().getDegrees());
         swerveLocalizer.reset(resetPose, getModulePositions());
     }
 

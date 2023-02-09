@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 
@@ -45,9 +46,6 @@ public class RobotStateEstimator implements Updatable {
             try {
                 poseProvider.getEstimatedPose(localizer.getPoseAtTime(time))
                         .ifPresentOrElse(estimate -> {
-                            localizer.addMeasurement(estimate.timestampSeconds,
-                                    estimate.estimatedPose.toPose2d(),
-                                    new Pose2d(0.20, 0.20, Rotation2d.fromDegrees(20.0)));
                             Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                     estimate.estimatedPose.toPose2d());
                         },

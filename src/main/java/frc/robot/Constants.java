@@ -120,9 +120,9 @@ public final class Constants {
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
         public static final double HOME_ANGLE = -98.2;
 
-        public static final double KP = 0.47213;
+        public static final double KP = 0.40;
         public static final double KI = 0.00;
-        public static final double KD = 0.26013;
+        public static final double KD = 0.30;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 0.0;
         public static final double CRUISE_V = 23000.0;
@@ -192,7 +192,7 @@ public final class Constants {
     public static final class SUBSYSTEM_VISION {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants("Test Camera", new Pose3d(0.118, 0.10, 0.774, 
-            new Rotation3d(0.0, Units.degreesToRadians(110.6 - 90.0), 0.0)))
+            new Rotation3d(0.0, Units.degreesToRadians(110.6 - 90.0), -Math.PI)))
         };
     }
 
