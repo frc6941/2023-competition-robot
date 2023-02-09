@@ -104,7 +104,7 @@ public class Coordinator implements Updatable {
     public SuperstructureState desiredManualSuperstructureState = null;
 
     // Swerve setting related variables
-    private boolean swerveSelfLocking = false;
+    private boolean swerveSelfLocking = true;
     private Double swerveSelfLockheadingRecord;
 
     // TODO: Change this to physical button and trigger board after simulation
@@ -250,12 +250,10 @@ public class Coordinator implements Updatable {
     public synchronized void updateSwerve() {
         mPeriodicIO.outSwerveTranslation = mPeriodicIO.inSwerveTranslation;
         mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
-        if (mPeriodicIO.inSwervePoseAssisted != null) {
-            if (mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
-                mPeriodicIO.outSwerveLockHeading = false;
-                mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
-                swerveSelfLockheadingRecord = null;
-            }
+        if (mPeriodicIO.inSwervePoseAssisted != null && mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
+            mPeriodicIO.outSwerveLockHeading = false;
+            mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
+            swerveSelfLockheadingRecord = null;
         } else if (mPeriodicIO.inSwerveSnapRotation != SWERVE_CARDINAL.NONE) {
             mPeriodicIO.outSwerveLockHeading = true;
             mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwerveSnapRotation.degrees;
@@ -280,30 +278,23 @@ public class Coordinator implements Updatable {
      * The guiding principle is to let the driver turn as less as possible.
      */
     public void updateDirections() {
-        if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+        if (scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
             loadDirection = Direction.NEAR;
             commuteDirection = Direction.FAR;
-            scoreDirection = Direction.NEAR;
-        } else if (gotGamePieceRecord) {
-            gotGamePieceRecord = false;
-            // Load on NEAR side
-            if (mPeriodicIO.inCurrentSuperstructureState.armAngle.getCos() > 0.0) {
-                loadDirection = Direction.NEAR;
-                commuteDirection = Direction.FAR;
+            if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                 scoreDirection = Direction.NEAR;
-                // Load on FAR side
             } else {
-                loadDirection = Direction.FAR;
-                commuteDirection = Direction.NEAR;
                 scoreDirection = Direction.FAR;
             }
         } else {
-            if (state == STATE.COMMUTING) {
-                if (Rotation2d.fromDegrees(mPeriodicIO.inSwerveFieldHeadingAngle).getCos() > 0.0) {
-                    loadDirection = Direction.NEAR;
-                } else {
-                    loadDirection = Direction.FAR;
-                }
+            if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+                loadDirection = Direction.NEAR;
+                commuteDirection = Direction.NEAR;
+                scoreDirection = Direction.NEAR;
+            } else {
+                loadDirection = Direction.FAR;
+                commuteDirection = Direction.NEAR;
+                scoreDirection = Direction.NEAR;
             }
         }
     }
