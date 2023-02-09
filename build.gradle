@@ -64,8 +64,9 @@ def includeDesktopSupport = false
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    implementation 'org.apache.commons:commons-collections4:4.0'
+    // https://mvnrepository.com/artifact/gov.nist.math/jama
+    implementation 'gov.nist.math:jama:1.0.3'
+
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)

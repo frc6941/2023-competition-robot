@@ -8,5 +8,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 
 public interface EstimatedPoseProvider {
     String getName();
-    Optional<EstimatedRobotPose> getEstimatedPose(Pose2d referencePose);
+    Optional<EstimatedPoseWithDistance> getEstimatedPose(Pose2d referencePose);
+
+    public class EstimatedPoseWithDistance {
+        public EstimatedRobotPose pose;
+        public double distance;
+
+        public EstimatedPoseWithDistance(EstimatedRobotPose pose, double distance) {
+            this.pose = pose;
+            this.distance = distance;
+        }
+    }
 }

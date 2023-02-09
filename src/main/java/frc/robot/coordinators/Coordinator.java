@@ -155,8 +155,8 @@ public class Coordinator implements Updatable {
             mSwerve.resetYaw(0.0);
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
-            mSwerve.resetPose(new Pose2d(0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
-                    0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH_BUMPERED,
+            mSwerve.resetPose(new Pose2d(0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH,
+                    0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH,
                     new Rotation2d()));
         }
 

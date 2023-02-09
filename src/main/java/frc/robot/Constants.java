@@ -191,8 +191,9 @@ public final class Constants {
     // Vision Constants
     public static final class SUBSYSTEM_VISION {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
-            new CameraConstants("Test Camera", new Pose3d(0.118, 0.10, 0.774, 
-            new Rotation3d(0.0, Units.degreesToRadians(110.6 - 90.0), -Math.PI)))
+            new CameraConstants("IP_VM1",
+            new Pose3d(0.0, -0.08, 0.775, 
+            new Rotation3d(0.0, 0.0, -Math.PI)))
         };
     }
 

@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 
 public class SwerveLocalizer implements Localizer {
@@ -28,7 +29,8 @@ public class SwerveLocalizer implements Localizer {
     private Pose2d vehicleAccelerationMeasured;
     private MovingAveragePose2d vehicleAccelerationMeasuredFilter;
 
-    public SwerveLocalizer(SwerveDriveKinematics kinematics, SwerveModulePosition[] currentPositions, int poseBufferSize, int velocityBufferSize, int accelerationBufferSize) {
+    public SwerveLocalizer(SwerveDriveKinematics kinematics, SwerveModulePosition[] currentPositions,
+            int poseBufferSize, int velocityBufferSize, int accelerationBufferSize) {
         fieldToVehicle = new InterpolatingTreeMap<Double, Pose2d>(poseBufferSize);
         vehicleVelocityMeasured = new Pose2d();
         vehicleVelocityPredicted = new Pose2d();
@@ -37,14 +39,16 @@ public class SwerveLocalizer implements Localizer {
         vehicleAccelerationMeasured = new Pose2d();
         vehicleAccelerationMeasuredFilter = new MovingAveragePose2d(accelerationBufferSize);
 
-        poseEstimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(), currentPositions, new Pose2d());
+        poseEstimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(), currentPositions, new Pose2d(),
+                VecBuilder.fill(0.02, 0.02, Units.degreesToRadians(0.5)),
+                VecBuilder.fill(0.10, 0.10, Units.degreesToRadians(0.5)));
     }
 
     public Pose2d updateWithTime(double time, double dt, Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
         // Get pose from kinematics update
         Pose2d pose = poseEstimator.updateWithTime(time, gyroAngle, modulePositions);
         fieldToVehicle.put(time, pose);
-        
+
         // First, get the velocity
         if (previousPose == null) {
             previousPose = pose;
@@ -63,7 +67,8 @@ public class SwerveLocalizer implements Localizer {
 
         // Third, use acceleartion to predict velocity
         Pose2d accelerationDelta = vehicleAccelerationMeasured.times(dt);
-        Transform2d accelerationTransform = new Transform2d(accelerationDelta.getTranslation(), accelerationDelta.getRotation());
+        Transform2d accelerationTransform = new Transform2d(accelerationDelta.getTranslation(),
+                accelerationDelta.getRotation());
         vehicleVelocityPredicted = vehicleVelocityMeasured.transformBy(accelerationTransform);
         vehicleVelocityPredictedFilter.add(vehicleVelocityPredicted);
 
@@ -112,7 +117,8 @@ public class SwerveLocalizer implements Localizer {
 
     @Override
     public void addMeasurement(double time, Pose2d measuredPose, Pose2d stdDeviation) {
-        poseEstimator.addVisionMeasurement(measuredPose, time, VecBuilder.fill(stdDeviation.getX(), stdDeviation.getY(), stdDeviation.getRotation().getRadians()));
+        poseEstimator.addVisionMeasurement(measuredPose, time,
+                VecBuilder.fill(stdDeviation.getX(), stdDeviation.getY(), stdDeviation.getRotation().getRadians()));
     }
 
     @Override
