@@ -82,7 +82,7 @@ public class Coordinator implements Updatable {
     public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
     public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
             SCORING_SIDE.OUTER);
-    public Direction loadDirection = Direction.NEAR;
+    public Direction loadDirection = Direction.FAR;
     public Direction commuteDirection = Direction.FAR;
     public Direction scoreDirection = Direction.NEAR;
 
@@ -252,7 +252,7 @@ public class Coordinator implements Updatable {
         mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
         if (mPeriodicIO.inSwervePoseAssisted != null) {
             if (mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
-                mPeriodicIO.outSwerveLockHeading = true;
+                mPeriodicIO.outSwerveLockHeading = false;
                 mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
                 swerveSelfLockheadingRecord = null;
             }
@@ -565,11 +565,18 @@ public class Coordinator implements Updatable {
     @Override
     public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
-        if (requirePoseAssist) {
-            mSwerve.setTargetPose(coreDirectionalPose2d);
+        // if (requirePoseAssist) {
+        //     mSwerve.setTargetPose(coreDirectionalPose2d);
+        // } else {
+        //     mSwerve.setTargetPose(null);
+        // }
+
+        if(mControlBoard.getAutoTrackingContinuous()) {
+            mSwerve.setTargetPose(new DirectionalPose2d(new Pose2d(1.0, 1.3, Rotation2d.fromDegrees(-180.0)), false, true, true));
         } else {
             mSwerve.setTargetPose(null);
         }
+
         mIntaker.setIntakerPower(coreIntakerPower);
 
         // Swerve Drive Logic

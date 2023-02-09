@@ -55,8 +55,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             this.headingController,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_FEEDFORWARD);
     // Pose Assist Controller
-    private final PIDController poseAssistXController = new PIDController(5.0, 0.0, 0.0);
-    private final PIDController poseAssistYController = new PIDController(5.0, 0.0, 0.0);
+    private final PIDController poseAssistXController = new PIDController(0.7, 0.0, 0.0);
+    private final PIDController poseAssistYController = new PIDController(0.7, 0.0, 0.0);
     private final DirectionalPoseFollower poseAssistedFollower;
 
     // Swerve Kinematics and Odometry

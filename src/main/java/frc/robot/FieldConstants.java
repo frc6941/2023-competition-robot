@@ -272,7 +272,7 @@ public final class FieldConstants {
         );
         TEST_TAGS.add(
             new AprilTag(2, 
-            new Pose3d(4.26, 1.00, 0.935,
+            new Pose3d(4.26, 1.00, 0.804,
             new Rotation3d(0.0, 0.0, -Math.PI)))
         );
         TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 5.0, 2.0);

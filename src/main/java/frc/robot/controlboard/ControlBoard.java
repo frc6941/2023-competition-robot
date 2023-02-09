@@ -127,6 +127,10 @@ public class ControlBoard {
         return driver.getController().getRightBumperPressed() || driver.getController().getRightBumperReleased();
     }
 
+    public boolean getAutoTrackingContinuous() {
+        return driver.getController().getRightBumper();
+    }
+
 
 
     /* OPERATOR METHODS */

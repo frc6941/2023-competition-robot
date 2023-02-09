@@ -221,11 +221,11 @@ public class SuperstructureStateBuilder {
         /* Loading */
         // Loading - Double Substation - Near Side
         Loading.shelfAngleNear.initDefault(3.0);
-        Loading.shelfLengthNear.initDefault(1.10);
+        Loading.shelfLengthNear.initDefault(1.00);
 
         // Loading - Double Substation - Far Side
         Loading.shelfAngleFar.initDefault(180.0);
-        Loading.shelfLengthFar.initDefault(1.40);
+        Loading.shelfLengthFar.initDefault(1.00);
 
         // Loading - Ground - Near Side
         Loading.groundAngleNear.initDefault(-66.0);

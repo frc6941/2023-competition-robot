@@ -125,7 +125,6 @@ public class SwerveLocalizer implements Localizer {
     public void reset(Pose2d resetPose, SwerveModulePosition[] modulePositions) {
         poseEstimator.resetPosition(resetPose.getRotation(), modulePositions, resetPose);
         previousPose = null;
-        fieldToVehicle.clear();
         fieldToVehicle.put(Timer.getFPGATimestamp(), resetPose);
     }
 }
