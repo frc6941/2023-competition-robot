@@ -79,8 +79,8 @@ public class Coordinator implements Updatable {
     public double coreIntakerPower = 0.0;
     public DirectionalPose2d coreDirectionalPose2d = null;
 
-    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
-    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
+    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CUBE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CUBE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
             SCORING_SIDE.OUTER);
     public Direction loadDirection = Direction.FAR;
     public Direction commuteDirection = Direction.FAR;
@@ -104,7 +104,7 @@ public class Coordinator implements Updatable {
     public SuperstructureState desiredManualSuperstructureState = null;
 
     // Swerve setting related variables
-    private boolean swerveSelfLocking = true;
+    private boolean swerveSelfLocking = false;
     private Double swerveSelfLockheadingRecord;
 
     // TODO: Change this to physical button and trigger board after simulation
@@ -155,8 +155,7 @@ public class Coordinator implements Updatable {
             mSwerve.resetYaw(0.0);
             swerveSelfLockheadingRecord = null;
             mSwerve.resetHeadingController();
-            mSwerve.resetPose(new Pose2d(0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH,
-                    0.0 + 0.5 * Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH,
+            mSwerve.resetPose(new Pose2d(mSwerve.getPose().getTranslation(),
                     new Rotation2d()));
         }
 
@@ -214,13 +213,15 @@ public class Coordinator implements Updatable {
         }
     }
 
-    public synchronized void updateRumble() {
+    public synchronized void updateRumble(double time) {
         switch (state) {
             case COMMUTING:
                 // Robot inverse notice
                 double cos = mSwerve.getLocalizer().getLatestPose().getRotation().getCos();
                 if ((cos > 0 && scoreDirection == Direction.NEAR) || (cos <= 0 && scoreDirection == Direction.FAR)) {
                     mControlBoard.setDriverRumble(0.5, 0.5);
+                } else {
+                    mControlBoard.setDriverRumble(0.0, 0.0);
                 }
                 break;
             case SCORING:
@@ -238,6 +239,9 @@ public class Coordinator implements Updatable {
                 break;
             case MANUAL:
                 break;
+        }
+        if (DriverStation.isTeleopEnabled()) {
+            mControlBoard.updateRumble(time);
         }
     }
 
@@ -258,7 +262,7 @@ public class Coordinator implements Updatable {
             mPeriodicIO.outSwerveLockHeading = true;
             mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwerveSnapRotation.degrees;
             swerveSelfLockheadingRecord = null;
-        } else if (Math.abs(mPeriodicIO.outSwerveRotation) <= 0.03
+        } else if (Math.abs(mPeriodicIO.outSwerveRotation) <= 0.10
                 && Math.abs(mPeriodicIO.inSwerveAngularVelocity) < 20.0
                 && swerveSelfLocking) {
             mPeriodicIO.outSwerveLockHeading = true;
@@ -281,13 +285,13 @@ public class Coordinator implements Updatable {
         if (scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
             loadDirection = Direction.NEAR;
             commuteDirection = Direction.FAR;
-            if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+            if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                 scoreDirection = Direction.NEAR;
             } else {
                 scoreDirection = Direction.FAR;
             }
         } else {
-            if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+            if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                 loadDirection = Direction.NEAR;
                 commuteDirection = Direction.NEAR;
                 scoreDirection = Direction.NEAR;
@@ -373,7 +377,12 @@ public class Coordinator implements Updatable {
                 coreDirectionalPose2d = null;
                 break;
             case LOADING:
-                coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
+                if(scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
+                    coreIntakerPower = 0.4;
+                } else {
+                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
+                }
+                
                 SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
                         loadDirection);
                 if (requirePoseAssist) {
@@ -516,7 +525,7 @@ public class Coordinator implements Updatable {
                     break;
             }
         } else {
-            switch(DriverStation.getAlliance()) {
+            switch (DriverStation.getAlliance()) {
                 case Red:
                     mIndicator.setPattern(Lights.ALLIANCE_RED);
                     break;
@@ -551,21 +560,23 @@ public class Coordinator implements Updatable {
         updateStates();
         updateSwerve();
         updateIndicator();
+        updateRumble(time);
     }
 
     @Override
     public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
         // if (requirePoseAssist) {
-        //     mSwerve.setTargetPose(coreDirectionalPose2d);
+        // mSwerve.setTargetPose(coreDirectionalPose2d);
         // } else {
-        //     mSwerve.setTargetPose(null);
+        // mSwerve.setTargetPose(null);
         // }
 
-        if(mControlBoard.getAutoTrackingContinuous()) {
-            mSwerve.setTargetPose(new DirectionalPose2d(new Pose2d(1.0, 1.2, Rotation2d.fromDegrees(-180.0)), false, true, true));
+        if (mControlBoard.getAutoTrackingContinuous()) {
+            mSwerve.setTargetPose(
+                    new DirectionalPose2d(new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(-180.0)), false, true, true));
         } else {
-            mSwerve.setTargetPose(null);
+            mSwerve.cancelPoseAssisit();
         }
 
         mIntaker.setIntakerPower(coreIntakerPower);
@@ -582,7 +593,7 @@ public class Coordinator implements Updatable {
 
             mSwerve.setLockHeading(mPeriodicIO.outSwerveLockHeading);
             mSwerve.setHeadingTarget(mPeriodicIO.outSwerveHeadingTarget);
-            mSwerve.drive(mPeriodicIO.outSwerveTranslation, mPeriodicIO.outSwerveRotation, true, false);
+            mSwerve.drive(mPeriodicIO.outSwerveTranslation, mPeriodicIO.outSwerveRotation, true, true);
         }
 
     }

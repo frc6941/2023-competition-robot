@@ -100,9 +100,9 @@ public final class Constants {
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 30.0;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.001;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.00;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 50.0;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.00;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.0005;
         public static final TrapezoidProfile.Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
                 300.0, 900.0);
 
@@ -120,11 +120,11 @@ public final class Constants {
         public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
         public static final double HOME_ANGLE = -98.2;
 
-        public static final double KP = 0.40;
-        public static final double KI = 0.00;
-        public static final double KD = 0.30;
+        public static final double KP = 0.3;
+        public static final double KI = 0.002;
+        public static final double KD = 0.15;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
-        public static final double IZONE = 0.0;
+        public static final double IZONE = 500;
         public static final double CRUISE_V = 22000.0;
         public static final double CRUIVE_ACC = 15000.0;
 
@@ -136,12 +136,13 @@ public final class Constants {
     public static final class SUBSYSTEM_EXTENDER {
         public static final double GEAR_RATIO = 8.0;
         public static final double WHEEL_CIRCUMFERENCE = 24 * 0.005;
-        public static final double HOME_LENGTH = 0.884;
+        public static final double HOME_LENGTH = 0.880;
 
-        public static final double KP = 0.3;
-        public static final double KI = 0.0;
-        public static final double KD = 0.1;
+        public static final double KP = 0.25;
+        public static final double KI = 0.0003;
+        public static final double KD = 0.15;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
+        public static final double IZONE = 200;
         public static final double CRUISE_V = 25000.0;
         public static final double CRUIVE_ACC = 40000.0;
     }
@@ -150,7 +151,7 @@ public final class Constants {
     public static final class SUBSYSTEM_INTAKE {
         public static final double INTAKING_PERCENTAGE = 1.00;
         public static final double OUTTAKING_PERCENTAGE = -0.60;
-        public static final double HOLD_PERCENTAGE = 0.45;
+        public static final double HOLD_PERCENTAGE = 0.2;
     }
 
     // Superstructure Constants
@@ -191,15 +192,22 @@ public final class Constants {
     // Vision Constants
     public static final class SUBSYSTEM_VISION {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
-            new CameraConstants("IP_VM1",
-            new Pose3d(0.0, -0.08, 0.775, 
-            new Rotation3d(0.0, 0.0, -Math.PI)))
+            new CameraConstants(
+                "IP_VM1",
+                new Pose3d(0.0, 0.112, 0.775, 
+                new Rotation3d(0.0, 0.0, -Math.PI))
+            ),
+            new CameraConstants(
+                "IP_VM2",
+                new Pose3d(0.0, -0.155, 0.750,
+                new Rotation3d(0.0, 0.0, -Math.PI))
+            )
         };
     }
 
     // Controller
     public static final class CONTROLBOARD {
-        public static final double CONTROLLER_DEADBAND = 0.15;
+        public static final double CONTROLLER_DEADBAND = 0.05;
 
         public static final int DRIVER_CONTROLLER_PORT = 0;
         public static final boolean CONTROLLER_INVERT_X = false;

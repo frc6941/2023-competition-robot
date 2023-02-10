@@ -133,10 +133,11 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         headingController.setIntegratorRange(-0.5, 0.5);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
-        poseAssistXController = new ProfiledPIDController(1.0, 0.0, 0.0, new Constraints(2.0, 2.5));
-        poseAssistYController = new ProfiledPIDController(1.0, 0.0, 0.0, new Constraints(2.0, 2.5));
-        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController,
-                headingController);
+        poseAssistXController = new ProfiledPIDController(0.6, 0.001, 0.0, new Constraints(2.5, 1.2));
+        poseAssistYController = new ProfiledPIDController(0.6, 0.001, 0.0, new Constraints(2.5, 1.2));
+        poseAssistXController.setIntegratorRange(-0.2, 0.2);
+        poseAssistYController.setIntegratorRange(-0.2, 0.2);
+        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController, headingController);
         gyro.setYaw(0.0);
         swerveLocalizer.reset(new Pose2d(), getModulePositions());
     }
@@ -310,9 +311,6 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             return;
         }
         poseAssistedFollower.setTargetPose(targetPose);
-        if (targetPose.isThetaRestricted() && state != STATE.POSE_ASSISTED) {
-            headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());
-        }
     }
 
     public DirectionalPose2d getTargetPose() {

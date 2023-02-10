@@ -27,10 +27,10 @@ public class RobotStateEstimator implements Updatable {
             new PolynomialRegression(
                 new double[] {
                   0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
-                  3.223358, 4.093358, 4.726358
+                  3.223358, 4.093358
                 },
                 new double[] {
-                  0.005, 0.0135, 0.016, 0.038, 0.0515, 0.0925, 0.12, 0.15, 0.20, 0.25, 0.30
+                  0.005, 0.015, 0.05, 0.08, 0.10, 0.12, 0.20, 0.30, 0.40, 0.50
                 },
                 1);
 
@@ -60,16 +60,31 @@ public class RobotStateEstimator implements Updatable {
             try {
                 Optional<EstimatedPoseWithDistance> ePose = poseProvider.getEstimatedPose(localizer.getLatestPose());
                 if(ePose.isPresent()) {
+                    Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
                     EstimatedPoseWithDistance eposeWithDistance = ePose.get();
                     Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                             eposeWithDistance.pose.estimatedPose.toPose2d());
                     double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
-                    localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
-                        new Pose2d(eposeWithDistance.pose.estimatedPose.toPose2d().getTranslation(), Rotation2d.fromDegrees(drivebase.getYaw())),
-                            new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(2.0))
+                    if (ePose.get().distance < 4.0) {
+                        localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
+                        eposeWithDistance.pose.estimatedPose.toPose2d(),
+                            new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(40.0))
                         );
+                    }
+                    
+                } else {
+                    Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", false);
                 }
 
+                if (ePose.isPresent()) {
+                    Logger.getInstance().recordOutput("Vision/Measured X", ePose.get().pose.estimatedPose.getX());
+                    Logger.getInstance().recordOutput("Vision/Measured Y", ePose.get().pose.estimatedPose.getY());
+                    Logger.getInstance().recordOutput("Vision/True X", drivebase.getPose().getX());
+                    Logger.getInstance().recordOutput("Vision/True Y", drivebase.getPose().getY());
+                    Logger.getInstance().recordOutput("Vision/Distance", ePose.get().distance);
+                    
+                }
+                
 
             } catch (Exception e) {
                 Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",

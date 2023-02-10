@@ -266,18 +266,15 @@ public final class FieldConstants {
 
     static {
         TEST_TAGS.add(
-            new AprilTag(1, 
-            new Pose3d(4.26, 0.295, 0.935,
-            new Rotation3d(0.0, 0.0, -Math.PI)))
-        );
+                new AprilTag(1,
+                        new Pose3d(5.00, 0.00, 1.069,
+                                new Rotation3d(0.0, 0.0, Math.PI))));
         TEST_TAGS.add(
-            new AprilTag(2, 
-            new Pose3d(4.26, 1.00, 0.804,
-            new Rotation3d(0.0, 0.0, -Math.PI)))
-        );
+                new AprilTag(4,
+                        new Pose3d(4.26, 0.00, 0.66,
+                                new Rotation3d(0.0, 0.0, Math.PI))));
         TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 5.0, 2.0);
     }
-
 
     public static Pose2d allianceFlip(Pose2d original) {
         return original;

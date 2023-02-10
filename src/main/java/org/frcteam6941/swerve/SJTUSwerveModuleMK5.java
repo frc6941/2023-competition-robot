@@ -29,7 +29,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
     public static double ANGLE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.ANGLE_GEAR_RATIO;
 
     public static double DRIVE_KP = 0.01;
-    public static double DRIVE_KI = 0.001;
+    public static double DRIVE_KI = 0.0005;
     public static double DRIVE_KD = 0.0;
     public static double DRIVE_KF = 1023 * 1.0 / (10266.1205);
 
@@ -125,7 +125,8 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mAngleMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
         mAngleMotor.setInverted(invertAngleOutput);
         mAngleMotor.setSensorPhase(invertAngleSensorPhase);
-        mAngleMotor.setNeutralMode(NeutralMode.Coast);
+        mAngleMotor.setNeutralMode(NeutralMode.Brake);
+        mAngleMotor.configNeutralDeadband(0.01);
 
         SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 15, 40, 0.02);
         mAngleMotor.configSupplyCurrentLimit(curr_lim);
@@ -136,7 +137,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mAngleMotor.config_kF(0, ANGLE_KF);
         mAngleMotor.configMotionCruiseVelocity(ANGLE_CRUISE_V);
         mAngleMotor.configMotionAcceleration(ANGLE_ACC);
-        mAngleMotor.config_IntegralZone(0, 75);
+        mAngleMotor.config_IntegralZone(0, 200.0);
         mAngleMotor.configVoltageCompSaturation(12);
         mAngleMotor.enableVoltageCompensation(true);
     }
@@ -146,8 +147,9 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mDriveMotor.configFactoryDefault();
         mDriveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 10);
         mDriveMotor.setInverted(true);
-        mDriveMotor.setNeutralMode(NeutralMode.Brake);
+        mDriveMotor.setNeutralMode(NeutralMode.Coast);
         mDriveMotor.setSelectedSensorPosition(0);
+        mDriveMotor.configNeutralDeadband(0.01);
 
         SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 15, 40, 0.02);
         mDriveMotor.configSupplyCurrentLimit(curr_lim);
@@ -156,7 +158,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mDriveMotor.config_kI(0, DRIVE_KI);
         mDriveMotor.config_kD(0, DRIVE_KD);
         mDriveMotor.config_kF(0, DRIVE_KF);
-        mDriveMotor.config_IntegralZone(0, 75);
+        mDriveMotor.config_IntegralZone(0, 100.0);
         mDriveMotor.configVoltageCompSaturation(12);
         mDriveMotor.enableVoltageCompensation(true);
     }

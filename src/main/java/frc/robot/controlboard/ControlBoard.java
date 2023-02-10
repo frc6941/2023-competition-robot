@@ -52,10 +52,16 @@ public class ControlBoard {
         operator.setRumble(power, interval);
     }
 
+    public void updateRumble(double time) {
+        driver.updateRumble(time);
+        operator.updateRumble(time);
+    }
+
     /* DRIVER METHODS */
     public Translation2d getSwerveTranslation() {
-        double forwardAxis = yLimit.calculate(driver.getAxis(Side.LEFT, Axis.Y));
-        double strafeAxis = xLimit.calculate(driver.getAxis(Side.LEFT, Axis.X));
+        double forwardAxis = driver.getAxis(Side.LEFT, Axis.Y);
+        double strafeAxis = driver.getAxis(Side.LEFT, Axis.X);
+        // double strafeAxis = 0.0;
         double pedal = driver.getTrigger(Side.RIGHT);
         double breaker = driver.getTrigger(Side.LEFT);
 
@@ -69,7 +75,7 @@ public class ControlBoard {
         } else {
             double pedalScale = 1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL + Constants.CONTROLBOARD.CONTROLLER_PEDAL * pedal;
             double breakScale = (1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL) * breaker;
-            return tAxes.times(pedalScale).minus(tAxes.times(breakScale)).times(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
+            return tAxes.times(pedalScale).minus(tAxes.times(breakScale));
         }
     }
 

@@ -46,7 +46,7 @@ public class DirectionalPoseFollower {
             if(needReset) {
                 xController.reset(currentPose.getX(), currentVelocity.getX());
                 yController.reset(currentPose.getY(), currentVelocity.getY());
-                thetaController.reset(currentPose.getRotation().getDegrees(),currentVelocity.getRotation().getDegrees());
+                thetaController.reset(currentPose.getRotation().getDegrees(), currentVelocity.getRotation().getDegrees());
                 needReset = false;
             }
             double x = inputDriveSignal.getTranslation().getX();
@@ -67,7 +67,7 @@ public class DirectionalPoseFollower {
                             new Translation2d(x, y),
                             theta,
                             true,
-                            false));
+                            true));
         }
     }
     

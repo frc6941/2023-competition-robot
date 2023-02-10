@@ -40,7 +40,7 @@ public class Intaker implements Updatable{
     private Intaker() {
         intakerMotor.restoreFactoryDefaults();
         intakerMotor.setIdleMode(IdleMode.kBrake);
-        intakerMotor.setSmartCurrentLimit(25, 15);
+        intakerMotor.setSmartCurrentLimit(8, 4);
     }
 
     public void setIntakerPower(double power) {
