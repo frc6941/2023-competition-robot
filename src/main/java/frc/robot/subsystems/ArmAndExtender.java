@@ -109,7 +109,7 @@ public class ArmAndExtender implements Updatable {
     private ArmAndExtender() {
         armMotorLeader.configFactoryDefault(50);
         armMotorLeader.setNeutralMode(NeutralMode.Brake);
-        armMotorLeader.configNeutralDeadband(0.05);
+        armMotorLeader.configNeutralDeadband(0.03);
         armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
         armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
@@ -131,6 +131,9 @@ public class ArmAndExtender implements Updatable {
         extenderMotor.config_kF(0, Constants.SUBSYSTEM_EXTENDER.KF, 100);
         extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_EXTENDER.CRUISE_V, 100);
         extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_EXTENDER.CRUIVE_ACC, 100);
+        extenderMotor.enableVoltageCompensation(true);
+        extenderMotor.configVoltageCompSaturation(12.0);
+        extenderMotor.configNeutralDeadband(0.05);
 
         mechRoot.append(new MechanismLigament2d("Tower", 0.80, 260, 8, new Color8Bit(Color.kBlue)));
     }

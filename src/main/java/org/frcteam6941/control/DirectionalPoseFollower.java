@@ -2,19 +2,19 @@ package org.frcteam6941.control;
 
 import java.util.Optional;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class DirectionalPoseFollower {
-    private PIDController xController;
-    private PIDController yController;
+    private ProfiledPIDController xController;
+    private ProfiledPIDController yController;
     private ProfiledPIDController thetaController;
 
     private DirectionalPose2d targetPose = null;
+    private boolean needReset = false;
 
-    public DirectionalPoseFollower(PIDController xController, PIDController yController,
+    public DirectionalPoseFollower(ProfiledPIDController xController, ProfiledPIDController yController,
             ProfiledPIDController thetaController) {
         this.xController = xController;
         this.yController = yController;
@@ -30,17 +30,25 @@ public class DirectionalPoseFollower {
     }
 
     public DirectionalPose2d getTargetPose() {
-        return this.targetPose;
+        return targetPose;
     }
 
     public void clear() {
-        this.targetPose = null;
+        targetPose = null;
+        needReset = true;
     }
 
-    public Optional<HolonomicDriveSignal> update(Pose2d currentPose, HolonomicDriveSignal inputDriveSignal) {
+    public Optional<HolonomicDriveSignal> update(Pose2d currentPose, Pose2d currentVelocity, HolonomicDriveSignal inputDriveSignal) {
         if (targetPose == null) {
+            needReset = true;
             return Optional.empty();
         } else {
+            if(needReset) {
+                xController.reset(currentPose.getX(), currentVelocity.getX());
+                yController.reset(currentPose.getY(), currentVelocity.getY());
+                thetaController.reset(currentPose.getRotation().getDegrees(),currentVelocity.getRotation().getDegrees());
+                needReset = false;
+            }
             double x = inputDriveSignal.getTranslation().getX();
             double y = inputDriveSignal.getTranslation().getY();
             double theta = inputDriveSignal.getRotation();

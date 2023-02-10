@@ -100,8 +100,8 @@ public final class Constants {
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 20.0;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.00;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 30.0;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.001;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.00;
         public static final TrapezoidProfile.Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
                 300.0, 900.0);
@@ -125,7 +125,7 @@ public final class Constants {
         public static final double KD = 0.30;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 0.0;
-        public static final double CRUISE_V = 23000.0;
+        public static final double CRUISE_V = 22000.0;
         public static final double CRUIVE_ACC = 15000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
@@ -138,11 +138,11 @@ public final class Constants {
         public static final double WHEEL_CIRCUMFERENCE = 24 * 0.005;
         public static final double HOME_LENGTH = 0.884;
 
-        public static final double KP = 0.4;
+        public static final double KP = 0.3;
         public static final double KI = 0.0;
-        public static final double KD = 0.0;
+        public static final double KD = 0.1;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
-        public static final double CRUISE_V = 28000.0;
+        public static final double CRUISE_V = 25000.0;
         public static final double CRUIVE_ACC = 40000.0;
     }
 

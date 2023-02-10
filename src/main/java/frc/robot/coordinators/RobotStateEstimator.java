@@ -66,7 +66,7 @@ public class RobotStateEstimator implements Updatable {
                     double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
                     localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
                         new Pose2d(eposeWithDistance.pose.estimatedPose.toPose2d().getTranslation(), Rotation2d.fromDegrees(drivebase.getYaw())),
-                            new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(0.50))
+                            new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(2.0))
                         );
                 }
 

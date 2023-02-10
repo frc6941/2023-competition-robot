@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
@@ -55,8 +56,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             this.headingController,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_FEEDFORWARD);
     // Pose Assist Controller
-    private final PIDController poseAssistXController = new PIDController(0.7, 0.0, 0.0);
-    private final PIDController poseAssistYController = new PIDController(0.7, 0.0, 0.0);
+    private final ProfiledPIDController poseAssistXController;
+    private final ProfiledPIDController poseAssistYController;
     private final DirectionalPoseFollower poseAssistedFollower;
 
     // Swerve Kinematics and Odometry
@@ -129,11 +130,11 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
         headingController.enableContinuousInput(0, 360.0); // Enable continuous rotation
         headingController.setTolerance(3.0);
-        headingController.setIntegratorRange(-20.0, 20.0);
-        poseAssistXController.setTolerance(0.05);
-        poseAssistYController.setTolerance(0.05);
+        headingController.setIntegratorRange(-0.5, 0.5);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
+        poseAssistXController = new ProfiledPIDController(1.0, 0.0, 0.0, new Constraints(2.0, 2.5));
+        poseAssistYController = new ProfiledPIDController(1.0, 0.0, 0.0, new Constraints(2.0, 2.5));
         poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController,
                 headingController);
         gyro.setYaw(0.0);
@@ -434,7 +435,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         driveSignal = inputDriveSignal;
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
                 getAngularVelocity(), time, dt);
-        Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(getPose(), inputDriveSignal);
+        Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(swerveLocalizer.getPoseAtTime(time), swerveLocalizer.getMeasuredVelocity(), inputDriveSignal);
         if (trajectorySignal.isPresent()) {
             setState(STATE.PATH_FOLLOWING);
             driveSignal = trajectorySignal.get();

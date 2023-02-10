@@ -563,7 +563,7 @@ public class Coordinator implements Updatable {
         // }
 
         if(mControlBoard.getAutoTrackingContinuous()) {
-            mSwerve.setTargetPose(new DirectionalPose2d(new Pose2d(1.0, 1.3, Rotation2d.fromDegrees(-180.0)), false, true, true));
+            mSwerve.setTargetPose(new DirectionalPose2d(new Pose2d(1.0, 1.2, Rotation2d.fromDegrees(-180.0)), false, true, true));
         } else {
             mSwerve.setTargetPose(null);
         }
