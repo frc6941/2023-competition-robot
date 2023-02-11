@@ -12,11 +12,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider{
+public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider {
     private PhotonCamera camera;
     private CameraConstants constants;
     private AprilTagFieldLayout layout;
-
 
     public PhotonCameraEstimatedPoseProvider(CameraConstants cameraConstants, AprilTagFieldLayout fieldLayout) {
         camera = new PhotonCamera(cameraConstants.getCameraName());
@@ -33,7 +32,6 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider{
             return Optional.empty();
         }
 
-        double smallestPoseDelta = 10e9;
         double distanceRecorder = -1;
         EstimatedRobotPose lowestDeltaPose = null;
 
@@ -66,17 +64,21 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider{
             double altDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), bestTransformPosition));
 
-            if (altDifference < smallestPoseDelta) {
-                smallestPoseDelta = altDifference;
+            if (altDifference < bestDifference * 0.2) {
                 lowestDeltaPose =
                         new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds());
                 distanceRecorder = target.getAlternateCameraToTarget().getTranslation().getNorm();
-            }
-            if (bestDifference < smallestPoseDelta) {
-                smallestPoseDelta = bestDifference;
+            } else if (bestDifference < altDifference * 0.2) {
                 lowestDeltaPose =
                         new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds());
                 distanceRecorder = target.getBestCameraToTarget().getTranslation().getNorm();
+            } else if (Math.abs(bestTransformPosition.toPose2d().getRotation().getDegrees() - prevEstimatedRobotPose.getRotation().getDegrees()) <
+            Math.abs(altTransformPosition.toPose2d().getRotation().getDegrees() - prevEstimatedRobotPose.getRotation().getDegrees())) {
+                lowestDeltaPose = new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds());
+                distanceRecorder = target.getBestCameraToTarget().getTranslation().getNorm();
+            } else {
+                lowestDeltaPose = new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds());
+                distanceRecorder = target.getAlternateCameraToTarget().getTranslation().getNorm();
             }
         }
 
@@ -101,5 +103,4 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider{
         return x.getTranslation().getDistance(y.getTranslation());
     }
 
-    
 }

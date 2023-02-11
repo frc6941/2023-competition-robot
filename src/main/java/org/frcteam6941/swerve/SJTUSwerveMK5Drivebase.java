@@ -133,8 +133,8 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         headingController.setIntegratorRange(-0.5, 0.5);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
-        poseAssistXController = new ProfiledPIDController(0.6, 0.001, 0.0, new Constraints(2.5, 1.2));
-        poseAssistYController = new ProfiledPIDController(0.6, 0.001, 0.0, new Constraints(2.5, 1.2));
+        poseAssistXController = new ProfiledPIDController(0.4, 0.001, 0.0, new Constraints(2.0, 1.5));
+        poseAssistYController = new ProfiledPIDController(0.4, 0.001, 0.0, new Constraints(2.0, 1.5));
         poseAssistXController.setIntegratorRange(-0.2, 0.2);
         poseAssistYController.setIntegratorRange(-0.2, 0.2);
         poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController, headingController);

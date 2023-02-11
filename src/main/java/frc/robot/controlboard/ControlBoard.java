@@ -162,7 +162,7 @@ public class ControlBoard {
 
     public double getManualIntakerPercentage() {
         if(operator.getController().getXButton()) {
-            return Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
+            return Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CONE;
         } else if (operator.getController().getYButton()) {
             return Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
         } else {

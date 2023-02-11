@@ -303,6 +303,7 @@ public class Coordinator implements Updatable {
         }
     }
 
+    /* Core methods to update set points within states & do automation. */
     public void updateStates() {
         if (state != STATE.PREP_SCORING) {
             autoTracking = false;
@@ -321,19 +322,12 @@ public class Coordinator implements Updatable {
                 coreIntakerPower = 0.0;
                 coreSuperstructureState = SuperstructureStateBuilder
                         .buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
-                if (requirePoseAssist) {
-                    coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
-                            scoreDirection);
-                } else {
-                    coreDirectionalPose2d = null;
-                }
-
-                if (!requirePoseAssist) {
-                    if (mArmAndExtender.isOnTarget()) {
-                        scoreFinishedTimer.start();
-                        coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
-                        setWantedAction(WANTED_ACTION.COMMUTE);
-                    }
+                coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
+                        scoreDirection);
+                if (mArmAndExtender.isOnTarget()) {
+                    scoreFinishedTimer.start();
+                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
+                    setWantedAction(WANTED_ACTION.COMMUTE);
                 }
                 break;
             case PREP_SCORING:
@@ -356,7 +350,7 @@ public class Coordinator implements Updatable {
                     autoTracking = false;
                 }
 
-                if (autoTracking && requirePoseAssist) {
+                if (autoTracking) {
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
@@ -378,19 +372,14 @@ public class Coordinator implements Updatable {
                 break;
             case LOADING:
                 if(scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
-                    coreIntakerPower = 0.4;
+                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CUBE;
                 } else {
-                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE;
+                    coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CONE;
                 }
                 
                 SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
                         loadDirection);
-                if (requirePoseAssist) {
-                    coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget,
-                            loadDirection);
-                } else {
-                    coreDirectionalPose2d = null;
-                }
+                coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
                 if (mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
                 }

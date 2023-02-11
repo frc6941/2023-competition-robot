@@ -40,7 +40,7 @@ public class SwerveLocalizer implements Localizer {
         vehicleAccelerationMeasuredFilter = new MovingAveragePose2d(accelerationBufferSize);
 
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(), currentPositions, new Pose2d(),
-                VecBuilder.fill(0.005, 0.005, Units.degreesToRadians(0.0005)),
+                VecBuilder.fill(0.003, 0.003, Units.degreesToRadians(0.0005)),
                 VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(0.05)));
     }
 

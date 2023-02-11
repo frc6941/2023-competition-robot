@@ -126,7 +126,7 @@ public final class Constants {
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
         public static final double CRUISE_V = 22000.0;
-        public static final double CRUIVE_ACC = 15000.0;
+        public static final double CRUIVE_ACC = 10000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
         public static final double ANGLE_OFFSET_TO_HORIZONTAL = -14.467;
@@ -149,9 +149,10 @@ public final class Constants {
 
     // Intake Constants
     public static final class SUBSYSTEM_INTAKE {
-        public static final double INTAKING_PERCENTAGE = 1.00;
+        public static final double INTAKING_PERCENTAGE_CONE = 0.80;
+        public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
         public static final double OUTTAKING_PERCENTAGE = -0.60;
-        public static final double HOLD_PERCENTAGE = 0.2;
+        public static final double HOLD_PERCENTAGE = 0.10;
     }
 
     // Superstructure Constants
@@ -199,8 +200,8 @@ public final class Constants {
             ),
             new CameraConstants(
                 "IP_VM2",
-                new Pose3d(0.0, -0.155, 0.750,
-                new Rotation3d(0.0, 0.0, -Math.PI))
+                new Pose3d(0.0, -0.135, 0.863,
+                new Rotation3d(0.0, 0.0, 0.0))
             )
         };
     }

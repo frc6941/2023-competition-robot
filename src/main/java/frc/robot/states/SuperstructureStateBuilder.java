@@ -3,6 +3,7 @@ package frc.robot.states;
 import org.frcteam6328.utils.LoggedTunableNumber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.Constants;
 
 public class SuperstructureStateBuilder {
     private static class Scoring {
@@ -179,6 +180,13 @@ public class SuperstructureStateBuilder {
             default:
                 return null;
         }
+    }
+
+    public static SuperstructureState buildHairTriggerSuperstructureState() {
+        return new SuperstructureState(
+            Rotation2d.fromDegrees(90.0),
+            Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
+        );
     }
 
     static {
