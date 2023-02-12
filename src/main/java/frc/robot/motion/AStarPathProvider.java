@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.frcteam6941.pathplanning.astar.AStarPathPlanner;
+import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 import org.frcteam6941.pathplanning.smoothing.FloydTrimming;
 import org.frcteam6941.pathplanning.universal.Path;
 
@@ -32,14 +33,14 @@ public class AStarPathProvider implements PathProvider {
     }
 
     @Override
-    public boolean buildPath(Translation2d startingPoint, Translation2d endingPoint) {
-        if(!planner.checkLegal(startingPoint, FieldObstacles.obstacleList) && !planner.checkLegal(endingPoint, FieldObstacles.obstacleList)) {
+    public boolean buildPath(Translation2d startingPoint, Translation2d endingPoint, Obstacle[] obstacles) {
+        if(!planner.checkLegal(startingPoint, obstacles) && !planner.checkLegal(endingPoint, obstacles)) {
             path = executor.submit(new Callable<Path>() {
                 @Override
                 public Path call() throws Exception {
                     return FloydTrimming.trimPath(planner.plan(
                     startingPoint, endingPoint,
-                    FieldObstacles.obstacleList,
+                    obstacles,
                     0.05, 0.05,
                     2.5, 1.0));
                 }

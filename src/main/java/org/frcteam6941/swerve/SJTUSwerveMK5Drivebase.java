@@ -3,6 +3,7 @@ package org.frcteam6941.swerve;
 import java.util.Optional;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.team254.lib.util.MovingAverage;
 import com.team254.lib.util.Util;
 
 import org.frcteam6941.control.DirectionalPose2d;
@@ -73,6 +74,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     private Translation2d translation = new Translation2d();
     private Pose2d pose = new Pose2d();
     private SwerveModulePosition[] swerveModsPositions;
+    private MovingAverage angularVelocity;
 
     private HolonomicDriveSignal inputDriveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
     private HolonomicDriveSignal driveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
@@ -107,7 +109,6 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
                         true, false)
         };
 
-
         // Module positions and swerve kinematics
         swerveModulePositions = new Translation2d[] {
                 new Translation2d(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_SIDE_WIDTH / 2.0,
@@ -133,13 +134,16 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         headingController.setIntegratorRange(-0.5, 0.5);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
-        poseAssistXController = new ProfiledPIDController(0.4, 0.001, 0.0, new Constraints(2.0, 1.5));
-        poseAssistYController = new ProfiledPIDController(0.4, 0.001, 0.0, new Constraints(2.0, 1.5));
+
+        poseAssistXController = new ProfiledPIDController(0.4, 0.001, 0.0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TARGET_POSE_FOLLOWING_CONSTRAINT);
+        poseAssistYController = new ProfiledPIDController(0.4, 0.001, 0.0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TARGET_POSE_FOLLOWING_CONSTRAINT);
         poseAssistXController.setIntegratorRange(-0.2, 0.2);
         poseAssistYController.setIntegratorRange(-0.2, 0.2);
-        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController, headingController);
+        poseAssistedFollower = new DirectionalPoseFollower(poseAssistXController, poseAssistYController);
+
         gyro.setYaw(0.0);
         swerveLocalizer.reset(new Pose2d(), getModulePositions());
+        angularVelocity = new MovingAverage(10);
     }
 
     /**
@@ -159,7 +163,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     @Override
     public void setLockHeading(boolean status) {
         if (this.isLockHeading != status) {
-            headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());
+            headingController.reset(swerveLocalizer.getLatestPose().getRotation().getDegrees(), getAngularVelocity());
         }
         this.isLockHeading = status;
     }
@@ -253,12 +257,15 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
 
     }
 
-    public void resetHeadingController() {
-        headingController.reset(gyro.getYaw().getDegrees(), getAngularVelocity());
+    public synchronized void resetHeadingController() {
+        headingController.reset(
+            swerveLocalizer.getLatestPose().getRotation().getDegrees(),
+            getAngularVelocity()
+        );
     }
 
-    public double getAngularVelocity() {
-        return swerveLocalizer.getSmoothedVelocity().getRotation().getDegrees();
+    public synchronized double getAngularVelocity() {
+        return angularVelocity.getAverage();
     }
 
     /**
@@ -430,21 +437,21 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
     @Override
     public void update(double time, double dt) {
         updateOdometry(time, dt);
-        driveSignal = inputDriveSignal;
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
                 getAngularVelocity(), time, dt);
-        Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(swerveLocalizer.getPoseAtTime(time), swerveLocalizer.getMeasuredVelocity(), inputDriveSignal);
+        Optional<HolonomicDriveSignal> poseAssistedSignal = poseAssistedFollower.update(this, inputDriveSignal);
         if (trajectorySignal.isPresent()) {
             setState(STATE.PATH_FOLLOWING);
             driveSignal = trajectorySignal.get();
         } else if (poseAssistedSignal.isPresent()) {
             setState(STATE.POSE_ASSISTED);
             driveSignal = poseAssistedSignal.get();
+        } else {
+            driveSignal = inputDriveSignal;
         }
 
-        if (isLockHeading && !poseAssistedFollower.isThetaRestricted()) {
-            headingTarget = AngleNormalization.placeInAppropriate0To360Scope(gyro.getYaw().getDegrees(), headingTarget);
-            double rotation = headingController.calculate(gyro.getYaw().getDegrees(), headingTarget);
+        if (isLockHeading) {
+            double rotation = headingController.calculate(swerveLocalizer.getLatestPose().getRotation().getDegrees(), headingTarget);
             driveSignal = new HolonomicDriveSignal(driveSignal.getTranslation(), rotation,
                     driveSignal.isFieldOriented(), driveSignal.isOpenLoop());
         }
@@ -473,6 +480,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         }
 
         gyro.updateIO();
+        angularVelocity.addNumber(gyro.getRaw()[2]);
     }
 
     @Override
@@ -513,9 +521,19 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         if (driveSignal == null) {
             chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
         } else {
-            double x = driveSignal.getTranslation().getX();
-            double y = driveSignal.getTranslation().getY();
-            double rotation = driveSignal.getRotation();
+            double x;
+            double y;
+            double rotation;
+            if (driveSignal.isOpenLoop()) {
+                x = driveSignal.getTranslation().getX() * MAX_SPEED;
+                y = driveSignal.getTranslation().getY() * MAX_SPEED;
+                rotation = driveSignal.getRotation() * 2.0;
+            } else {
+                x = driveSignal.getTranslation().getX();
+                y = driveSignal.getTranslation().getY();
+                rotation = driveSignal.getRotation();
+            }
+
             if (driveSignal.isFieldOriented()) {
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rotation, Rotation2d.fromDegrees(getYaw()));
             } else {

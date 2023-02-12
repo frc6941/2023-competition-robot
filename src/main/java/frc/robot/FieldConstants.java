@@ -266,12 +266,12 @@ public final class FieldConstants {
 
     static {
         TEST_TAGS.add(
-                new AprilTag(1,
-                        new Pose3d(5.00, 0.00, 1.069,
-                                new Rotation3d(0.0, 0.0, Math.PI))));
+                new AprilTag(6,
+                        new Pose3d(0.0, 0.0, 0.40,
+                                new Rotation3d(0.0, 0.0, 0.0))));
         TEST_TAGS.add(
                 new AprilTag(4,
-                        new Pose3d(4.26, 0.00, 0.66,
+                        new Pose3d(4.85, 0.00, 0.700,
                                 new Rotation3d(0.0, 0.0, Math.PI))));
         TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 5.0, 2.0);
     }

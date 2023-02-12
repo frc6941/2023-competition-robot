@@ -44,4 +44,9 @@ public class PlaceholderGyro implements Gyro{
     public GyroPeriodicIOAutoLogged getIO() {
         return mPeriodicIO;
     }
+
+    @Override
+    public double[] getRaw() {
+        return null;
+    }
 }

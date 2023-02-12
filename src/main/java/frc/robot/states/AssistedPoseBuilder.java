@@ -29,14 +29,14 @@ public class AssistedPoseBuilder {
                 return new DirectionalPose2d(
                         FieldConstants.allianceFlip(
                                 new Pose2d(
-                                        new Translation2d(0.0, loadingLeftQuaterY.get()),
+                                        new Translation2d(FieldConstants.fieldLength, loadingLeftQuaterY.get()),
                                         Rotation2d.fromDegrees(directionDegrees))),
                         false, true, true);
             case DOUBLE_SUBSTATION_INNER:
                 return new DirectionalPose2d(
                         FieldConstants.allianceFlip(
                                 new Pose2d(
-                                        new Translation2d(0.0, loadingRightQuaterY.get()),
+                                        new Translation2d(FieldConstants.fieldLength, loadingRightQuaterY.get()),
                                         Rotation2d.fromDegrees(directionDegrees))),
                         false, true, true);
             case GROUND:

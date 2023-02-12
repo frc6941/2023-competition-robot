@@ -198,16 +198,16 @@ public class SuperstructureStateBuilder {
         Scoring.highRowCubeLengthNear.initDefault(1.40);
 
         // Mid Row - Near Side
-        Scoring.midRowConeAngleNear.initDefault(5);
-        Scoring.midRowConeLengthNear.initDefault(1.20);
+        Scoring.midRowConeAngleNear.initDefault(12.5);
+        Scoring.midRowConeLengthNear.initDefault(0.920);
         Scoring.midRowCubeAngleNear.initDefault(0.0);
         Scoring.midRowConeLengthNear.initDefault(1.20);
 
         // Low Row - Near Side
-        Scoring.lowRowConeAngleNear.initDefault(-60.0);
-        Scoring.lowRowConeLengthNear.initDefault(1.00);
-        Scoring.lowRowCubeAngleNear.initDefault(-62.0);
-        Scoring.lowRowConeLengthNear.initDefault(1.00);
+        Scoring.lowRowConeAngleNear.initDefault(-53);
+        Scoring.lowRowConeLengthNear.initDefault(0.885);
+        Scoring.lowRowCubeAngleNear.initDefault(-53);
+        Scoring.lowRowConeLengthNear.initDefault(0.885);
 
         // Mid Row - Far Side
         Scoring.midRowConeAngleFar.initDefault(200);
@@ -228,12 +228,12 @@ public class SuperstructureStateBuilder {
 
         /* Loading */
         // Loading - Double Substation - Near Side
-        Loading.shelfAngleNear.initDefault(3.0);
-        Loading.shelfLengthNear.initDefault(1.00);
+        Loading.shelfAngleNear.initDefault(7.5);
+        Loading.shelfLengthNear.initDefault(1.05);
 
         // Loading - Double Substation - Far Side
-        Loading.shelfAngleFar.initDefault(180.0);
-        Loading.shelfLengthFar.initDefault(1.00);
+        Loading.shelfAngleFar.initDefault(175.0);
+        Loading.shelfLengthFar.initDefault(1.05);
 
         // Loading - Ground - Near Side
         Loading.groundAngleNear.initDefault(-66.0);

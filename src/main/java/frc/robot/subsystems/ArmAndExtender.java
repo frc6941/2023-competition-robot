@@ -8,6 +8,8 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.team254.lib.drivers.LazyTalonFX;
@@ -16,6 +18,7 @@ import com.team254.lib.util.Util;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -37,11 +40,14 @@ public class ArmAndExtender implements Updatable {
         public double armAngle = 0.0;
         public double armTrajectoryVelocitySetPoint = 0.0;
         public double armTrajectoryAccelerationSetPoint = 0.0;
+        public boolean armRevLimitReached = false;
 
         public double extenderCurrent = 0.0;
         public double extenderVoltage = 0.0;
         public double extenderTemperature = 0.0;
         public double extenderLength = 0.80;
+
+        public boolean retractInMotionOverride = false;
 
         // OUTPUT
         public String armControlState = ARM_STATE.HOMING.toString();
@@ -57,6 +63,8 @@ public class ArmAndExtender implements Updatable {
     private final LazyTalonFX armMotorLeader = new LazyTalonFX(Constants.CANID.ARM_MOTOR_LEADER);
     private final LazyTalonFX armMotorFollower = new LazyTalonFX(Constants.CANID.ARM_MOTOR_FOLLOWER);
     private final LazyTalonFX extenderMotor = new LazyTalonFX(Constants.CANID.EXTENDER_MOTOR);
+    private final DigitalInput armRevLimitSwitch = new DigitalInput(Constants.DIO_ID.ARM_LIMIT_SWTICH_PORT);
+
     private final TalonFXSimCollection simArmMotor = armMotorLeader.getSimCollection();
     private final TalonFXSimCollection simExtenderMotor = extenderMotor.getSimCollection();
 
@@ -119,6 +127,8 @@ public class ArmAndExtender implements Updatable {
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
         armMotorLeader.enableVoltageCompensation(true);
         armMotorLeader.configVoltageCompSaturation(12.0);
+        armMotorLeader.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
+        armMotorLeader.setInverted(InvertType.None);
 
         armMotorFollower.configFactoryDefault(50);
         armMotorFollower.setNeutralMode(NeutralMode.Brake);
@@ -201,6 +211,10 @@ public class ArmAndExtender implements Updatable {
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);
     }
 
+    public void setRetractInMotionOverrdie(boolean override) {
+        mPeriodicIO.retractInMotionOverride = override;
+    }
+
     public boolean isHomed() {
         return armIsHomed && extenderIsHomed;
     }
@@ -226,6 +240,7 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
+        mPeriodicIO.armRevLimitReached = !armRevLimitSwitch.get();
         if(armMotorLeader.getControlMode() == ControlMode.MotionMagic) {
             mPeriodicIO.armTrajectoryVelocitySetPoint = Conversions
                 .falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(0), Constants.SUBSYSTEM_ARM.GEAR_RATIO);
@@ -247,7 +262,7 @@ public class ArmAndExtender implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (armMotorLeader.isRevLimitSwitchClosed() == 1 && !armIsHomed) {
+        if ((mPeriodicIO.armRevLimitReached || mPeriodicIO.armCurrent > 12.0) && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
@@ -299,7 +314,7 @@ public class ArmAndExtender implements Updatable {
                 mPeriodicIO.extenderFeedforward = 0.0;
                 break;
             case LENGTH:
-                if(!Util.epsilonEquals(mPeriodicIO.armDemand, mPeriodicIO.armAngle, 10.0)){
+                if(!Util.epsilonEquals(mPeriodicIO.armDemand, mPeriodicIO.armAngle, 10.0) && !mPeriodicIO.retractInMotionOverride){
                     mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
                 } else {
                     mPeriodicIO.extenderDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE

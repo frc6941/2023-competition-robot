@@ -1,18 +1,22 @@
 package frc.robot.coordinators;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
+import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.team254.lib.util.Util;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -77,16 +81,19 @@ public class Coordinator implements Updatable {
     // Core control variables
     public SuperstructureState coreSuperstructureState = new SuperstructureState();
     public double coreIntakerPower = 0.0;
+    public double coreIntakeHoldPower = Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CONE;
     public DirectionalPose2d coreDirectionalPose2d = null;
 
-    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CUBE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
-    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CUBE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
+    public LoadingTarget loadingTarget = new LoadingTarget(GamePiece.CONE, LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
+    public ScoringTarget scoringTarget = new ScoringTarget(GamePiece.CONE, SCORING_ROW.HIGH, SCORING_GRID.OUTER,
             SCORING_SIDE.OUTER);
-    public Direction loadDirection = Direction.FAR;
+    public Direction loadDirection = Direction.NEAR;
     public Direction commuteDirection = Direction.FAR;
     public Direction scoreDirection = Direction.NEAR;
 
     public boolean gotGamePieceRecord = false;
+    public Double loadAutoXDirectionVelocity = null;
+    public SlewRateLimiter loadXVelocitySlewRateLimit = new SlewRateLimiter(0.30, -0.60, 0.0);
     public Timer scoreFinishedTimer = new Timer();
 
     // Path planning related
@@ -102,10 +109,6 @@ public class Coordinator implements Updatable {
     public boolean inManual = false;
 
     public SuperstructureState desiredManualSuperstructureState = null;
-
-    // Swerve setting related variables
-    private boolean swerveSelfLocking = false;
-    private Double swerveSelfLockheadingRecord;
 
     // TODO: Change this to physical button and trigger board after simulation
     private LoggedDashboardChooser<GamePiece> simulatedTargetGamepiece = new LoggedDashboardChooser<GamePiece>(
@@ -153,8 +156,6 @@ public class Coordinator implements Updatable {
 
         if (mControlBoard.zeroGyro()) {
             mSwerve.resetYaw(0.0);
-            swerveSelfLockheadingRecord = null;
-            mSwerve.resetHeadingController();
             mSwerve.resetPose(new Pose2d(mSwerve.getPose().getTranslation(),
                     new Rotation2d()));
         }
@@ -252,28 +253,22 @@ public class Coordinator implements Updatable {
      * decided.
      */
     public synchronized void updateSwerve() {
-        mPeriodicIO.outSwerveTranslation = mPeriodicIO.inSwerveTranslation;
-        mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
+        if (loadAutoXDirectionVelocity != null && state == STATE.LOADING) {
+            mPeriodicIO.outSwerveTranslation = new Translation2d(
+                    loadXVelocitySlewRateLimit.calculate(loadAutoXDirectionVelocity), 0.0);
+            mPeriodicIO.outSwerveRotation = 0.0;
+        } else {
+            mPeriodicIO.outSwerveTranslation = mPeriodicIO.inSwerveTranslation;
+            mPeriodicIO.outSwerveRotation = mPeriodicIO.inSwerveRotation;
+        }
         if (mPeriodicIO.inSwervePoseAssisted != null && mPeriodicIO.inSwervePoseAssisted.isThetaRestricted()) {
             mPeriodicIO.outSwerveLockHeading = false;
-            mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwervePoseAssisted.getRotation().getDegrees();
-            swerveSelfLockheadingRecord = null;
+            mPeriodicIO.outSwerveHeadingTarget = 0.0;
         } else if (mPeriodicIO.inSwerveSnapRotation != SWERVE_CARDINAL.NONE) {
             mPeriodicIO.outSwerveLockHeading = true;
             mPeriodicIO.outSwerveHeadingTarget = mPeriodicIO.inSwerveSnapRotation.degrees;
-            swerveSelfLockheadingRecord = null;
-        } else if (Math.abs(mPeriodicIO.outSwerveRotation) <= 0.10
-                && Math.abs(mPeriodicIO.inSwerveAngularVelocity) < 20.0
-                && swerveSelfLocking) {
-            mPeriodicIO.outSwerveLockHeading = true;
-            swerveSelfLockheadingRecord = Optional
-                    .ofNullable(swerveSelfLockheadingRecord)
-                    .orElse(mPeriodicIO.inSwerveFieldHeadingAngle);
-            mPeriodicIO.outSwerveHeadingTarget = swerveSelfLockheadingRecord;
         } else {
             mPeriodicIO.outSwerveLockHeading = false;
-            mPeriodicIO.outSwerveHeadingTarget = 0.0;
-            swerveSelfLockheadingRecord = null;
         }
     }
 
@@ -305,6 +300,12 @@ public class Coordinator implements Updatable {
 
     /* Core methods to update set points within states & do automation. */
     public void updateStates() {
+        if (scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
+            coreIntakeHoldPower = Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CUBE;
+        } else {
+            coreIntakeHoldPower = Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CONE;
+        }
+
         if (state != STATE.PREP_SCORING) {
             autoTracking = false;
             wantAutoTracking = false;
@@ -317,13 +318,25 @@ public class Coordinator implements Updatable {
             desiredManualSuperstructureState = null;
         }
 
+        if (state != STATE.LOADING) {
+            loadAutoXDirectionVelocity = null;
+            loadXVelocitySlewRateLimit.reset(0.0);
+        }
+
+        if (state != STATE.SCORING) {
+            mArmAndExtender.setRetractInMotionOverrdie(false);
+        }
+
         switch (state) {
             case SCORING:
                 coreIntakerPower = 0.0;
+                mArmAndExtender.setRetractInMotionOverrdie(true);
                 coreSuperstructureState = SuperstructureStateBuilder
                         .buildScoringSupertructureStateLowerDelta(scoringTarget, scoreDirection);
-                coreDirectionalPose2d = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
-                        scoreDirection);
+                // coreDirectionalPose2d =
+                // AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
+                // scoreDirection);
+                coreDirectionalPose2d = null;
                 if (mArmAndExtender.isOnTarget()) {
                     scoreFinishedTimer.start();
                     coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
@@ -332,15 +345,25 @@ public class Coordinator implements Updatable {
                 break;
             case PREP_SCORING:
                 coreIntakerPower = 0.0;
-                coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget,
-                        scoreDirection);
-                DirectionalPose2d targetPose = AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
-                        scoreDirection);
+                // DirectionalPose2d targetPose =
+                // AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
+                // // scoreDirection);
+                DirectionalPose2d targetPose = new DirectionalPose2d(
+                        new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(-180.0)), true, true, true);
+                if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
+                        .minus(targetPose.getRotation()).getDegrees()) < 45.0
+                        && targetPose.minus(mSwerve.getLocalizer().getLatestPose()).getTranslation().getNorm() < 1.00) {
+                    coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget,
+                            scoreDirection);
+                } else {
+                    coreSuperstructureState = SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
+                }
+
                 if (wantAutoTracking && !autoTracking) {
                     pathTrackingStartTimer.reset();
                     pathTrackingStartTimer.stop();
                     if (pathProvider.buildPath(mSwerve.getLocalizer().getLatestPose().getTranslation(),
-                            targetPose.getTranslation())) {
+                            targetPose.getTranslation(), new Obstacle[] {})) {
                         autoTracking = true;
                     }
                 } else if (!wantAutoTracking && autoTracking) {
@@ -351,10 +374,11 @@ public class Coordinator implements Updatable {
                 }
 
                 if (autoTracking) {
+                    System.out.println("Testing");
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
-                                new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 3.0),
+                                new Pose2d(path.getPathPointByDistance(pathTrackingStartTimer.get() * 1.5),
                                         targetPose.getRotation()),
                                 true, true, true);
                     }, () -> {
@@ -371,19 +395,48 @@ public class Coordinator implements Updatable {
                 coreDirectionalPose2d = null;
                 break;
             case LOADING:
-                if(scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
+                if (scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
                     coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CUBE;
                 } else {
                     coreIntakerPower = Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CONE;
                 }
-                
                 SuperstructureState tempState = SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget,
                         loadDirection);
-                coreDirectionalPose2d = AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget, loadDirection);
+                // coreDirectionalPose2d =
+                // AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget,
+                // loadDirection);
+                coreDirectionalPose2d = new DirectionalPose2d(new Pose2d(4.5, 0.0, Rotation2d.fromDegrees(0.0)), false,
+                        true, true);
                 if (mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
+                    tempState.armAngle = loadDirection == Direction.NEAR
+                            ? tempState.armAngle.plus(Rotation2d.fromDegrees(10))
+                            : tempState.armAngle.plus(Rotation2d.fromDegrees(-10));
+                    if (mArmAndExtender.isOnTarget()) {
+                        loadAutoXDirectionVelocity = -0.15;
+                        if (mPeriodicIO.inSwerveTranslation.getX() < -0.15) {
+                            System.out.println("Teleop want commute auto.");
+                            setWantedAction(WANTED_ACTION.COMMUTE);
+                        }
+                    } else {
+                        loadAutoXDirectionVelocity = 0.0;
+                    }
+                } else {
+                    if (!Util.epsilonEquals(coreDirectionalPose2d.getX(), mSwerve.getLocalizer().getLatestPose().getX(),
+                            0.2) && mArmAndExtender.isOnTarget()) {
+                        loadAutoXDirectionVelocity = 0.25;
+                    } else {
+                        loadAutoXDirectionVelocity = 0.0;
+                    }
                 }
-                coreSuperstructureState = tempState;
+
+                if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
+                        .minus(coreDirectionalPose2d.getRotation()).getDegrees()) < 40.0) {
+                    coreSuperstructureState = tempState;
+                } else {
+                    coreSuperstructureState = SuperstructureStateBuilder
+                            .buildCommutingSuperstructureState(commuteDirection);
+                }
                 break;
             case MANUAL:
                 if (mArmAndExtender.isHomed()) {
@@ -405,6 +458,7 @@ public class Coordinator implements Updatable {
                     coreIntakerPower = mPeriodicIO.inManualIntakerPercentage;
                     coreDirectionalPose2d = null;
                 }
+                break;
         }
     }
 
@@ -434,7 +488,7 @@ public class Coordinator implements Updatable {
                     break;
                 case SCORING:
                     if (wantedAction == WANTED_ACTION.COMMUTE) {
-                        if (scoreFinishedTimer.get() > 0.7) {
+                        if (scoreFinishedTimer.get() > 1.0) {
                             scoreFinishedTimer.stop();
                             scoreFinishedTimer.reset();
                             setState(STATE.COMMUTING);
@@ -547,28 +601,18 @@ public class Coordinator implements Updatable {
             updateDirections();
         }
         updateStates();
-        updateSwerve();
         updateIndicator();
         updateRumble(time);
+
+        updateSwerve();
     }
 
     @Override
     public synchronized void write(double time, double dt) {
         mArmAndExtender.setSuperstructureState(coreSuperstructureState);
-        // if (requirePoseAssist) {
-        // mSwerve.setTargetPose(coreDirectionalPose2d);
-        // } else {
-        // mSwerve.setTargetPose(null);
-        // }
-
-        if (mControlBoard.getAutoTrackingContinuous()) {
-            mSwerve.setTargetPose(
-                    new DirectionalPose2d(new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(-180.0)), false, true, true));
-        } else {
-            mSwerve.cancelPoseAssisit();
-        }
-
+        mSwerve.setTargetPose(coreDirectionalPose2d);
         mIntaker.setIntakerPower(coreIntakerPower);
+        mIntaker.setHoldPower(coreIntakeHoldPower);
 
         // Swerve Drive Logic
         if (mPeriodicIO.inSwerveBrake) {
@@ -580,6 +624,10 @@ public class Coordinator implements Updatable {
                 mSwerve.setState(SJTUSwerveMK5Drivebase.STATE.DRIVE);
             }
 
+            if (coreDirectionalPose2d != null && coreDirectionalPose2d.isThetaRestricted()) {
+                mPeriodicIO.outSwerveHeadingTarget = coreDirectionalPose2d.getRotation().getDegrees();
+                mPeriodicIO.outSwerveLockHeading = true;
+            }
             mSwerve.setLockHeading(mPeriodicIO.outSwerveLockHeading);
             mSwerve.setHeadingTarget(mPeriodicIO.outSwerveHeadingTarget);
             mSwerve.drive(mPeriodicIO.outSwerveTranslation, mPeriodicIO.outSwerveRotation, true, true);
