@@ -19,12 +19,12 @@ public class DirectionalPoseFollower {
         this.yController = yController;
     }
 
-    public void setTargetPose(DirectionalPose2d targetPose) {
+    public void setTargetPose(DirectionalPose2d targetPose, Pose2d currentPosition, Pose2d currentVelocity) {
+        if(this.targetPose == null) {
+            xController.reset(currentPosition.getX(), currentVelocity.getX());
+            yController.reset(currentPosition.getY(), currentVelocity.getY());
+        }
         this.targetPose = targetPose;
-    }
-
-    public void setTargetPose(Pose2d targetPose) {
-        this.targetPose = new DirectionalPose2d(targetPose, true, true, true);
     }
 
     public DirectionalPose2d getTargetPose() {

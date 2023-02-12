@@ -16,7 +16,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -24,7 +23,6 @@ import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
 import frc.robot.motion.AStarPathProvider;
 import frc.robot.motion.PathProvider;
-import frc.robot.states.AssistedPoseBuilder;
 import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
 import frc.robot.states.LoadingTarget;
@@ -278,13 +276,9 @@ public class Coordinator implements Updatable {
      */
     public void updateDirections() {
         if (scoringTarget.getTargetGamePiece() == GamePiece.CUBE) {
-            loadDirection = Direction.NEAR;
+            loadDirection = Direction.FAR;
             commuteDirection = Direction.FAR;
-            if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
-                scoreDirection = Direction.NEAR;
-            } else {
-                scoreDirection = Direction.FAR;
-            }
+            scoreDirection = Direction.FAR;
         } else {
             if (scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                 loadDirection = Direction.NEAR;
@@ -292,8 +286,8 @@ public class Coordinator implements Updatable {
                 scoreDirection = Direction.NEAR;
             } else {
                 loadDirection = Direction.FAR;
-                commuteDirection = Direction.NEAR;
-                scoreDirection = Direction.NEAR;
+                commuteDirection = Direction.FAR;
+                scoreDirection = Direction.FAR;
             }
         }
     }
@@ -349,14 +343,14 @@ public class Coordinator implements Updatable {
                 // AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
                 // // scoreDirection);
                 DirectionalPose2d targetPose = new DirectionalPose2d(
-                        new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(-180.0)), true, true, true);
+                        new Pose2d(1.40, 1.00, Rotation2d.fromDegrees(-180.0)), true, true, true);
                 if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
                         .minus(targetPose.getRotation()).getDegrees()) < 45.0
                         && targetPose.minus(mSwerve.getLocalizer().getLatestPose()).getTranslation().getNorm() < 1.00) {
                     coreSuperstructureState = SuperstructureStateBuilder.buildScoringSupertructureState(scoringTarget,
                             scoreDirection);
                 } else {
-                    coreSuperstructureState = SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
+                    coreSuperstructureState = SuperstructureStateBuilder.buildHairTriggerSuperstructureState();
                 }
 
                 if (wantAutoTracking && !autoTracking) {
@@ -374,7 +368,6 @@ public class Coordinator implements Updatable {
                 }
 
                 if (autoTracking) {
-                    System.out.println("Testing");
                     pathProvider.getPath().ifPresentOrElse(path -> {
                         pathTrackingStartTimer.start();
                         coreDirectionalPose2d = new DirectionalPose2d(
@@ -405,7 +398,7 @@ public class Coordinator implements Updatable {
                 // coreDirectionalPose2d =
                 // AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget,
                 // loadDirection);
-                coreDirectionalPose2d = new DirectionalPose2d(new Pose2d(4.5, 0.0, Rotation2d.fromDegrees(0.0)), false,
+                coreDirectionalPose2d = new DirectionalPose2d(new Pose2d(5.50, 1.00, Rotation2d.fromDegrees(0.0)), false,
                         true, true);
                 if (mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
@@ -413,8 +406,11 @@ public class Coordinator implements Updatable {
                             ? tempState.armAngle.plus(Rotation2d.fromDegrees(10))
                             : tempState.armAngle.plus(Rotation2d.fromDegrees(-10));
                     if (mArmAndExtender.isOnTarget()) {
-                        loadAutoXDirectionVelocity = -0.15;
-                        if (mPeriodicIO.inSwerveTranslation.getX() < -0.15) {
+                        loadAutoXDirectionVelocity = -0.20;
+                        if(coreDirectionalPose2d.getX() - mSwerve.getLocalizer().getLatestPose().getX() > 1.0) {
+                            tempState = SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
+                        }
+                        if (mPeriodicIO.inSwerveTranslation.getX() < -0.10) {
                             System.out.println("Teleop want commute auto.");
                             setWantedAction(WANTED_ACTION.COMMUTE);
                         }
@@ -589,6 +585,10 @@ public class Coordinator implements Updatable {
         mPeriodicIO.inSwervePoseAssisted = mSwerve.getTargetPose();
         mPeriodicIO.inIntakerHasGamePiece = mIntaker.hasGamePiece();
         mPeriodicIO.inCurrentSuperstructureState = mArmAndExtender.getCurrentSuperstructureState();
+
+        scoringTarget.setTargetGamePiece(simulatedTargetGamepiece.get());
+        loadingTarget.setTargetGamePiece(simulatedTargetGamepiece.get());
+        scoringTarget.setScoringRow(simulatedScoringRowChooser.get());
     }
 
     @Override

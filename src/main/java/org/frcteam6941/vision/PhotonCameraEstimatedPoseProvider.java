@@ -1,5 +1,6 @@
 package org.frcteam6941.vision;
 
+import java.lang.StackWalker.Option;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -64,21 +65,16 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider 
             double altDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), bestTransformPosition));
 
-            if (altDifference < bestDifference * 0.2) {
+            if(target.getPoseAmbiguity() > 0.20 || target.getBestCameraToTarget().getTranslation().getNorm() > 7.0) {
+                return Optional.empty();
+            } else if (altDifference < bestDifference) {
                 lowestDeltaPose =
                         new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds());
                 distanceRecorder = target.getAlternateCameraToTarget().getTranslation().getNorm();
-            } else if (bestDifference < altDifference * 0.2) {
+            } else if (bestDifference <= altDifference) {
                 lowestDeltaPose =
                         new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds());
                 distanceRecorder = target.getBestCameraToTarget().getTranslation().getNorm();
-            } else if (Math.abs(bestTransformPosition.toPose2d().getRotation().getDegrees() - prevEstimatedRobotPose.getRotation().getDegrees()) <
-            Math.abs(altTransformPosition.toPose2d().getRotation().getDegrees() - prevEstimatedRobotPose.getRotation().getDegrees())) {
-                lowestDeltaPose = new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds());
-                distanceRecorder = target.getBestCameraToTarget().getTranslation().getNorm();
-            } else {
-                lowestDeltaPose = new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds());
-                distanceRecorder = target.getAlternateCameraToTarget().getTranslation().getNorm();
             }
         }
 

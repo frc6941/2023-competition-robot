@@ -23,16 +23,15 @@ public class RobotStateEstimator implements Updatable {
     private SJTUSwerveMK5Drivebase drivebase = SJTUSwerveMK5Drivebase.getInstance();
     private ArrayList<EstimatedPoseProvider> providers = new ArrayList<>();
 
-    private PolynomialRegression xyStdDevModel =
-            new PolynomialRegression(
-                new double[] {
-                  0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
-                  3.223358, 4.093358
-                },
-                new double[] {
-                  0.005, 0.015, 0.02, 0.04, 0.5, 0.10, 0.15, 0.25, 0.35, 0.40
-                },
-                1);
+    private PolynomialRegression xyStdDevModel = new PolynomialRegression(
+            new double[] {
+                    0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
+                    3.223358, 4.093358
+            },
+            new double[] {
+                    0.005, 0.015, 0.02, 0.04, 0.5, 0.10, 0.15, 0.25, 0.35, 0.40
+            },
+            1);
 
     private static RobotStateEstimator instance;
 
@@ -59,19 +58,17 @@ public class RobotStateEstimator implements Updatable {
         for (EstimatedPoseProvider poseProvider : providers) {
             try {
                 Optional<EstimatedPoseWithDistance> ePose = poseProvider.getEstimatedPose(localizer.getLatestPose());
-                if(ePose.isPresent()) {
-                    Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
-                    EstimatedPoseWithDistance eposeWithDistance = ePose.get();
-                    Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
-                            eposeWithDistance.pose.estimatedPose.toPose2d());
-                    double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
-                    if (ePose.get().distance < 4.0) {
+                if (ePose.isPresent()) {
+                    if (Math.abs(ePose.get().pose.estimatedPose.toPose2d().getRotation().getDegrees())  > 1e-4  && ePose.get().distance < 3.5) {
+                        Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
+                        EstimatedPoseWithDistance eposeWithDistance = ePose.get();
+                        Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
+                                eposeWithDistance.pose.estimatedPose.toPose2d());
+                        double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
                         localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
-                        eposeWithDistance.pose.estimatedPose.toPose2d(),
-                            new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(40.0))
-                        );
+                                eposeWithDistance.pose.estimatedPose.toPose2d(),
+                                new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(20.0)));
                     }
-                    
                 } else {
                     Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", false);
                 }
@@ -82,13 +79,12 @@ public class RobotStateEstimator implements Updatable {
                     Logger.getInstance().recordOutput("Vision/True X", drivebase.getPose().getX());
                     Logger.getInstance().recordOutput("Vision/True Y", drivebase.getPose().getY());
                     Logger.getInstance().recordOutput("Vision/Distance", ePose.get().distance);
-                    
+
                 }
-                
 
             } catch (Exception e) {
                 Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
-                                    new Pose2d(-1000.0, -1000.0, Rotation2d.fromDegrees(0.0)));
+                        new Pose2d(-1000.0, -1000.0, Rotation2d.fromDegrees(0.0)));
                 throw e;
             }
 
@@ -102,7 +98,6 @@ public class RobotStateEstimator implements Updatable {
 
     @Override
     public synchronized void telemetry() {
-        // Auto Generated Method
     }
 
     @Override

@@ -156,11 +156,12 @@ public final class Constants {
 
     // Intake Constants
     public static final class SUBSYSTEM_INTAKE {
-        public static final double INTAKING_PERCENTAGE_CONE = 0.80;
+        public static final double INTAKING_PERCENTAGE_CONE = 1.00;
         public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
         public static final double OUTTAKING_PERCENTAGE = -0.60;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
         public static final double HOLD_PERCENTAGE_CONE = 0.50;
+        public static final double HOLD_DELAY = 0.4;
     }
 
     // Superstructure Constants
@@ -203,12 +204,12 @@ public final class Constants {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants(
                 "IP_VM1",
-                new Pose3d(0.0, 0.112, 0.775, 
+                new Pose3d(0.0, 0.12, 0.576, 
                 new Rotation3d(0.0, 0.0, -Math.PI))
             ),
             new CameraConstants(
                 "IP_VM2",
-                new Pose3d(0.0, -0.135, 0.863,
+                new Pose3d(0.0, -0.12, 0.550,
                 new Rotation3d(0.0, 0.0, 0.0))
             )
         };

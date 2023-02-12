@@ -317,7 +317,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
             poseAssistedFollower.clear();
             return;
         }
-        poseAssistedFollower.setTargetPose(targetPose);
+        poseAssistedFollower.setTargetPose(targetPose, swerveLocalizer.getLatestPose(), swerveLocalizer.getMeasuredVelocity());
     }
 
     public DirectionalPose2d getTargetPose() {
@@ -497,6 +497,9 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         Logger.getInstance().recordOutput("Drivetrain/SwerveModuleStates", getModuleStates());
         Logger.getInstance().processInputs("Drivetrain/Gyro", gyro.getIO());
         Logger.getInstance().recordOutput("Drivetrain/Pose", swerveLocalizer.getLatestPose());
+        Logger.getInstance().recordOutput("Drivetrain/Velocity", swerveLocalizer.getMeasuredVelocity());
+        Logger.getInstance().recordOutput("Drivetrain/Velocity Smoothed", swerveLocalizer.getSmoothedVelocity());
+        Logger.getInstance().recordOutput("Drivetrain/Acceleration", swerveLocalizer.getMeasuredAcceleration());
 
         if (Constants.AUTO_TUNING) {
             this.trajectoryFollower.sendData();

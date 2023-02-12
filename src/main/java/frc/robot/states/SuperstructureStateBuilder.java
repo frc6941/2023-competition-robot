@@ -184,7 +184,7 @@ public class SuperstructureStateBuilder {
 
     public static SuperstructureState buildHairTriggerSuperstructureState() {
         return new SuperstructureState(
-            Rotation2d.fromDegrees(90.0),
+            Rotation2d.fromDegrees(120.0),
             Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
         );
     }
@@ -193,9 +193,9 @@ public class SuperstructureStateBuilder {
         /* Scoring */
         // High Row - Near Side
         Scoring.highRowConeAngleNear.initDefault(25);
-        Scoring.highRowConeLengthNear.initDefault(1.40);
+        Scoring.highRowConeLengthNear.initDefault(1.35);
         Scoring.highRowCubeAngleNear.initDefault(0);
-        Scoring.highRowCubeLengthNear.initDefault(1.40);
+        Scoring.highRowCubeLengthNear.initDefault(1.35);
 
         // Mid Row - Near Side
         Scoring.midRowConeAngleNear.initDefault(12.5);
@@ -228,7 +228,7 @@ public class SuperstructureStateBuilder {
 
         /* Loading */
         // Loading - Double Substation - Near Side
-        Loading.shelfAngleNear.initDefault(7.5);
+        Loading.shelfAngleNear.initDefault(5.0);
         Loading.shelfLengthNear.initDefault(1.05);
 
         // Loading - Double Substation - Far Side

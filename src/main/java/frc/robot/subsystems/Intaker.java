@@ -44,7 +44,7 @@ public class Intaker implements Updatable{
     private Intaker() {
         intakerMotor.restoreFactoryDefaults();
         intakerMotor.setIdleMode(IdleMode.kBrake);
-        intakerMotor.setSmartCurrentLimit(8, 4);
+        intakerMotor.setSmartCurrentLimit(15, 5);
     }
 
     public void setIntakerPower(double power) {
@@ -60,7 +60,7 @@ public class Intaker implements Updatable{
     }
 
     public boolean hasGamePiece() {
-        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, 0.2);
+        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY);
     }
 
     @Override
