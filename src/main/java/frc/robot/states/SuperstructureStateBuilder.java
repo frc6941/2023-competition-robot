@@ -204,9 +204,9 @@ public class SuperstructureStateBuilder {
         Scoring.midRowConeLengthNear.initDefault(1.20);
 
         // Low Row - Near Side
-        Scoring.lowRowConeAngleNear.initDefault(-53);
+        Scoring.lowRowConeAngleNear.initDefault(-30);
         Scoring.lowRowConeLengthNear.initDefault(0.885);
-        Scoring.lowRowCubeAngleNear.initDefault(-53);
+        Scoring.lowRowCubeAngleNear.initDefault(-30);
         Scoring.lowRowConeLengthNear.initDefault(0.885);
 
         // Mid Row - Far Side

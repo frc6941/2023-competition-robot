@@ -76,7 +76,7 @@ public class Intaker implements Updatable{
     
     @Override
     public synchronized void write(double time, double dt){
-        if(mPeriodicIO.intakerMotorDemand < 0.0 || !mPeriodicIO.hasGamePiece){
+        if(mPeriodicIO.intakerMotorDemand < -0.1 || !mPeriodicIO.hasGamePiece){
             intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         } else if (mPeriodicIO.hasGamePiece) {
             intakerMotor.set(mPeriodicIO.intakeMotorHoldDemand);

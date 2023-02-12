@@ -19,6 +19,11 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle;
+import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
+import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
+import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
+
 /**
  * Contains various field dimensions and useful reference points. Dimensions are
  * in meters, and sets of corners start in the lower left moving clockwise.
@@ -37,7 +42,8 @@ public final class FieldConstants {
         // Region dimensions
         public static final double innerX = 0.0;
         public static final double midX = Units.inchesToMeters(132.375); // Tape to the left of charging station
-        public static final double outerX = Units.inchesToMeters(193.25); // Tape to the right of charging station
+        public static final double outerX = Units.inchesToMeters(193.25); // Tape to the right of charging
+                                                                          // station
         public static final double leftY = Units.feetToMeters(18.0);
         public static final double midY = leftY - Units.inchesToMeters(59.39) + tapeWidth;
         public static final double rightY = 0.0;
@@ -79,7 +85,8 @@ public final class FieldConstants {
     public static final class Grids {
         // X layout
         public static final double outerX = Units.inchesToMeters(54.25);
-        public static final double lowX = outerX - (Units.inchesToMeters(14.25) / 2.0); // Centered when under cube
+        public static final double lowX = outerX - (Units.inchesToMeters(14.25) / 2.0); // Centered when under
+                                                                                        // cube
                                                                                         // nodes
         public static final double midX = outerX - Units.inchesToMeters(22.75);
         public static final double highX = outerX - Units.inchesToMeters(39.75);
@@ -111,14 +118,16 @@ public final class FieldConstants {
                 mid3dTranslations[i] = new Translation3d(midX, nodeFirstY + nodeSeparationY * i,
                         isCube ? midCubeZ : midConeZ);
                 high3dTranslations[i] = new Translation3d(
-                        highX, nodeFirstY + nodeSeparationY * i, isCube ? highCubeZ : highConeZ);
+                        highX, nodeFirstY + nodeSeparationY * i,
+                        isCube ? highCubeZ : highConeZ);
                 highTranslations[i] = new Translation2d(highX, nodeFirstY + nodeSeparationY * i);
             }
         }
 
         // Complex low layout (shifted to account for cube vs cone rows and wide edge
         // nodes)
-        public static final double complexLowXCones = outerX - Units.inchesToMeters(16.0) / 2.0; // Centered X under
+        public static final double complexLowXCones = outerX - Units.inchesToMeters(16.0) / 2.0; // Centered X
+                                                                                                 // under
                                                                                                  // cone nodes
         public static final double complexLowXCubes = lowX; // Centered X under cube nodes
         public static final double complexLowOuterYOffset = nodeFirstY - Units.inchesToMeters(3.0)
@@ -134,7 +143,8 @@ public final class FieldConstants {
                 new Translation2d(complexLowXCones, nodeFirstY + nodeSeparationY * 6),
                 new Translation2d(complexLowXCubes, nodeFirstY + nodeSeparationY * 7),
                 new Translation2d(
-                        complexLowXCones, nodeFirstY + nodeSeparationY * 8 + complexLowOuterYOffset),
+                        complexLowXCones,
+                        nodeFirstY + nodeSeparationY * 8 + complexLowOuterYOffset),
         };
     }
 
@@ -152,7 +162,8 @@ public final class FieldConstants {
         public static final double rightY = leftY - width;
         public static final Translation2d[] regionCorners = new Translation2d[] {
                 new Translation2d(
-                        midX, rightY), // Start at lower left next to border with opponent community
+                        midX, rightY), // Start at lower left next to border with opponent
+                                       // community
                 new Translation2d(midX, midY),
                 new Translation2d(outerX, midY),
                 new Translation2d(outerX, leftY),
@@ -169,14 +180,17 @@ public final class FieldConstants {
         public static final double singleSubstationWidth = Units.inchesToMeters(22.75);
         public static final double singleSubstationLeftX = FieldConstants.fieldLength - doubleSubstationLength
                 - Units.inchesToMeters(88.77);
-        public static final double singleSubstationCenterX = singleSubstationLeftX + (singleSubstationWidth / 2.0);
+        public static final double singleSubstationCenterX = singleSubstationLeftX
+                + (singleSubstationWidth / 2.0);
         public static final double singleSubstationRightX = singleSubstationLeftX + singleSubstationWidth;
-        public static final Translation2d singleSubstationTranslation = new Translation2d(singleSubstationCenterX,
+        public static final Translation2d singleSubstationTranslation = new Translation2d(
+                singleSubstationCenterX,
                 leftY);
 
         public static final double singleSubstationHeight = Units.inchesToMeters(18.0);
         public static final double singleSubstationLowZ = Units.inchesToMeters(27.125);
-        public static final double singleSubstationCenterZ = singleSubstationLowZ + (singleSubstationHeight / 2.0);
+        public static final double singleSubstationCenterZ = singleSubstationLowZ
+                + (singleSubstationHeight / 2.0);
         public static final double singleSubstationHighZ = singleSubstationLowZ + singleSubstationHeight;
 
         public static final Translation2d outerLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX,
@@ -275,6 +289,9 @@ public final class FieldConstants {
                                 new Rotation3d(0.0, 0.0, Math.PI))));
         TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 6.0, 2.0);
     }
+
+    public static final Obstacle LOADING_ZONE = new InfiniteBarrierObstacle(3.0, DIRECTION.GREATER, AXIS.X);
+    public static final Obstacle SCORING_ZONE = new InfiniteBarrierObstacle(2.0, DIRECTION.SMALLER, AXIS.X);
 
     public static Pose2d allianceFlip(Pose2d original) {
         return original;

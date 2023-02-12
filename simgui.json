@@ -106,11 +106,10 @@
         "Drivetrain": {
           "Gyro": {
             "open": true
-          },
-          "open": true
+          }
         },
         "RealOutputs": {
-          "Arm Mechanism": {
+          "Coordinator": {
             "open": true
           },
           "Drivetrain": {
@@ -173,8 +172,5 @@
         "open": true
       }
     }
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

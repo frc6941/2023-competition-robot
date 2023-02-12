@@ -205,7 +205,7 @@ public class ArmAndExtender implements Updatable {
         return inputedSuperstructureState;
     }
 
-    public boolean isOnTarget() {
+    public synchronized boolean isOnTarget() {
         return currentSuperstructureState.isOnTarget(desiredSuperstructureState,
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.ARM,
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);

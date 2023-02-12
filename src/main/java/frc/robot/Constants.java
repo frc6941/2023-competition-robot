@@ -105,7 +105,7 @@ public final class Constants {
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 50.0;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 70.0;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.00;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.0005;
         public static final TrapezoidProfile.Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
@@ -160,7 +160,7 @@ public final class Constants {
         public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
         public static final double OUTTAKING_PERCENTAGE = -0.60;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
-        public static final double HOLD_PERCENTAGE_CONE = 0.50;
+        public static final double HOLD_PERCENTAGE_CONE = 0.60;
         public static final double HOLD_DELAY = 0.4;
     }
 

@@ -1,11 +1,13 @@
 package frc.robot.coordinators;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.frcteam6941.control.DirectionalPose2d;
 import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
+import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
 import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -19,6 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.SwerveCardinal.SWERVE_CARDINAL;
 import frc.robot.motion.AStarPathProvider;
@@ -74,7 +77,7 @@ public class Coordinator implements Updatable {
 
     // Overall state settings
     public boolean requirePoseAssist = false;
-    public boolean autoDirectionDetermine = false;
+    public boolean autoDirectionDetermine = true;
 
     // Core control variables
     public SuperstructureState coreSuperstructureState = new SuperstructureState();
@@ -342,8 +345,14 @@ public class Coordinator implements Updatable {
                 // DirectionalPose2d targetPose =
                 // AssistedPoseBuilder.buildScoringDirectionalPose2d(scoringTarget,
                 // // scoreDirection);
+                double degree;
+                if(loadDirection == Direction.NEAR) {
+                    degree = -180.0;
+                } else {
+                    degree = 0.0;
+                }
                 DirectionalPose2d targetPose = new DirectionalPose2d(
-                        new Pose2d(1.40, 1.00, Rotation2d.fromDegrees(-180.0)), true, true, true);
+                        new Pose2d(1.40, 1.00, Rotation2d.fromDegrees(degree)), true, true, true);
                 if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
                         .minus(targetPose.getRotation()).getDegrees()) < 45.0
                         && targetPose.minus(mSwerve.getLocalizer().getLatestPose()).getTranslation().getNorm() < 1.00) {
@@ -398,7 +407,14 @@ public class Coordinator implements Updatable {
                 // coreDirectionalPose2d =
                 // AssistedPoseBuilder.buildLoadingDirectionalPose2d(loadingTarget,
                 // loadDirection);
-                coreDirectionalPose2d = new DirectionalPose2d(new Pose2d(5.50, 1.00, Rotation2d.fromDegrees(0.0)), false,
+                double degree2;
+                if(loadDirection == Direction.NEAR) {
+                    degree2 = 0.0;
+                } else {
+                    degree2 = 180.0;
+                }
+                coreDirectionalPose2d = new DirectionalPose2d(new Pose2d(5.50, 1.00, Rotation2d.fromDegrees(degree2)),
+                        false,
                         true, true);
                 if (mPeriodicIO.inIntakerHasGamePiece) {
                     tempState.extenderLength = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min;
@@ -407,31 +423,35 @@ public class Coordinator implements Updatable {
                             : tempState.armAngle.plus(Rotation2d.fromDegrees(-10));
                     if (mArmAndExtender.isOnTarget()) {
                         loadAutoXDirectionVelocity = -0.20;
-                        if(coreDirectionalPose2d.getX() - mSwerve.getLocalizer().getLatestPose().getX() > 1.0) {
-                            tempState = SuperstructureStateBuilder.buildCommutingSuperstructureState(commuteDirection);
-                        }
-                        if (mPeriodicIO.inSwerveTranslation.getX() < -0.10) {
-                            System.out.println("Teleop want commute auto.");
-                            setWantedAction(WANTED_ACTION.COMMUTE);
+                        if (!FieldConstants.LOADING_ZONE.isInObstacle(mSwerve.getLocalizer().getLatestPose().getX(),
+                                mSwerve.getLocalizer().getLatestPose().getY())) {
+                            coreSuperstructureState = SuperstructureStateBuilder
+                                    .buildCommutingSuperstructureState(commuteDirection);
+                            if (mPeriodicIO.inSwerveTranslation.getX() < -0.10) {
+                                System.out.println("Teleop want commute auto.");
+                                setWantedAction(WANTED_ACTION.COMMUTE);
+                            }
+                        } else {
+                            coreSuperstructureState = tempState;
                         }
                     } else {
                         loadAutoXDirectionVelocity = 0.0;
                     }
                 } else {
+                    if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
+                            .minus(coreDirectionalPose2d.getRotation()).getDegrees()) < 40.0) {
+                        coreSuperstructureState = tempState;
+                    } else {
+                        coreSuperstructureState = SuperstructureStateBuilder
+                                .buildCommutingSuperstructureState(commuteDirection);
+                    }
+
                     if (!Util.epsilonEquals(coreDirectionalPose2d.getX(), mSwerve.getLocalizer().getLatestPose().getX(),
                             0.2) && mArmAndExtender.isOnTarget()) {
                         loadAutoXDirectionVelocity = 0.25;
                     } else {
                         loadAutoXDirectionVelocity = 0.0;
                     }
-                }
-
-                if (Math.abs(mSwerve.getLocalizer().getLatestPose().getRotation()
-                        .minus(coreDirectionalPose2d.getRotation()).getDegrees()) < 40.0) {
-                    coreSuperstructureState = tempState;
-                } else {
-                    coreSuperstructureState = SuperstructureStateBuilder
-                            .buildCommutingSuperstructureState(commuteDirection);
                 }
                 break;
             case MANUAL:
@@ -469,29 +489,54 @@ public class Coordinator implements Updatable {
             coreDirectionalPose2d = null;
             coreIntakerPower = 0.0;
             setState(STATE.MANUAL);
+            wantedActionChanged = false;
             return;
         } else {
             switch (state) {
                 case PREP_SCORING:
                     if (wantedAction == WANTED_ACTION.SCORE) {
                         setState(STATE.SCORING);
+                        wantedActionChanged = false;
                     } else if (wantedAction == WANTED_ACTION.COMMUTE) {
-                        setState(STATE.COMMUTING);
+                        if (!FieldConstants.SCORING_ZONE.isInObstacle(mSwerve.getLocalizer().getLatestPose().getX(),
+                                mSwerve.getLocalizer().getLatestPose().getY())) {
+                            setState(STATE.COMMUTING);
+                            wantedActionChanged = false;
+                        }
                     } else {
                         System.out.println(
                                 "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        wantedActionChanged = false;
                     }
                     break;
                 case SCORING:
                     if (wantedAction == WANTED_ACTION.COMMUTE) {
                         if (scoreFinishedTimer.get() > 1.0) {
-                            scoreFinishedTimer.stop();
-                            scoreFinishedTimer.reset();
-                            setState(STATE.COMMUTING);
+                            coreIntakerPower = 0.0;
+                            if (!FieldConstants.SCORING_ZONE.isInObstacle(
+                                mSwerve.getLocalizer().getLatestPose().getX(),
+                                mSwerve.getLocalizer().getLatestPose().getY())
+                            ) {
+                                setState(STATE.COMMUTING);
+                                scoreFinishedTimer.stop();
+                                scoreFinishedTimer.reset();
+                                wantedActionChanged = false;
+                            } else {
+                                coreSuperstructureState = SuperstructureStateBuilder
+                                        .buildHairTriggerSuperstructureState();
+                                
+                            }
+                        } else {
+                            if(mArmAndExtender.isOnTarget()) {
+                                coreIntakerPower = Constants.SUBSYSTEM_INTAKE.OUTTAKING_PERCENTAGE;
+                            } else {
+                                coreIntakerPower = 0.0;
+                            }
                         }
                     } else {
                         System.out.println(
                                 "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        wantedActionChanged = false;
                     }
                     break;
                 case COMMUTING:
@@ -503,20 +548,32 @@ public class Coordinator implements Updatable {
                         System.out.println(
                                 "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
                     }
+                    wantedActionChanged = false;
                     break;
                 case LOADING:
                     if (wantedAction == WANTED_ACTION.COMMUTE) {
-                        setState(STATE.COMMUTING);
+                        if (!FieldConstants.LOADING_ZONE.isInObstacle(mSwerve.getLocalizer().getLatestPose().getX(),
+                                mSwerve.getLocalizer().getLatestPose().getY())) {
+                            setState(STATE.COMMUTING);
+                            wantedActionChanged = false;
+                        } else {
+                            coreIntakerPower = 0.0;
+                            coreDirectionalPose2d = null;
+                            loadAutoXDirectionVelocity = null;
+                        }
                     } else if (wantedAction == WANTED_ACTION.PREP_SCORE) {
                         setState(STATE.PREP_SCORING);
+                        wantedActionChanged = false;
                     } else {
                         System.out.println(
                                 "Transition Invalid: Receive Illegal WANTED_ACTION " + wantedAction.toString());
+                        wantedActionChanged = false;
                     }
                     break;
                 case MANUAL:
                     if (wantedAction != WANTED_ACTION.MANUAL) {
                         setState(STATE.COMMUTING);
+                        wantedActionChanged = false;
                     }
                     break;
             }
@@ -593,14 +650,16 @@ public class Coordinator implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (wantedActionChanged) {
-            handleTransitions();
-            wantedActionChanged = false;
-        }
         if (autoDirectionDetermine) {
             updateDirections();
         }
-        updateStates();
+
+        if (wantedActionChanged) {
+            handleTransitions();
+        } else {
+            updateStates();
+        }
+
         updateIndicator();
         updateRumble(time);
 
