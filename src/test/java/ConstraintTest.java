@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConstraintTest {
-    static final double DELTA = 0.001;
 
     @BeforeEach
     void setup() {

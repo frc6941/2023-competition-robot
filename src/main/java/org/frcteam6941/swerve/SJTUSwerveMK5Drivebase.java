@@ -493,7 +493,7 @@ public class SJTUSwerveMK5Drivebase implements SwerveDrivetrainBase {
         BRAKE,
         DRIVE,
         PATH_FOLLOWING
-    };
+    }
 
     public void setState(STATE state) {
         this.state = state;
