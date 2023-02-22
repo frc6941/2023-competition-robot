@@ -7,13 +7,23 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.team254.lib.drivers.LazyTalonFX;
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -22,10 +32,11 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.states.SuperstructureState;
 
-public class ArmAndExtender implements Updatable {
+public class ArmAndExtender extends SubsystemBase implements Updatable {
     @AutoLog
     public static class ArmAndExtenderPeriodicIO {
         // INPUT
@@ -34,11 +45,15 @@ public class ArmAndExtender implements Updatable {
         public double armTemperature = 0.0;
         public double armAngle = 0.0;
         public double armTrajectoryVelocitySetPoint = 0.0;
+        public double armTrajectoryAccelerationSetPoint = 0.0;
+        public boolean armRevLimitReached = false;
 
         public double extenderCurrent = 0.0;
         public double extenderVoltage = 0.0;
         public double extenderTemperature = 0.0;
         public double extenderLength = 0.80;
+
+        public boolean retractInMotionOverride = false;
 
         // OUTPUT
         public String armControlState = ARM_STATE.HOMING.toString();
@@ -54,6 +69,8 @@ public class ArmAndExtender implements Updatable {
     private final LazyTalonFX armMotorLeader = new LazyTalonFX(Constants.CANID.ARM_MOTOR_LEADER);
     private final LazyTalonFX armMotorFollower = new LazyTalonFX(Constants.CANID.ARM_MOTOR_FOLLOWER);
     private final LazyTalonFX extenderMotor = new LazyTalonFX(Constants.CANID.EXTENDER_MOTOR);
+    private final DigitalInput armRevLimitSwitch = new DigitalInput(Constants.DIO_ID.ARM_LIMIT_SWTICH_PORT);
+
     private final TalonFXSimCollection simArmMotor = armMotorLeader.getSimCollection();
     private final TalonFXSimCollection simExtenderMotor = extenderMotor.getSimCollection();
 
@@ -66,7 +83,6 @@ public class ArmAndExtender implements Updatable {
             Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.average(),
             Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.min),
             Units.degreesToRadians(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE.max),
-            Constants.SUBSYSTEM_ARM.MASS,
             true);
     private final ElevatorSim simElevator = new ElevatorSim(DCMotor.getFalcon500(1),
             Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO, 5.0,
@@ -77,12 +93,12 @@ public class ArmAndExtender implements Updatable {
 
     private final Mechanism2d mechDrawing = new Mechanism2d(5, 2.5);
     private final MechanismRoot2d mechRoot = mechDrawing.getRoot(
-            "High Pivot", Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getX() + 2.0,
+            "High Pivot", Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getX() + 2.5,
             Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.HIGH_PIVOT_2D_LOCATION.getY());
     private final MechanismLigament2d armMech = mechRoot
-            .append(new MechanismLigament2d("Arm", 0.80, 0.0, 8, new Color8Bit(Color.kPurple)));
+            .append(new MechanismLigament2d("Arm", 0.885, 0.0, 8, new Color8Bit(Color.kPurple)));
     private final MechanismLigament2d extenderMech = mechRoot
-            .append(new MechanismLigament2d("Extender", 0.80, 0.0, 3, new Color8Bit(Color.kYellow)));
+            .append(new MechanismLigament2d("Extender", 0.885, 0.0, 3, new Color8Bit(Color.kYellow)));
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
@@ -90,8 +106,7 @@ public class ArmAndExtender implements Updatable {
     private SuperstructureState inputedSuperstructureState = new SuperstructureState();
     private SuperstructureState desiredSuperstructureState = new SuperstructureState();
     private SuperstructureState currentSuperstructureState = new SuperstructureState(
-        Rotation2d.fromDegrees(getAngle()), getLength()
-    );
+            Rotation2d.fromDegrees(getAngle()), getLength());
     private Double armOpenLoopPercentage = null;
     private Double extenderOpenLoopPercentage = null;
 
@@ -106,22 +121,40 @@ public class ArmAndExtender implements Updatable {
 
     private ArmAndExtender() {
         armMotorLeader.configFactoryDefault(50);
+        armMotorLeader.setNeutralMode(NeutralMode.Brake);
+        armMotorLeader.configNeutralDeadband(0.005);
         armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
         armMotorLeader.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
         armMotorLeader.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
+        armMotorLeader.config_IntegralZone(0, Constants.SUBSYSTEM_ARM.IZONE, 100);
         armMotorLeader.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
         armMotorLeader.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        armMotorLeader.enableVoltageCompensation(true);
+        armMotorLeader.configVoltageCompSaturation(12.0);
+        armMotorLeader.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector,
+                LimitSwitchNormal.NormallyOpen);
+        armMotorLeader.setInverted(InvertType.None);
+
+        armMotorFollower.configFactoryDefault(50);
+        armMotorFollower.setNeutralMode(NeutralMode.Brake);
+        armMotorFollower.setInverted(InvertType.FollowMaster);
 
         extenderMotor.configFactoryDefault(50);
-        extenderMotor.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
-        extenderMotor.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
-        extenderMotor.config_kD(0, Constants.SUBSYSTEM_ARM.KD, 100);
-        extenderMotor.config_kF(0, Constants.SUBSYSTEM_ARM.KF, 100);
-        extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_ARM.CRUISE_V, 100);
-        extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_ARM.CRUIVE_ACC, 100);
+        extenderMotor.config_kP(0, Constants.SUBSYSTEM_EXTENDER.KP, 100);
+        extenderMotor.config_kI(0, Constants.SUBSYSTEM_EXTENDER.KI, 100);
+        extenderMotor.config_kD(0, Constants.SUBSYSTEM_EXTENDER.KD, 100);
+        extenderMotor.config_kF(0, Constants.SUBSYSTEM_EXTENDER.KF, 100);
+        extenderMotor.config_IntegralZone(0, Constants.SUBSYSTEM_EXTENDER.IZONE, 100);
+        extenderMotor.configMotionCruiseVelocity(Constants.SUBSYSTEM_EXTENDER.CRUISE_V, 100);
+        extenderMotor.configMotionAcceleration(Constants.SUBSYSTEM_EXTENDER.CRUIVE_ACC, 100);
+        extenderMotor.enableVoltageCompensation(true);
+        extenderMotor.configVoltageCompSaturation(12.0);
+        extenderMotor.configNeutralDeadband(0.005);
 
-        mechRoot.append(new MechanismLigament2d("Tower", 0.80, 240, 8, new Color8Bit(Color.kBlue)));
+        mechRoot.append(new MechanismLigament2d(
+            "Tower",
+            1.083, 360 - 110.5, 8, new Color8Bit(Color.kBlue)));
     }
 
     public double getAngle() {
@@ -155,7 +188,7 @@ public class ArmAndExtender implements Updatable {
         }
     }
 
-    public void setExtenderPercentage(double power){
+    public void setExtenderPercentage(double power) {
         if (extenderIsHomed) {
             extenderState = EXTENDER_STATE.PERCENTAGE;
             extenderOpenLoopPercentage = power;
@@ -165,6 +198,11 @@ public class ArmAndExtender implements Updatable {
     public void setSuperstructureState(SuperstructureState superstructureState) {
         setAngle(superstructureState.armAngle.getDegrees());
         setLength(superstructureState.extenderLength);
+    }
+
+    public void turnOff() {
+        setArmPercentage(0.0);
+        setExtenderPercentage(0.0);
     }
 
     public SuperstructureState getCurrentSuperstructureState() {
@@ -177,6 +215,20 @@ public class ArmAndExtender implements Updatable {
 
     public SuperstructureState getInputedSuperstructureState() {
         return inputedSuperstructureState;
+    }
+
+    public synchronized boolean isOnTarget() {
+        return currentSuperstructureState.isOnTarget(desiredSuperstructureState,
+                Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.ARM,
+                Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);
+    }
+
+    public void setRetractInMotionOverrdie(boolean override) {
+        mPeriodicIO.retractInMotionOverride = override;
+    }
+
+    public boolean isHomed() {
+        return armIsHomed && extenderIsHomed;
     }
 
     public void homeArm(double homingAngle) {
@@ -200,11 +252,11 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.armCurrent = armMotorLeader.getSupplyCurrent();
         mPeriodicIO.armVoltage = armMotorLeader.getMotorOutputVoltage();
         mPeriodicIO.armTemperature = armMotorLeader.getTemperature();
-        mPeriodicIO.armTrajectoryVelocitySetPoint = Units
-                .rotationsPerMinuteToRadiansPerSecond(
-                        Conversions.falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(),
-                                Constants.SUBSYSTEM_ARM.GEAR_RATIO));
-
+        mPeriodicIO.armRevLimitReached = !armRevLimitSwitch.get();
+        if (armMotorLeader.getControlMode() == ControlMode.MotionMagic) {
+            mPeriodicIO.armTrajectoryVelocitySetPoint = Conversions
+                    .falconToRPM(armMotorLeader.getActiveTrajectoryVelocity(0), Constants.SUBSYSTEM_ARM.GEAR_RATIO);
+        }
         mPeriodicIO.extenderLength = Conversions.falconToDegrees(extenderMotor.getSelectedSensorPosition(),
                 Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO) / 360.0
                 * Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE;
@@ -216,18 +268,18 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderControlState = extenderState.toString();
 
         currentSuperstructureState = new SuperstructureState(
-            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
-            mPeriodicIO.extenderLength
-        );
+                Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+                mPeriodicIO.extenderLength);
     }
 
     @Override
     public synchronized void update(double time, double dt) {
-        if (armMotorLeader.isFwdLimitSwitchClosed() == 1) {
+        if (mPeriodicIO.armRevLimitReached && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
-        if (extenderMotor.isRevLimitSwitchClosed() == 1) {
+        if (mPeriodicIO.extenderCurrent > 5.0 && !extenderIsHomed) {
+            System.out.println("test if is homed");
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
@@ -239,21 +291,25 @@ public class ArmAndExtender implements Updatable {
             extenderState = EXTENDER_STATE.HOMING;
         }
 
-        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT.optimize(inputedSuperstructureState, currentSuperstructureState);
-        mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage : desiredSuperstructureState.armAngle.getDegrees();
-        mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage : desiredSuperstructureState.extenderLength;
+        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
+                .optimize(inputedSuperstructureState, currentSuperstructureState);
+        mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage
+                : desiredSuperstructureState.armAngle.getDegrees();
+        mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage
+                : desiredSuperstructureState.extenderLength;
 
         // Determine Outputs
         switch (armState) {
             case HOMING:
-                mPeriodicIO.armDemand = -0.2;
+                mPeriodicIO.armDemand = -0.15;
                 mPeriodicIO.armFeedforward = 0.0;
                 break;
             case ANGLE:
                 mPeriodicIO.armDemand = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.ARM_RANGE
                         .clamp(mPeriodicIO.armDemand);
                 mPeriodicIO.armFeedforward = Constants.SUBSYSTEM_ARM.FEEDFORWARD.calculate(
-                        Units.degreesToRadians(getAngle()), mPeriodicIO.armTrajectoryVelocitySetPoint) / 12.0;
+                        Units.degreesToRadians(getAngle() + Constants.SUBSYSTEM_ARM.ANGLE_OFFSET_TO_HORIZONTAL),
+                        mPeriodicIO.armTrajectoryVelocitySetPoint) / 12.0;
                 break;
             case PERCENTAGE:
                 mPeriodicIO.armDemand = Util.clamp(mPeriodicIO.armDemand, -1.0, 1.0);
@@ -282,10 +338,7 @@ public class ArmAndExtender implements Updatable {
                 mPeriodicIO.extenderDemand = 0.0;
                 break;
         }
-    }
 
-    @Override
-    public synchronized void write(double time, double dt) {
         switch (armState) {
             case HOMING:
                 armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
@@ -336,7 +389,7 @@ public class ArmAndExtender implements Updatable {
                 break;
             case PERCENTAGE:
                 if (!armIsHomed) {
-                    extenderMotor.set(ControlMode.PercentOutput, 0.0);
+                    extenderMotor.set(ControlMode.PercentOutput, 0.00);
                 } else {
                     extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand,
                             DemandType.ArbitraryFeedForward,
@@ -350,18 +403,30 @@ public class ArmAndExtender implements Updatable {
     }
 
     @Override
+    public synchronized void write(double time, double dt) {
+
+    }
+
+    @Override
     public synchronized void telemetry() {
         armMech.setAngle(getAngle());
         extenderMech.setAngle(getAngle());
         extenderMech.setLength(getLength());
 
+        Pose3d highPivotPose = new Pose3d().transformBy(Constants.SUBSYSTEM_SUPERSTRUCTURE.STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT.inverse());
+        Pose3d armPose = highPivotPose.transformBy(
+                new Transform3d(new Translation3d(),
+                        new Rotation3d(0.0, Units.degreesToRadians(getAngle()), 0.0)));
+        Pose3d extenderPose = armPose;
+
         Logger.getInstance().processInputs("Arm and Extender", mPeriodicIO);
         Logger.getInstance().recordOutput("Arm Mechanism", mechDrawing);
+        Logger.getInstance().recordOutput("Mechanism3d/" + "Arm", armPose, extenderPose);
     }
 
     @Override
     public synchronized void start() {
-        // Auto Generated Method
+        extenderIsHomed = false;
     }
 
     @Override
@@ -389,10 +454,10 @@ public class ArmAndExtender implements Updatable {
                         simElevator.getVelocityMetersPerSecond(), Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE,
                         Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
 
-        if (simArm.wouldHitLowerLimit(simArm.getAngleRads()-0.0001)) {
+        if (simArm.wouldHitLowerLimit(simArm.getAngleRads() - 0.0001) && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
-        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters()-0.0001)) {
+        if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters() - 0.0001) && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
@@ -409,12 +474,8 @@ public class ArmAndExtender implements Updatable {
         mPeriodicIO.extenderControlState = extenderState.toString();
 
         currentSuperstructureState = new SuperstructureState(
-            Rotation2d.fromDegrees(mPeriodicIO.armAngle),
-            mPeriodicIO.extenderLength
-        );
-
-        setAngle(140);
-        setLength(1.80);
+                Rotation2d.fromDegrees(mPeriodicIO.armAngle),
+                mPeriodicIO.extenderLength);
     }
 
     public enum ARM_STATE {

@@ -91,6 +91,12 @@ public class Pigeon implements Gyro {
         mGyro.getRawGyro(xyz_dps);
         return xyz_dps[2];
     }
+    @Override
+    public double[] getRaw() {
+        double[] xyz_dps = new double[] {0.0, 0.0, 0.0};
+        mGyro.getRawGyro(xyz_dps);
+        return xyz_dps;
+    }
 
     @Override
     public void updateIO() {

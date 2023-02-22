@@ -45,15 +45,17 @@ public class AStarPathPlanner {
 
         // Time the planning
         Timer timer = new Timer();
+        timer.reset();
         timer.start();
 
         // Start of algorithm
         // Iterating if there's still nodes to be evaluted in the open set
-        while (openSet.size() != 0 && timer.get() < overtimeLimit) {
+        while (openSet.size() != 0 && timer.get() <= overtimeLimit) {
             // First, find the point with the minimal estimated score, add this node to
             // closed set, meaning that it is valuated
             Node minimalNode = openSet.poll();
             closedSet.offer(minimalNode);
+            
 
             // Then, search the near positions
             searchNear(minimalNode, endingPoint, obstacles, stepx, stepy, hGain);
@@ -69,15 +71,17 @@ public class AStarPathPlanner {
             for (Node clNode : closedSet) {
                 if (Math.abs(clNode.x - endingPoint.getX()) <= stepx
                         && Math.abs(clNode.y - endingPoint.getY()) <= stepy) {
-                    System.out.println("Found route, Time: " + timer.get() + " seconds");
                     ArrayList<Translation2d> resultPath = new ArrayList<>();
                     double pathLength = clNode.g + new Translation2d(clNode.x, clNode.y).getDistance(endingPoint);
                     resultPath.add(endingPoint);
                     // Use recursion to get original path, and return the trimmed one
+                    System.out.println("Found route, Time: " + timer.get() + " seconds");
                     return new Path(pathLength, reconstructPath(clNode, resultPath));
                 }
             }
         }
+        System.out.println("Failed to found path.");
+        
         // If all the points in open set is evaluted, then there's no possible path
         // found, return null
         return null;
@@ -95,6 +99,20 @@ public class AStarPathPlanner {
             }
         }
         return false;
+    }
+
+    public boolean checkLegal(Translation2d translation, Obstacle[] obstacles) {
+        if (obstacles == null) {
+            return true;
+        }
+        for (Obstacle obstacle : obstacles) {
+            if (obstacle.isInObstacle(translation.getX(), translation.getY())) {
+                return false;
+            } else {
+
+            }
+        }
+        return true;
     }
 
     private void searchNear(Node minimalNode, Translation2d destination, Obstacle[] obstacles, double stepx,

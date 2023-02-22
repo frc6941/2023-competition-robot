@@ -1,10 +1,10 @@
 package frc.robot.controlboard;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class CustomXboxController {
-    private final XboxController mController;
+    private final CommandXboxController mController;
 
     private double rumblePower = 0.0;
     private double rumbleInterval = 0.0;
@@ -28,7 +28,7 @@ public class CustomXboxController {
     }
 
     CustomXboxController(int port) {
-        mController = new XboxController(port);
+        mController = new CommandXboxController(port);
     }
 
     double getAxis(Side side, Axis axis) {
@@ -45,10 +45,6 @@ public class CustomXboxController {
         return mController.getRawAxis(side == Side.LEFT ? 2 : 3) > 0.5;
     }
 
-    public boolean getButton(Button button) {
-        return mController.getRawButton(button.id);
-    }
-
     public void setRumble(double power, double interval) {
         rumblePower = power;
         rumbleInterval = interval;
@@ -56,15 +52,15 @@ public class CustomXboxController {
 
     public void updateRumble(double time) {
         if (rumbleInterval == 0) {
-            mController.setRumble(RumbleType.kRightRumble, rumblePower);
+            mController.getHID().setRumble(RumbleType.kRightRumble, rumblePower);
         } else if (Math.floor(time / rumbleInterval) % 2 == 0) {
-            mController.setRumble(RumbleType.kRightRumble, rumblePower);
+            mController.getHID().setRumble(RumbleType.kRightRumble, rumblePower);
         } else {
-            mController.setRumble(RumbleType.kRightRumble, 0.0);
+            mController.getHID().setRumble(RumbleType.kRightRumble, 0.0);
         }
     }
 
-    public XboxController getController() {
+    public CommandXboxController getController() {
         return mController;
     }
 }

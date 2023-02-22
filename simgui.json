@@ -1,10 +1,5 @@
 {
   "HALProvider": {
-    "Analog Inputs": {
-      "window": {
-        "visible": true
-      }
-    },
     "Other Devices": {
       "Talon FX[8]": {
         "header": {
@@ -25,6 +20,9 @@
         "header": {
           "open": true
         }
+      },
+      "window": {
+        "visible": false
       }
     },
     "RoboRIO": {
@@ -36,9 +34,6 @@
       },
       "RoboRIO Input": {
         "open": true
-      },
-      "window": {
-        "visible": true
       }
     }
   },
@@ -46,23 +41,135 @@
     "types": {
       "/AdvantageKit/RealOutputs/Arm Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/DigitalInput[0]": "Digital Input",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[4]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[5]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[6]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[7]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
-      "/SmartDashboard/Mechanism": "Mechanism2d"
+      "/LiveWindow/Ungrouped/Talon FX [10]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [8]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [9]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [1]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [3]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [5]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [7]": "Motor Controller",
+      "/SmartDashboard/Game Piece": "String Chooser",
+      "/SmartDashboard/Loading Location": "String Chooser",
+      "/SmartDashboard/Mechanism": "Mechanism2d",
+      "/SmartDashboard/Simulated Game Piece": "String Chooser",
+      "/SmartDashboard/Target Grid": "String Chooser",
+      "/SmartDashboard/Target Row": "String Chooser",
+      "/SmartDashboard/Target Side": "String Chooser"
+    },
+    "windows": {
+      "/AdvantageKit/RealOutputs/Arm Mechanism": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Game Piece": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Loading Location": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Simulated Game Piece": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Grid": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Row": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Target Side": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
-    "Persistent Values": {
-      "open": false
-    },
-    "Retained Values": {
-      "open": false
-    },
     "transitory": {
       "AdvantageKit": {
-        "Arm and Extender": {
+        "Drivetrain": {
+          "Gyro": {
+            "open": true
+          }
+        },
+        "RealOutputs": {
+          "Coordinator": {
+            "open": true
+          },
+          "Drivetrain": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      },
+      "Shuffleboard": {
+        ".recording": {
+          "open": true
+        }
+      },
+      "SmartDashboard": {
+        "TunableNumbers": {
+          "Commuting": {
+            "Near": {
+              "open": true
+            }
+          },
+          "Loading": {
+            "Shelf": {
+              "open": true
+            },
+            "open": true
+          },
+          "Scoring": {
+            "Cone": {
+              "Far": {
+                "Low Row": {
+                  "open": true
+                },
+                "Mid Row": {
+                  "open": true
+                },
+                "open": true
+              },
+              "Near": {
+                "High Row": {
+                  "open": true
+                },
+                "Low Row": {
+                  "open": true
+                },
+                "Mid Row": {
+                  "open": true
+                },
+                "open": true
+              },
+              "open": true
+            },
+            "Cube": {
+              "open": true
+            },
+            "open": true
+          },
           "open": true
         },
         "open": true

@@ -15,6 +15,7 @@ public interface Gyro {
     Rotation2d getYaw();
     Rotation2d getPitch();
     Rotation2d getRoll();
+    double[] getRaw();
 
     void setYaw(double angle);
     void setPitch(double angle);
