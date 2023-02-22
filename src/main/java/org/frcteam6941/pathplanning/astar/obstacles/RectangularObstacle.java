@@ -33,7 +33,7 @@ public class RectangularObstacle implements Obstacle{
         minX -= marginx;
         minY -= marginy;
         maxX += marginx;
-        marginy += marginy;
+        maxY += marginy;
     }
 
 

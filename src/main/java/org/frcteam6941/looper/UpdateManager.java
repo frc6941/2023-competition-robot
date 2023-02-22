@@ -2,6 +2,7 @@ package org.frcteam6941.looper;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public final class UpdateManager {
 		public void run() {
 			synchronized (taskRunningLock_) {
 				final double timestamp = Timer.getFPGATimestamp();
-				final double dt = timestamp - lastTimestamp;
+				final double dt = timestamp - lastTimestamp > 10e-5 ? timestamp - lastTimestamp : Constants.LOOPER_DT;
 				lastTimestamp = timestamp;
 				updatables.forEach(s -> {
 					s.read(timestamp, dt);
@@ -52,7 +53,7 @@ public final class UpdateManager {
 		public void run() {
 			synchronized (taskRunningLock_) {
 				final double timestamp = Timer.getFPGATimestamp();
-				final double dt = timestamp - lastTimestamp;
+				final double dt = timestamp - lastTimestamp > 10e-5 ? timestamp - lastTimestamp : Constants.LOOPER_DT;
 				lastTimestamp = timestamp;
 				updatables.forEach(s -> {
 					s.simulate(timestamp, dt);
@@ -77,7 +78,7 @@ public final class UpdateManager {
 	}
 
 	public void startEnableLoop(double period) {
-		updatables.forEach(s -> s.start());
+		updaterEnableThread.startPeriodic(period);
 	}
 
 	public void stopEnableLoop() {

@@ -7,26 +7,31 @@ import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.team254.lib.util.TimeDelayedBoolean;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class Intaker implements Updatable{
+public class Intaker extends SubsystemBase implements Updatable{
     @AutoLog
     public static class IntakerPeriodicIO {
         // INPUT
         public double intakerMotorVoltage = 0.0;
         public boolean hasGamePiece = false;
+        public double intakeMotorCurrent = 0.0;
     
         // OUTPUT
         public double intakerMotorDemand = 0.0;
+        public double intakeMotorHoldDemand = 0.0;
     }
     
     public IntakerPeriodicIOAutoLogged mPeriodicIO = new IntakerPeriodicIOAutoLogged();
 
     private final CANSparkMax intakerMotor = new CANSparkMax(Constants.CANID.INTAKER_MOTOR, MotorType.kBrushless);
     private final AnalogInput gamepieceSensor = new AnalogInput(Constants.ANALOG_ID.GAMEPIECE_SENSOR);
+    private final TimeDelayedBoolean hasGamePieceDelayedBoolean = new TimeDelayedBoolean();
 
     private static Intaker instance;
 
@@ -38,21 +43,32 @@ public class Intaker implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.setIdleMode(IdleMode.kCoast);
+        intakerMotor.restoreFactoryDefaults();
+        intakerMotor.setIdleMode(IdleMode.kBrake);
+        intakerMotor.setSmartCurrentLimit(15, 5);
     }
 
     public void setIntakerPower(double power) {
         mPeriodicIO.intakerMotorDemand = Util.clamp(power, -1.0, 1.0);
     }
 
+    public void setHoldPower(double power) {
+        mPeriodicIO.intakeMotorHoldDemand = Util.clamp(power, -1.0, 1.0);;
+    }
+
     public double getIntakerVoltage() {
         return mPeriodicIO.intakerMotorVoltage;
+    }
+
+    public boolean hasGamePiece() {
+        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY);
     }
 
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
         mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
+        mPeriodicIO.intakeMotorCurrent = intakerMotor.getOutputCurrent();
     }
     
     @Override
@@ -61,10 +77,12 @@ public class Intaker implements Updatable{
     
     @Override
     public synchronized void write(double time, double dt){
-        if(!mPeriodicIO.hasGamePiece || (mPeriodicIO.hasGamePiece && mPeriodicIO.intakerMotorDemand <= 0.0)){
+        if(mPeriodicIO.intakerMotorDemand < -0.1 || !mPeriodicIO.hasGamePiece){
             intakerMotor.set(mPeriodicIO.intakerMotorDemand);
+        } else if (mPeriodicIO.hasGamePiece) {
+            intakerMotor.set(mPeriodicIO.intakeMotorHoldDemand);
         } else {
-            intakerMotor.set(0.0);
+            intakerMotor.set(mPeriodicIO.intakerMotorDemand);
         }
     }
     

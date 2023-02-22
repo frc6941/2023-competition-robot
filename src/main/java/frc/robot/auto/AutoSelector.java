@@ -1,11 +1,11 @@
 package frc.robot.auto;
 
 import java.util.Optional;
-import org.frcteam6941.swerve.SJTUSwerveMK5Drivebase;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.auto.modes.AutoModeBase;
+import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 
 public class AutoSelector {
     private AutoModeBase mAutoMode;
@@ -39,7 +39,7 @@ public class AutoSelector {
     }
 
     public void resetStartingPosition(Pose2d pose) {
-        SJTUSwerveMK5Drivebase.getInstance().getLocalizer().reset(pose);
+        SJTUSwerveMK5Drivebase.getInstance().resetPose(pose);
     }
 
     public Optional<AutoModeBase> getAutoMode() {

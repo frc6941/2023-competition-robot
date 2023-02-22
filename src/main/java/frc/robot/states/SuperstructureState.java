@@ -53,7 +53,7 @@ public class SuperstructureState {
         }
          
         SuperstructureState c = (SuperstructureState) o;
-        return c.armAngle.equals(c.armAngle) && c.extenderLength == extenderLength;
+        return c.armAngle.equals(armAngle) && c.extenderLength == extenderLength;
     }
 
     @Override
