@@ -26,8 +26,7 @@ public class SuperstructureKinematics {
     public static final SuperstructureState inverseKinematics(Translation3d endEffectorPosition,
             Pose2d drivetrainPose) {
         Pose3d drivetrainPose3d = new Pose3d(drivetrainPose);
-        Pose3d topTowerPivot = drivetrainPose3d
-                .plus(STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT);
+        Pose3d topTowerPivot = drivetrainPose3d.plus(STRUCTURE.ROBOT_CENTER_TO_HIGH_PIVOT);
         Transform3d endEffectorToTower = topTowerPivot.minus(new Pose3d(endEffectorPosition, new Rotation3d()));
         Rotation2d armAngle = new Rotation2d(endEffectorToTower.getX(), endEffectorToTower.getZ());
         double extenderLength = endEffectorToTower.getTranslation().getNorm();

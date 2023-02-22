@@ -27,16 +27,16 @@ public class AutoScoreCommand extends SequentialCommandGroup {
             .andThen(
                 new ConditionalCommand(
                     new RequestSuperstructureStateCommand(mSuperstructure, () -> mTargetSelector.getScoreLowerDelSuperstructureState())
-                    .andThen(new WaitCommand(0.2))
+                    .andThen(new WaitCommand(0.1))
                     .andThen(new InstantCommand(() -> mIntaker.setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_SLOW_PERCENTAGE)))
-                    .andThen(new WaitCommand(0.5))
+                    .andThen(new WaitCommand(0.3))
                     .andThen(new RequestSuperstructureStateCommand(mSuperstructure, () -> mTargetSelector.getScoreSuperstructureState())),
                     
                     new InstantCommand(() -> mIntaker.setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE)),
                     () -> mTargetSelector.getTargetGamePiece() == GamePiece.CONE))
             .andThen(new WaitUntilCommand(confirmation))
             .andThen(new InstantCommand(() -> mIntaker.setIntakerPower(0.0)))
-            .andThen(new WaitUntilCommand(() -> mDrivebase.getLocalizer().getLatestPose().getX() > 2.0))
+            .andThen(new WaitUntilCommand(() -> mDrivebase.getLocalizer().getLatestPose().getX() > 2.5))
             .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
                     () -> mTargetSelector.getCommuteSuperstructureState()))
         );

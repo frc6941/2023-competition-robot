@@ -6,12 +6,10 @@ import java.util.stream.Collectors;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.PolygonObstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.utils.AllianceFlipUtil;
 
@@ -20,7 +18,7 @@ public class FieldObstacles {
         private static InfiniteBarrierObstacle fieldYBarrierLarger = new InfiniteBarrierObstacle(FieldConstants.fieldLength, DIRECTION.GREATER, AXIS.Y);
 
         public static Obstacle[] getObstacles() {
-            Obstacle boundaryChargingStation = new RectangularObstacle(
+            Obstacle boundaryChargingStation = new PolygonObstacle(
                 List.of(FieldConstants.Community.chargeStationCornersBumpered).stream()
                                 .map(translation -> AllianceFlipUtil.apply(translation))
                                 .collect(Collectors.toList()).toArray(new Translation2d[0]));

@@ -2,7 +2,9 @@ package frc.robot;
 
 import org.frcteam6941.looper.UpdateManager;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoadCommand;
