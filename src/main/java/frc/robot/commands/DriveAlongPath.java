@@ -6,6 +6,7 @@ import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -25,7 +26,7 @@ public class DriveAlongPath extends CommandBase {
     private Timer pathTrackingTimer = new Timer();
     private boolean needReset = true;
 
-    private ProfiledPIDController driveController = new ProfiledPIDController(2.5, 0.001, 0,
+    private ProfiledPIDController driveController = new ProfiledPIDController(1.5, 0.001, 0,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
 
     private Runnable r = new Runnable() {
@@ -35,11 +36,11 @@ public class DriveAlongPath extends CommandBase {
                 pathTrackingTimer.start();
                 Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
                 Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
-                Pose2d trackingPose = new Pose2d(path.getPathPointByDistance(pathTrackingTimer.get() * 2.5),
+                Pose2d trackingPose = new Pose2d(path.getPathPointByDistance(pathTrackingTimer.get() * 2.0),
                         targetPose.get().getRotation());
-                Translation2d deltaTranslation = currentPose.getTranslation().minus(trackingPose.getTranslation());
+                Translation2d deltaTranslation = trackingPose.getTranslation().minus(currentPose.getTranslation());
                 double driveK = driveController.calculate(deltaTranslation.getNorm(), 0.0);
-                Translation2d velocity = new Translation2d(driveK, deltaTranslation.getAngle());
+                Translation2d velocity = new Translation2d(driveK, deltaTranslation.getAngle().plus(new Rotation2d(Math.PI)));
 
                 if(needReset) {
                     double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
@@ -83,6 +84,7 @@ public class DriveAlongPath extends CommandBase {
                 targetPose.get().getTranslation(),
                 obstacles.get());
         needReset = true;
+
         n.startPeriodic(Constants.LOOPER_DT);
     }
 

@@ -402,11 +402,11 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     }
 
     @Override
-    public void read(double time, double dt) {
+    public synchronized void read(double time, double dt) {
     }
 
     @Override
-    public void update(double time, double dt) {
+    public synchronized void update(double time, double dt) {
         updateOdometry(time, dt);
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
                 getAngularVelocity(), time, dt);
@@ -444,12 +444,12 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     }
 
     @Override
-    public void write(double time, double dt) {
+    public synchronized void write(double time, double dt) {
 
     }
 
     @Override
-    public void telemetry() {
+    public synchronized void telemetry() {
         for (SwerveModuleBase mod : mSwerveMods) {
             Logger.getInstance().recordOutput("Drivetrain/Module Angle/Mod " + mod.getModuleNumber(),
                     mod.getEncoderUnbound().getDegrees());
@@ -467,18 +467,18 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
 
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         trajectoryFollower.cancel();
         setState(STATE.DRIVE);
     }
 
     @Override
-    public void simulate(double time, double dt) {
+    public synchronized void simulate(double time, double dt) {
         ChassisSpeeds chassisSpeeds;
 
         if (driveSignal == null) {

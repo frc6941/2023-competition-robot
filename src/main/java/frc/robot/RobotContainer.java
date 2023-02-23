@@ -78,7 +78,6 @@ public class RobotContainer {
         mControlBoard.getDriverController().getController().rightBumper().whileTrue(
             new DriveAlongPath(mDrivebase, mPathProvider, () -> mSelector.getScorePose2d(), () -> FieldObstacles.getObstacles())
             .andThen(new RunCommand(() -> mDrivebase.stopMovement()))
-            .unless(() -> !mIntaker.hasGamePiece())
         );
     }
 

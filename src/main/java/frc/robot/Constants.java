@@ -118,7 +118,7 @@ public final class Constants {
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
 
-        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(4.0, 6.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(3.5, 5.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
                 300.0, 900.0);
     }
@@ -134,8 +134,8 @@ public final class Constants {
         public static final double KD = 0.15;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
-        public static final double CRUISE_V = 24000.0;
-        public static final double CRUIVE_ACC = 20000.0;
+        public static final double CRUISE_V = 22000.0;
+        public static final double CRUIVE_ACC = 15000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
         public static final double ANGLE_OFFSET_TO_HORIZONTAL = -14.467;

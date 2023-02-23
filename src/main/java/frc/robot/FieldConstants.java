@@ -66,10 +66,10 @@ public final class FieldConstants {
         };
 
         public static Translation2d[] chargeStationCornersBumpered = new Translation2d[] {
-                new Translation2d(chargingStationInnerX - 0.25, chargingStationRightY - 0.25), new Translation2d(chargingStationInnerX - 0.5, chargingStationRightY), new Translation2d(chargingStationInnerX, chargingStationRightY - 0.5),
-                new Translation2d(chargingStationInnerX - 0.25, chargingStationLeftY + 0.25), new Translation2d(chargingStationInnerX - 0.5, chargingStationLeftY), new Translation2d(chargingStationInnerX, chargingStationLeftY + 0.5),
-                new Translation2d(chargingStationOuterX + 0.25, chargingStationRightY - 0.25), new Translation2d(chargingStationOuterX + 0.5, chargingStationRightY), new Translation2d(chargingStationOuterX, chargingStationRightY - 0.5),
-                new Translation2d(chargingStationOuterX + 0.25, chargingStationLeftY + 0.25), new Translation2d(chargingStationOuterX + 0.5, chargingStationLeftY), new Translation2d(chargingStationOuterX, chargingStationLeftY + 0.5)
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationRightY), new Translation2d(chargingStationInnerX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationLeftY), new Translation2d(chargingStationInnerX, chargingStationLeftY + 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationRightY), new Translation2d(chargingStationOuterX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationLeftY), new Translation2d(chargingStationOuterX, chargingStationLeftY + 0.5)
             };
 
         // Cable bump

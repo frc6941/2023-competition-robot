@@ -209,9 +209,9 @@ public class SuperstructureStateBuilder {
         /* Scoring */
         // High Row - Near Side
         Scoring.highRowConeAngleNear.initDefault(20);
-        Scoring.highRowConeLengthNear.initDefault(1.25);
+        Scoring.highRowConeLengthNear.initDefault(1.35);
         Scoring.highRowCubeAngleNear.initDefault(5);
-        Scoring.highRowCubeLengthNear.initDefault(1.10);
+        Scoring.highRowCubeLengthNear.initDefault(1.20);
 
         // Mid Row - Near Side
         Scoring.midRowConeAngleNear.initDefault(12.5);
@@ -258,7 +258,7 @@ public class SuperstructureStateBuilder {
         Loading.groundLengthNear.initDefault(1.35);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(220.0);
+        Loading.groundAngleFar.initDefault(225.0);
         Loading.groundLengthFar.initDefault(1.35);
 
         /* Commuting */

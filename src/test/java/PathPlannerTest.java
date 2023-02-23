@@ -122,4 +122,12 @@ public class PathPlannerTest {
         ).getLength());
     }
 
+    public static void main(String[] args) {
+        Pose2d currentPose = new Pose2d(5.0, 5.0, new Rotation2d());
+        Pose2d currentVelocity = new Pose2d(-2.0, -0.0, new Rotation2d());
+        Pose2d trackingPose = new Pose2d(0.0, 0.0, new Rotation2d());
+        Translation2d deltaTranslation = trackingPose.getTranslation().minus(currentPose.getTranslation());
+        double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
+        System.out.println(dot / deltaTranslation.getNorm());
+    }
 }

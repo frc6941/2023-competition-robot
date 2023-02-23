@@ -22,7 +22,7 @@ import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
 import frc.robot.utils.Lights;
 
-public class TargetSelector extends SubsystemBase implements Updatable{
+public class TargetSelector extends SubsystemBase implements Updatable {
     private GamePiece targetGamePiece = GamePiece.CONE;
     private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
     private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
