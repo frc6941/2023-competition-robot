@@ -10,8 +10,8 @@ import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
 
-public class AutoShelfLoadCommand extends SequentialCommandGroup {
-    public AutoShelfLoadCommand(ArmAndExtender mSuperstructure, Intaker mIntaker,
+public class LoadShelfCommand extends SequentialCommandGroup {
+    public LoadShelfCommand(ArmAndExtender mSuperstructure, Intaker mIntaker,
             TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier wantManual) {
         addCommands(
             new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> mTargetSelector.getLoadSuperstructureStateMinExtenderLength()),

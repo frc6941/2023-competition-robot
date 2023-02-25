@@ -4,7 +4,6 @@ import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.controlboard.CustomButtonBoard;
@@ -20,11 +19,10 @@ import frc.robot.states.ScoringTarget.SCORING_ROW;
 import frc.robot.states.ScoringTarget.SCORING_SIDE;
 import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
-import frc.robot.utils.Lights;
 
 public class TargetSelector extends SubsystemBase implements Updatable {
     private GamePiece targetGamePiece = GamePiece.CONE;
-    private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
+    private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.MID, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
     private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
 
     private Direction scoringDirection = Direction.NEAR;
@@ -150,34 +148,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         }
     }
 
-    public void updateIndictor() {
-        if(DriverStation.isDSAttached()) {
-            if(DriverStation.isEnabled()) {
-                switch(targetGamePiece) {
-                    case CONE:
-                        mIndicator.setPattern(Lights.LOAD_CONE);
-                        break;
-                    case CUBE:
-                        mIndicator.setPattern(Lights.LOAD_CUBE);
-                        break;
-                }
-            } else {
-                switch(DriverStation.getAlliance()) {
-                    case Red:
-                        mIndicator.setPattern(Lights.ALLIANCE_RED);
-                        break;
-                    case Blue:
-                        mIndicator.setPattern(Lights.ALLIANCE_BLUE);
-                        break;
-                    default:
-                        mIndicator.setPattern(Lights.CONNECTING);
-                }
-            }
-        } else {
-            mIndicator.setPattern(Lights.CONNECTING);
-        }
-    }
-
 
     @Override
     public synchronized void read(double time, double dt){
@@ -231,8 +201,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         if(mButtonBoard.getRawButton(BUTTON.LR)) {
             setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND));
         }
-
-        updateIndictor();
     }
     
     @Override

@@ -14,6 +14,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
@@ -32,6 +35,10 @@ public class Robot extends LoggedRobot {
     private final RobotContainer mContainer = new RobotContainer();
     private final UpdateManager updateManager = mContainer.getUpdateManager();
 
+    public Robot() {
+        super(Constants.LOOPER_DT);
+    }
+
     /**
      * This function is run when the robot is first started up and should be used
      * for any
@@ -49,6 +56,7 @@ public class Robot extends LoggedRobot {
         } else {
             logger.addDataReceiver(new NT4Publisher());
             updateManager.startSimulateLoop(Constants.LOOPER_DT);
+            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         }
 
         logger.start();

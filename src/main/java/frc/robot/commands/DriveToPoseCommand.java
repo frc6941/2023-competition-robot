@@ -29,7 +29,7 @@ public class DriveToPoseCommand extends CommandBase {
     public void initialize() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
         Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
-        Translation2d deltaTranslation = targetPose.get().minus(currentPose).getTranslation();
+        Translation2d deltaTranslation = targetPose.get().getTranslation().minus(currentPose.getTranslation());
         double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
         driveController.reset(
             deltaTranslation.getNorm(),
@@ -42,9 +42,11 @@ public class DriveToPoseCommand extends CommandBase {
     @Override
     public void execute() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
-        Translation2d deltaTranslation = currentPose.minus(targetPose.get()).getTranslation();
+        Translation2d deltaTranslation = currentPose.getTranslation().minus(targetPose.get().getTranslation());
         double driveGain = driveController.calculate(deltaTranslation.getNorm(), 0.0);
         Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle());
+
+        System.out.println(targetPose.get());
 
         mDrivebase.setLockHeading(true);
         mDrivebase.setHeadingTarget(targetPose.get().getRotation().getDegrees());

@@ -12,8 +12,8 @@ import frc.robot.subsystems.TargetSelector;
 public class AutoLoadCommand extends ConditionalCommand {
     public AutoLoadCommand(ArmAndExtender mSuperstructure, Intaker mIntaker,
             TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier wantManual) {
-        super(new GroundLoadCommand(mSuperstructure, mIntaker, mTargetSelector),
-                new AutoShelfLoadCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation,
+        super(new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector),
+                new LoadShelfCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation,
                         wantManual),
                 () -> mTargetSelector.getLoadingTarget().getLoadingLocation() == LOADING_LOCATION.GROUND);
     }

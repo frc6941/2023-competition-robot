@@ -7,8 +7,8 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.TargetSelector;
 
-public class GroundLoadCommand extends SequentialCommandGroup{
-    public GroundLoadCommand(ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
+public class LoadGroundCommand extends SequentialCommandGroup{
+    public LoadGroundCommand(ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
         addCommands(
             new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> mTargetSelector.getLoadSuperstructureState()),
             new InstantCommand(() -> mIntaker.setIntakerPower(mTargetSelector.getIntakerIntakePercentage())),

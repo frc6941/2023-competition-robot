@@ -8,11 +8,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoadCommand;
-import frc.robot.commands.AutoScoreCommand;
+import frc.robot.commands.DepAutoScoreCommand;
 import frc.robot.commands.DriveAlongPath;
 import frc.robot.commands.DriveTeleopCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
+import frc.robot.commands.WaitUntilNoCollision;
+import frc.robot.commands.AutoScoreCommand;
+import frc.robot.commands.LoadGroundSweeperCommand;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.motion.AStarPathProvider;
 import frc.robot.motion.FieldObstacles;
@@ -56,28 +59,39 @@ public class RobotContainer {
                         () -> mControlBoard.getSwerveRotation() * 1.5,
                         false));
         mSuperstructure.setDefaultCommand(
-                new AutoCommuteCommand(mSuperstructure, mIntaker, mSelector));
-
-        mControlBoard.getDriverController().getController().start().onTrue(
-                new ResetGyroCommand(mDrivebase, new Rotation2d()));
-
-        mControlBoard.getDriverController().getController().x().onTrue(
-                new AutoLoadCommand(mSuperstructure, mIntaker, mSelector,
-                        () -> mControlBoard.getConfirmation(), () -> true)
-                        .until(() -> mControlBoard.getCancellation())
+                new AutoCommuteCommand(mSuperstructure, mIntaker, mSelector)
         );
+
+        // mControlBoard.getDriverController().getController().start().onTrue(
+        //         new ResetGyroCommand(mDrivebase, new Rotation2d()));
+
+        // mControlBoard.getDriverController().getController().x().onTrue(
+        //         new AutoLoadCommand(mSuperstructure, mIntaker, mSelector,
+        //                 () -> mControlBoard.getConfirmation(), () -> true)
+        //                 .until(() -> mControlBoard.getCancellation())
+        // );
+        // mControlBoard.getDriverController().getController().y().onTrue(
+        //     new AutoScoreCommand(mDrivebase, mSuperstructure, mIntaker, mSelector,
+        //         () -> mControlBoard.getConfirmation(), () -> false)
+        //         .until(() -> mControlBoard.getCancellation()));
+
+        // mControlBoard.getDriverController().getController().leftBumper().whileTrue(
+        //         new DriveToPoseCommand(mDrivebase, () -> mSelector.getLoadPose2d())
+        //         .andThen(new RunCommand(() -> mDrivebase.stopMovement()))
+        // );
+        // mControlBoard.getDriverController().getController().rightBumper().whileTrue(
+        //     new DriveAlongPath(mDrivebase, mPathProvider, () -> mSelector.getScorePose2d(), () -> FieldObstacles.getObstacles())
+        //     .andThen(new RunCommand(() -> mDrivebase.stopMovement()))
+        // );
+
+        // mControlBoard.getDriverController().getController().y().onTrue(
+        //     new LoadGroundSweeperCommand(mSuperstructure, mIntaker, mSelector, () -> mControlBoard.getSwerveTranslation().getX())
+        //     .until(() -> mControlBoard.getCancellation())
+        // );
+
         mControlBoard.getDriverController().getController().y().onTrue(
-                new AutoScoreCommand(mDrivebase, mSuperstructure, mIntaker, mSelector,
-                        () -> mControlBoard.getConfirmation(), () -> false)
-                        .until(() -> mControlBoard.getCancellation()));
-
-        mControlBoard.getDriverController().getController().leftBumper().whileTrue(
-                new DriveToPoseCommand(mDrivebase, () -> mSelector.getLoadPose2d())
-                .andThen(new RunCommand(() -> mDrivebase.stopMovement()))
-        );
-        mControlBoard.getDriverController().getController().rightBumper().whileTrue(
-            new DriveAlongPath(mDrivebase, mPathProvider, () -> mSelector.getScorePose2d(), () -> FieldObstacles.getObstacles())
-            .andThen(new RunCommand(() -> mDrivebase.stopMovement()))
+            new AutoScoreCommand(mDrivebase, mSuperstructure, mIntaker, mSelector, () -> mControlBoard.getConfirmation(), () -> false)
+            .until(() -> mControlBoard.getCancellation())
         );
     }
 

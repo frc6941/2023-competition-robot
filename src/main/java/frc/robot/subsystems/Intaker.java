@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
@@ -13,6 +15,7 @@ import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.states.GamePiece;
 
 public class Intaker extends SubsystemBase implements Updatable{
     @AutoLog
@@ -58,6 +61,28 @@ public class Intaker extends SubsystemBase implements Updatable{
 
     public double getIntakerVoltage() {
         return mPeriodicIO.intakerMotorVoltage;
+    }
+
+    public void runIntakeCube() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CUBE);
+        setHoldPower(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CUBE);
+    }
+
+    public void runIntakeCone() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CONE);
+        setHoldPower(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CONE);
+    }
+
+    public void runIntake(Supplier<GamePiece> gamePiece) {
+        if(gamePiece.get() == GamePiece.CONE) {
+            runIntakeCone();
+        } else {
+            runIntakeCube();
+        }
+    }
+
+    public void stopIntake() {
+        setIntakerPower(0.0);
     }
 
     public boolean hasGamePiece() {
