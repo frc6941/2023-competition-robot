@@ -37,6 +37,8 @@ public class Robot extends LoggedRobot {
 
     public Robot() {
         super(Constants.LOOPER_DT);
+        
+        DriverStation.silenceJoystickConnectionWarning(true);
     }
 
     /**
@@ -52,10 +54,8 @@ public class Robot extends LoggedRobot {
         if (isReal()) {
             logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
             logger.addDataReceiver(new NT4Publisher());
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
         } else {
             logger.addDataReceiver(new NT4Publisher());
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
             DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         }
 
@@ -68,6 +68,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
+        if(isReal()) {
+            updateManager.runEnableSingle();
+        } else {
+            updateManager.runSimulateSingle();
+        }
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
@@ -91,11 +96,6 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().enable();
 
-        if (isReal()) {
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
-        } else {
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
-        }
         updateManager.invokeStart();
 
         Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
@@ -116,11 +116,6 @@ public class Robot extends LoggedRobot {
     public void teleopInit() {
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().enable();
-        if (isReal()) {
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
-        } else {
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
-        }
         updateManager.invokeStart();
     }
 

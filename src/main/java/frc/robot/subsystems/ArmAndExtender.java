@@ -278,8 +278,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
 
-        if (mPeriodicIO.extenderCurrent > 5.0 && !extenderIsHomed) {
-            System.out.println("test if is homed");
+        if (mPeriodicIO.extenderCurrent > 7.0 && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
 
@@ -338,7 +337,10 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                 mPeriodicIO.extenderDemand = 0.0;
                 break;
         }
+    }
 
+    @Override
+    public synchronized void write(double time, double dt) {
         switch (armState) {
             case HOMING:
                 armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
@@ -368,24 +370,17 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                         mPeriodicIO.extenderFeedforward);
                 break;
             case LENGTH:
-                if (!armIsHomed) {
-                    extenderMotor.set(ControlMode.MotionMagic,
-                            Conversions.degreesToFalcon(
-                                    Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
-                                            / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
-                                            * 360.0,
-                                    Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
-                            DemandType.ArbitraryFeedForward,
-                            mPeriodicIO.extenderFeedforward);
-                } else {
-                    extenderMotor.set(ControlMode.MotionMagic,
-                            Conversions.degreesToFalcon(
-                                    mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
-                                            * 360.0,
-                                    Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
-                            DemandType.ArbitraryFeedForward,
-                            mPeriodicIO.extenderFeedforward);
+                if (!armIsHomed && extenderIsHomed) {
+                    System.out.println("Extender waiting arm to be homed.");
+                    mPeriodicIO.extenderDemand = 0.885;
                 }
+                extenderMotor.set(ControlMode.MotionMagic,
+                        Conversions.degreesToFalcon(
+                                mPeriodicIO.extenderDemand / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
+                                        * 360.0,
+                                Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
+                        DemandType.ArbitraryFeedForward,
+                        mPeriodicIO.extenderFeedforward);
                 break;
             case PERCENTAGE:
                 if (!armIsHomed) {
@@ -400,11 +395,6 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                 extenderMotor.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
                 break;
         }
-    }
-
-    @Override
-    public synchronized void write(double time, double dt) {
-
     }
 
     @Override

@@ -11,7 +11,7 @@ public class AutoCommuteCommand extends SequentialCommandGroup{
         addCommands(
             new RequestSuperstructureStateAutoRetract(
                 mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState()
-            ).unless(() -> !mSuperstructure.isHomed()),
+            ),
             new InstantCommand(() -> mIntaker.setIntakerPower(0.0))
         );
     }
