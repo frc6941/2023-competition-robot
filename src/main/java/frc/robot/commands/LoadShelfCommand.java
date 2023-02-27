@@ -19,7 +19,7 @@ public class LoadShelfCommand extends SequentialCommandGroup {
             new InstantCommand(() -> mIntaker.setHoldPower(mTargetSelector.getIntakerHoldPercentage())),
             new WaitUntilCommand(confirmation),
             new RequestExtenderCommand(mSuperstructure, 1.35, 0.20).alongWith(
-                    new WaitUntilCommand(() -> mIntaker.hasGamePiece())),
+                    new WaitUntilCommand(() -> mIntaker.hasGamePiece())).unless(() -> mIntaker.hasGamePiece()),
             new InstantCommand(() -> mIntaker.setIntakerPower(0.0)),
             new RequestExtenderCommand(mSuperstructure, 0.885, 0.20),
             new RequestSuperstructureStateAutoRetract(mSuperstructure,

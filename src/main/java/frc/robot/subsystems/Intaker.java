@@ -46,7 +46,6 @@ public class Intaker extends SubsystemBase implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.restoreFactoryDefaults();
         intakerMotor.setIdleMode(IdleMode.kBrake);
         intakerMotor.setSmartCurrentLimit(15, 5);
     }
@@ -83,6 +82,10 @@ public class Intaker extends SubsystemBase implements Updatable{
 
     public void stopIntake() {
         setIntakerPower(0.0);
+    }
+
+    public void eject() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE);
     }
 
     public boolean hasGamePiece() {

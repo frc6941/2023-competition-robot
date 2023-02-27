@@ -121,7 +121,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
     private ArmAndExtender() {
         armMotorLeader.configFactoryDefault(50);
-        armMotorLeader.setNeutralMode(NeutralMode.Brake);
+        armMotorLeader.setNeutralMode(NeutralMode.Coast);
         armMotorLeader.configNeutralDeadband(0.005);
         armMotorLeader.config_kP(0, Constants.SUBSYSTEM_ARM.KP, 100);
         armMotorLeader.config_kI(0, Constants.SUBSYSTEM_ARM.KI, 100);
@@ -137,7 +137,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         armMotorLeader.setInverted(InvertType.None);
 
         armMotorFollower.configFactoryDefault(50);
-        armMotorFollower.setNeutralMode(NeutralMode.Brake);
+        armMotorFollower.setNeutralMode(NeutralMode.Coast);
         armMotorFollower.setInverted(InvertType.FollowMaster);
 
         extenderMotor.configFactoryDefault(50);
@@ -270,10 +270,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         currentSuperstructureState = new SuperstructureState(
                 Rotation2d.fromDegrees(mPeriodicIO.armAngle),
                 mPeriodicIO.extenderLength);
-    }
 
-    @Override
-    public synchronized void update(double time, double dt) {
         if (mPeriodicIO.armRevLimitReached && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_ANGLE);
         }
@@ -281,7 +278,10 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         if (mPeriodicIO.extenderCurrent > 7.0 && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
+    }
 
+    @Override
+    public synchronized void update(double time, double dt) {
         if (!armIsHomed) {
             armState = ARM_STATE.HOMING;
         }
@@ -365,13 +365,22 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
         switch (extenderState) {
             case HOMING:
-                extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand,
+                if(extenderIsHomed) {
+                    extenderMotor.set(ControlMode.MotionMagic,
+                        Conversions.degreesToFalcon(
+                                0.885 / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE
+                                        * 360.0,
+                                Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO),
                         DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.extenderFeedforward);
+                        0.0);
+                } else {
+                    extenderMotor.set(ControlMode.PercentOutput, mPeriodicIO.extenderDemand,
+                        DemandType.ArbitraryFeedForward,
+                        0.0);
+                }
                 break;
             case LENGTH:
                 if (!armIsHomed && extenderIsHomed) {
-                    System.out.println("Extender waiting arm to be homed.");
                     mPeriodicIO.extenderDemand = 0.885;
                 }
                 extenderMotor.set(ControlMode.MotionMagic,
@@ -417,11 +426,14 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
     @Override
     public synchronized void start() {
         extenderIsHomed = false;
+        armMotorLeader.setNeutralMode(NeutralMode.Brake);
+        armMotorFollower.setNeutralMode(NeutralMode.Brake);
     }
 
     @Override
     public synchronized void stop() {
-        // Auto Generated Method
+        armMotorLeader.setNeutralMode(NeutralMode.Coast);
+        armMotorFollower.setNeutralMode(NeutralMode.Coast);
     }
 
     @Override

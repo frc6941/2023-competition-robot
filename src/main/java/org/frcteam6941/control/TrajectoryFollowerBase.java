@@ -2,15 +2,14 @@ package org.frcteam6941.control;
 
 import java.util.Optional;
 
-import com.pathplanner.lib.PathPlannerTrajectory;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 
-public abstract class PathPlannerTrajectoryFollower<DriveSignalType> {
+public abstract class TrajectoryFollowerBase<DriveSignalType> {
     private final Object trajectoryLock = new Object();
 
-    private PathPlannerTrajectory currentTrajectory = null;
+    private Trajectory currentTrajectory = null;
 
     private double startTime = Double.NaN;
 
@@ -26,7 +25,7 @@ public abstract class PathPlannerTrajectoryFollower<DriveSignalType> {
      * @return the signal required to follow the trajectory
      */
     protected abstract DriveSignalType calculateDriveSignal(Pose2d currentPose, Translation2d velocity,
-                                                            double rotationalVelocity, PathPlannerTrajectory trajectory,
+                                                            double rotationalVelocity, Trajectory trajectory,
                                                             double time, double dt);
 
     /**
@@ -50,7 +49,7 @@ public abstract class PathPlannerTrajectoryFollower<DriveSignalType> {
         }
     }
 
-    public final void follow(PathPlannerTrajectory trajectory) {
+    public final void follow(Trajectory trajectory) {
         synchronized (trajectoryLock) {
             currentTrajectory = trajectory;
             startTime = Double.NaN;
@@ -62,7 +61,7 @@ public abstract class PathPlannerTrajectoryFollower<DriveSignalType> {
      *
      * @return the current trajectory being followed
      */
-    public final Optional<PathPlannerTrajectory> getCurrentTrajectory() {
+    public final Optional<Trajectory> getCurrentTrajectory() {
         synchronized (trajectoryLock) {
             return Optional.ofNullable(currentTrajectory);
         }
@@ -81,7 +80,7 @@ public abstract class PathPlannerTrajectoryFollower<DriveSignalType> {
      */
     public final Optional<DriveSignalType> update(Pose2d currentPose, Translation2d velocity,
                                                   double rotationalVelocity, double time, double dt) {
-        PathPlannerTrajectory trajectory;
+        Trajectory trajectory;
         double timeSinceStart;
 
         synchronized (trajectoryLock) {

@@ -65,6 +65,7 @@
       "/SmartDashboard/Game Piece": "String Chooser",
       "/SmartDashboard/Loading Location": "String Chooser",
       "/SmartDashboard/Mechanism": "Mechanism2d",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
       "/SmartDashboard/Simulated Game Piece": "String Chooser",
       "/SmartDashboard/Target Grid": "String Chooser",
       "/SmartDashboard/Target Row": "String Chooser",
@@ -82,6 +83,11 @@
         }
       },
       "/SmartDashboard/Loading Location": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/SendableChooser[0]": {
         "window": {
           "visible": true
         }

@@ -15,19 +15,23 @@ import frc.robot.FieldConstants;
 import frc.robot.utils.AllianceFlipUtil;
 
 public class FieldObstacles {
-        private static InfiniteBarrierObstacle fieldYBarrierSmaller = new InfiniteBarrierObstacle(0.0, DIRECTION.SMALLER, AXIS.Y);
-        private static InfiniteBarrierObstacle fieldYBarrierLarger = new InfiniteBarrierObstacle(FieldConstants.fieldLength, DIRECTION.GREATER, AXIS.Y);
+    private static InfiniteBarrierObstacle fieldYBarrierSmaller = new InfiniteBarrierObstacle(0.0, DIRECTION.SMALLER,
+            AXIS.Y);
+    private static InfiniteBarrierObstacle fieldYBarrierLarger = new InfiniteBarrierObstacle(FieldConstants.fieldLength,
+            DIRECTION.GREATER, AXIS.Y);
 
-        public static Obstacle[] getObstacles() {
-            Obstacle boundaryChargingStation = new RectangularObstacle(
+    public static Obstacle[] getObstacles() {
+        Obstacle minDriveX = AllianceFlipUtil.shouldFlip()
+                ? new InfiniteBarrierObstacle(FieldConstants.Grids.outerX + 0.5, DIRECTION.SMALLER, AXIS.X)
+                : new InfiniteBarrierObstacle(AllianceFlipUtil.apply(FieldConstants.Grids.outerX + 0.5),
+                        DIRECTION.GREATER, AXIS.X);
+        Obstacle boundaryChargingStation = new RectangularObstacle(
                 List.of(FieldConstants.Community.chargeStationCornersBumpered).stream()
-                                .map(translation -> AllianceFlipUtil.apply(translation))
-                                .collect(Collectors.toList()).toArray(new Translation2d[0]));
-            return new Obstacle[] {
-                boundaryChargingStation, fieldYBarrierLarger, fieldYBarrierSmaller
-            };
-        }
-
-        
+                        .map(translation -> AllianceFlipUtil.apply(translation))
+                        .collect(Collectors.toList()).toArray(new Translation2d[0]));
+        return new Obstacle[] {
+                boundaryChargingStation, fieldYBarrierLarger, fieldYBarrierSmaller, minDriveX
+        };
+    }
 
 }

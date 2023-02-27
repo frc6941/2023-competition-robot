@@ -44,7 +44,7 @@ public final class Constants {
     }
 
     // Looper Configurations
-    public static final double LOOPER_DT = 1.0 / 150.0; // The robot is running at 150Hz
+    public static final double LOOPER_DT = 1.0 / 60.0; // The robot is running at 60Hz
 
     // CAN ID Configurations
     public static final class CANID {
@@ -60,7 +60,7 @@ public final class Constants {
         public static final int ARM_MOTOR_LEADER = 8;
         public static final int ARM_MOTOR_FOLLOWER = 9;
         public static final int EXTENDER_MOTOR = 10;
-        public static final int INTAKER_MOTOR = 11;
+        public static final int INTAKER_MOTOR = 15;
     }
 
     // Analog ID Configurations
@@ -106,7 +106,7 @@ public final class Constants {
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 50.0;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 40.0;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.0001;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.0005;
         
@@ -118,9 +118,9 @@ public final class Constants {
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
 
-        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(3.5, 5.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(3.5, 3.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
-                300.0, 900.0);
+                400.0, 1500.0);
     }
 
     // Arm Constants

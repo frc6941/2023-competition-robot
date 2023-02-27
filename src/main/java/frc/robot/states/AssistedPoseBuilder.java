@@ -56,7 +56,7 @@ public class AssistedPoseBuilder {
             directionDegrees = 0.0;
         }
 
-        double targetY = FieldConstants.Grids.complexLowTranslations[scoringTarget.getPosition(gamePiece)].getY();
+        double targetY = FieldConstants.Grids.complexLowTranslations[scoringTarget.getPosition()].getY();
         return AllianceFlipUtil.apply(
             new Pose2d(minDriveX, targetY, Rotation2d.fromDegrees(directionDegrees))
         );

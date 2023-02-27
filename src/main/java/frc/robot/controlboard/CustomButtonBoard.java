@@ -19,4 +19,8 @@ public class CustomButtonBoard extends GenericHID {
     public boolean getRawButton(BUTTON button) {
         return getRawButton(button.id);
     }
+
+    public boolean getRawButtonPressed(BUTTON button) {
+        return getRawButtonPressed(button.id);
+    }
 }

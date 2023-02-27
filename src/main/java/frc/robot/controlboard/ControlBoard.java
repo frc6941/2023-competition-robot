@@ -3,6 +3,7 @@ package frc.robot.controlboard;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants;
+import frc.robot.controlboard.CustomButtonBoard.BUTTON;
 import frc.robot.controlboard.CustomXboxController.Axis;
 import frc.robot.controlboard.CustomXboxController.Side;
 
@@ -49,7 +50,6 @@ public class ControlBoard {
         double strafeAxis = yLimiter.calculate(driver.getAxis(Side.LEFT, Axis.X));
         // double strafeAxis = 0.0;
         double pedal = driver.getTrigger(Side.RIGHT);
-        double breaker = driver.getTrigger(Side.LEFT);
 
         forwardAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_Y ? forwardAxis : -forwardAxis;
         strafeAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_X ? strafeAxis : -strafeAxis;
@@ -60,8 +60,7 @@ public class ControlBoard {
             return new Translation2d();
         } else {
             double pedalScale = 1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL + Constants.CONTROLBOARD.CONTROLLER_PEDAL * pedal;
-            double breakScale = (1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL) * breaker;
-            return tAxes.times(pedalScale).minus(tAxes.times(breakScale));
+            return tAxes.times(pedalScale);
         }
     }
 
@@ -82,5 +81,33 @@ public class ControlBoard {
 
     public boolean getCancellation() {
         return driver.getController().getHID().getBButtonPressed();
+    }
+
+    public boolean getTargetMoveRight() {
+        return operator.getRawButtonPressed(BUTTON.MR);
+    }
+
+    public boolean getTargetMoveLeft() {
+        return operator.getRawButtonPressed(BUTTON.ML);
+    }
+
+    public boolean getTargetMoveUp() {
+        return operator.getRawButtonPressed(BUTTON.UM);
+    }
+
+    public boolean getTargetMoveDown() {
+        return operator.getRawButtonPressed(BUTTON.LM);
+    }
+
+    public boolean getLoadStation() {
+        return operator.getRawButtonPressed(BUTTON.UL);
+    }
+
+    public boolean getLoadGround() {
+        return operator.getRawButtonPressed(BUTTON.UR);
+    }
+
+    public double getSweeperExtension() {
+        return driver.getTrigger(Side.LEFT);
     }
 }

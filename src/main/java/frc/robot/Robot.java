@@ -17,9 +17,11 @@ import com.pathplanner.lib.server.PathPlannerServer;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
 import frc.robot.auto.modes.AutoModeBase;
+import frc.robot.subsystems.ArmAndExtender;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,13 +33,12 @@ import frc.robot.auto.modes.AutoModeBase;
  * project.
  */
 public class Robot extends LoggedRobot {
-    private final AutoSelector mAutoSelector = AutoSelector.getInstance();
     private final RobotContainer mContainer = new RobotContainer();
     private final UpdateManager updateManager = mContainer.getUpdateManager();
+    private final AutoSelector mAutoSelector = AutoSelector.getInstance();
 
     public Robot() {
         super(Constants.LOOPER_DT);
-        
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 
@@ -64,6 +65,8 @@ public class Robot extends LoggedRobot {
         if (Constants.AUTO_TUNING) {
             PathPlannerServer.startServer(6941);
         }
+
+        SmartDashboard.putData(mAutoSelector.getSendableChooser());
     }
 
     @Override
@@ -101,6 +104,7 @@ public class Robot extends LoggedRobot {
         Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
         autoMode.ifPresent(autoModeBase -> {
             if (autoModeBase.getAutoCommand() != null) {
+                System.out.println("Has Auto");
                 autoModeBase.getAutoCommand().schedule();
             }
         });

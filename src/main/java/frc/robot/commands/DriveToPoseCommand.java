@@ -14,7 +14,7 @@ import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 public class DriveToPoseCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
     // Pose Assist Controller
-    private ProfiledPIDController driveController = new ProfiledPIDController(2.5, 0.001, 0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
+    private ProfiledPIDController driveController = new ProfiledPIDController(3.0, 0.001, 0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
 
     private Supplier<Pose2d> targetPose;
 
@@ -45,8 +45,6 @@ public class DriveToPoseCommand extends CommandBase {
         Translation2d deltaTranslation = currentPose.getTranslation().minus(targetPose.get().getTranslation());
         double driveGain = driveController.calculate(deltaTranslation.getNorm(), 0.0);
         Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle());
-
-        System.out.println(targetPose.get());
 
         mDrivebase.setLockHeading(true);
         mDrivebase.setHeadingTarget(targetPose.get().getRotation().getDegrees());

@@ -2,10 +2,19 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
+
+import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.DoubleArrayEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.controlboard.ControlBoard;
 import frc.robot.controlboard.CustomButtonBoard;
 import frc.robot.controlboard.CustomButtonBoard.BUTTON;
 import frc.robot.states.AssistedPoseBuilder;
@@ -21,6 +30,15 @@ import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
 
 public class TargetSelector extends SubsystemBase implements Updatable {
+    @AutoLog
+    public static class TargetSelectorPeriodicIO {
+        // INPUT
+        public double[] targetSelect = new double[] { 6, 2 };
+    }
+    
+    public TargetSelectorPeriodicIOAutoLogged mPeriodicIO = new TargetSelectorPeriodicIOAutoLogged();
+
+
     private GamePiece targetGamePiece = GamePiece.CONE;
     private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.MID, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
     private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
@@ -29,7 +47,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private Direction commutingDirection = Direction.NEAR;
     private Direction loadingDirection = Direction.NEAR;
 
-    private CustomButtonBoard mButtonBoard;
+    private ControlBoard mControlBoard = ControlBoard.getInstance();
     private AddressableLEDWrapper mIndicator;
 
     private static TargetSelector instance;
@@ -85,10 +103,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
 
     public Direction getLoadingDirection() {
         return this.loadingDirection;
-    }
-
-    public void bindButtonBoard(CustomButtonBoard buttonBoard) {
-        this.mButtonBoard = buttonBoard;
     }
 
     public SuperstructureState getCommuteSuperstructureState() {
@@ -148,9 +162,55 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         }
     }
 
+    private int[] clampTargetSelect(int[] ids) {
+        return new int[] { (int) Util.clamp(ids[0], 0, 8), (int) Util.clamp(ids[1], 0, 2) };
+    }
 
     @Override
     public synchronized void read(double time, double dt){
+        double[] temp = mPeriodicIO.targetSelect;
+        if(mControlBoard.getTargetMoveDown()) {
+            temp[1] -= 1;
+        }
+        if(mControlBoard.getTargetMoveUp()) {
+            temp[1] += 1;
+        }
+        if(mControlBoard.getTargetMoveRight()) {
+            temp[0] -= 1;
+        }
+        if(mControlBoard.getTargetMoveLeft()) {
+            temp[0] += 1;
+        }
+
+        int[] transformed = new int[] { 0, 0 };
+        for(int i = 0; i < temp.length; i++) {
+            transformed[i] = (int) temp[i];
+        }
+        transformed = clampTargetSelect(transformed);
+
+        double[] record = new double[] { 0, 0 };
+        for(int i = 0; i < transformed.length; i++) {
+            record[i] = (double) transformed[i];
+        }
+
+        if(record.equals(mPeriodicIO.targetSelect)) {
+
+        } else {
+            mPeriodicIO.targetSelect = record;
+            scoringTarget = new ScoringTarget(transformed);
+            if(scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE) {
+                this.targetGamePiece = GamePiece.CUBE;
+            } else {
+                this.targetGamePiece = GamePiece.CONE;
+            }
+        }
+
+        if(mControlBoard.getLoadGround()) {
+            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.GROUND);
+        }
+        if(mControlBoard.getLoadStation()) {
+            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
+        }
     }
     
     @Override
@@ -173,34 +233,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
                 loadingDirection = Direction.FAR;
                 break;
         }
-
-        if(mButtonBoard.getRawButton(BUTTON.LM)) {
-            setScoringTarget(new ScoringTarget(SCORING_ROW.LOW, SCORING_GRID.INNER, SCORING_SIDE.OUTER));
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.MM)) {
-            setScoringTarget(new ScoringTarget(SCORING_ROW.MID, SCORING_GRID.INNER, SCORING_SIDE.OUTER));
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.UM)) {
-            setScoringTarget(new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER));
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.UL)) {
-            setTargetGamePiece(GamePiece.CONE);
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.UR)) {
-            setTargetGamePiece(GamePiece.CUBE);
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.LL)) {
-            setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER));
-        }
-
-        if(mButtonBoard.getRawButton(BUTTON.LR)) {
-            setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND));
-        }
     }
     
     @Override
@@ -210,6 +242,8 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void telemetry(){
+        Logger.getInstance().processInputs("Target Selector", mPeriodicIO);
+
     }
     
     @Override
@@ -224,6 +258,44 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void simulate(double time, double dt){
-        // Auto Generated Method
+        double[] temp = mPeriodicIO.targetSelect;
+        if(mControlBoard.getTargetMoveDown()) {
+            temp[1] -= 1;
+        }
+        if(mControlBoard.getTargetMoveUp()) {
+            temp[1] += 1;
+        }
+        if(mControlBoard.getTargetMoveRight()) {
+            temp[0] -= 1;
+        }
+        if(mControlBoard.getTargetMoveLeft()) {
+            temp[0] += 1;
+        }
+
+        int[] transformed = new int[] { 0, 0 };
+        for(int i = 0; i < temp.length; i++) {
+            transformed[i] = (int) temp[i];
+        }
+        transformed = clampTargetSelect(transformed);
+
+        double[] record = new double[] { 0, 0 };
+        for(int i = 0; i < transformed.length; i++) {
+            record[i] = (double) transformed[i];
+        }
+        mPeriodicIO.targetSelect = record;
+
+        scoringTarget = new ScoringTarget(transformed);
+        if(scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE) {
+            this.targetGamePiece = GamePiece.CUBE;
+        } else {
+            this.targetGamePiece = GamePiece.CONE;
+        }
+
+        if(mControlBoard.getLoadGround()) {
+            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.GROUND);
+        }
+        if(mControlBoard.getLoadStation()) {
+            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
+        }
     }
 }
