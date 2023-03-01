@@ -9,9 +9,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
 
-public class HolonomicTrajectoryFollower extends TrajectoryFollowerBase<HolonomicDriveSignal> {
+public class HolonomicTrajectoryFollower extends PathPlannerTrajectoryFollowerBase<HolonomicDriveSignal> {
     private final PIDController xController;
     private final PIDController yController;
     private final ProfiledPIDController thetaController;
@@ -40,7 +39,7 @@ public class HolonomicTrajectoryFollower extends TrajectoryFollowerBase<Holonomi
 
     @Override
     protected HolonomicDriveSignal calculateDriveSignal(Pose2d currentPose, Translation2d velocity,
-            double rotationalVelocity, Trajectory trajectory, double time,
+            double rotationalVelocity, PathPlannerTrajectory trajectory, double time,
             double dt) {
         if (time > trajectory.getTotalTimeSeconds()) {
             if (this.requiredOnTarget) {
@@ -110,7 +109,7 @@ public class HolonomicTrajectoryFollower extends TrajectoryFollowerBase<Holonomi
     }
 
     public boolean isPathFollowing() {
-        return this.getCurrentTrajectory().isPresent();
+        return !finished;
     }
 
     public void sendData() {

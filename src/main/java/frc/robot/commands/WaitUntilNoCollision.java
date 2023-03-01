@@ -12,11 +12,10 @@ import frc.robot.subsystems.TargetSelector;
 import frc.robot.utils.AllianceFlipUtil;
 
 public class WaitUntilNoCollision extends SequentialCommandGroup{
-    public static final double minDriveX = FieldConstants.Grids.outerX + 0.8;
+    public static final double minDriveX = FieldConstants.Grids.outerX + 0.7;
     public WaitUntilNoCollision(Supplier<Pose2d> pose, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
         addCommands(
-            new WaitUntilCommand(() -> AllianceFlipUtil.apply(pose.get()).getX() > minDriveX),
-            new AutoCommuteCommand(mSuperstructure, mIntaker, mTargetSelector)
+            new WaitUntilCommand(() -> AllianceFlipUtil.apply(pose.get()).getX() > minDriveX)
         );
     }
 }

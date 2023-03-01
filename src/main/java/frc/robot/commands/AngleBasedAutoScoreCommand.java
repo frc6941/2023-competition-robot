@@ -15,8 +15,8 @@ import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
 
-public class DepAutoScoreCommand extends SequentialCommandGroup {
-    public DepAutoScoreCommand(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker,
+public class AngleBasedAutoScoreCommand extends SequentialCommandGroup {
+    public AngleBasedAutoScoreCommand(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker,
             TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier shouldAutoScore) {
         addCommands(
             new ConditionalCommand(

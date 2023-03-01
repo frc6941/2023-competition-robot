@@ -36,6 +36,7 @@ public class AutoScore {
 
     Supplier<Pose2d> drivetrainTargetSupplier;
     Supplier<SuperstructureState> superstructureTargetSupplier;
+    Supplier<SuperstructureState> superstructureTargetLoweredSupplier;
     BooleanSupplier alignedScore;
 
     private static final Translation3d higherDelta = new Translation3d(-0.10, 0.0, 0.30);
@@ -50,7 +51,6 @@ public class AutoScore {
 
     private Command driveCommand;
     private Command armCommand;
-    private double lower;
     
 
     public AutoScore(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier alignedScore) {
@@ -63,9 +63,7 @@ public class AutoScore {
         initSuppliers();
 
         driveCommand = new DriveToPoseCommand(mDrivebase, drivetrainTargetSupplier).andThen(new InstantCommand(() -> mDrivebase.stopMovement()));
-        armCommand = Commands.runOnce(() -> lower = 0.0)
-        .andThen(
-            new ConditionalCommand(
+        armCommand = new ConditionalCommand(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier),
 
             new RequestExtenderCommand(mSuperstructure, 0.885, 0.05)
@@ -77,16 +75,14 @@ public class AutoScore {
                 && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 20.0
                 && Math.abs(superstructureTargetSupplier.get().armAngle.minus(mSuperstructure.getCurrentSuperstructureState().armAngle).getDegrees()) < 10.0;
             }
-        ).repeatedly().until(confirmation))
+        ).repeatedly().until(confirmation)
         .andThen(
-            Commands.runOnce(() -> lower = 0.10)
-            .andThen(new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier))
+            new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetLoweredSupplier)
             .andThen(new WaitCommand(0.3))
             .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
         )
-        .andThen(new InstantCommand(() -> mIntaker.setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE)))
-        .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector))
-        .andThen(Commands.runOnce(() -> lower = 0.0));
+        .andThen(new InstantCommand(mIntaker::eject))
+        .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector));
     }
 
     public void initSuppliers() {
@@ -95,7 +91,13 @@ public class AutoScore {
             getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
             mTargetSelector.getScoringTarget(),
             mTargetSelector.getScoringDirection(),
-            lower
+            0.0
+        );
+        superstructureTargetLoweredSupplier = () -> getSupertructureStateTarget(
+            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
+            mTargetSelector.getScoringTarget(),
+            mTargetSelector.getScoringDirection(),
+            0.10
         );
     }
 
@@ -247,5 +249,9 @@ public class AutoScore {
 
     public Supplier<SuperstructureState> getSuperstructureTargetSupplier() {
         return superstructureTargetSupplier;
+    }
+
+    public Supplier<SuperstructureState> getSuperstructureTargetSupplierLower() {
+        return superstructureTargetLoweredSupplier;
     }
 }

@@ -16,11 +16,11 @@ import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
-import frc.robot.auto.modes.AutoModeBase;
 import frc.robot.subsystems.ArmAndExtender;
 
 /**
@@ -65,8 +65,6 @@ public class Robot extends LoggedRobot {
         if (Constants.AUTO_TUNING) {
             PathPlannerServer.startServer(6941);
         }
-
-        SmartDashboard.putData(mAutoSelector.getSendableChooser());
     }
 
     @Override
@@ -88,7 +86,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void disabledPeriodic() {
-        mAutoSelector.updateModeCreator();
+        mAutoSelector.update();
     }
 
     /**
@@ -100,14 +98,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().enable();
 
         updateManager.invokeStart();
-
-        Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
-        autoMode.ifPresent(autoModeBase -> {
-            if (autoModeBase.getAutoCommand() != null) {
-                System.out.println("Has Auto");
-                autoModeBase.getAutoCommand().schedule();
-            }
-        });
+        mAutoSelector.getAutoCommand().schedule();
     }
 
     /** This function is called periodically during autonomous. */

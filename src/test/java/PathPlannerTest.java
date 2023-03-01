@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.frcteam6941.pathplanning.astar.AStarPathPlanner;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle;
@@ -22,8 +23,12 @@ import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import frc.robot.FieldConstants;
 import frc.robot.motion.FieldObstacles;
+import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 
 public class PathPlannerTest {
     @BeforeEach
@@ -123,11 +128,6 @@ public class PathPlannerTest {
     }
 
     public static void main(String[] args) {
-        Pose2d currentPose = new Pose2d(5.0, 5.0, new Rotation2d());
-        Pose2d currentVelocity = new Pose2d(-2.0, -0.0, new Rotation2d());
-        Pose2d trackingPose = new Pose2d(0.0, 0.0, new Rotation2d());
-        Translation2d deltaTranslation = trackingPose.getTranslation().minus(currentPose.getTranslation());
-        double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
-        System.out.println(dot / deltaTranslation.getNorm());
+        
     }
 }

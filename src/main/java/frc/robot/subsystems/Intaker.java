@@ -9,6 +9,7 @@ import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.team254.lib.util.TimeDelayedBoolean;
 import com.team254.lib.util.Util;
 
@@ -48,6 +49,12 @@ public class Intaker extends SubsystemBase implements Updatable{
     private Intaker() {
         intakerMotor.setIdleMode(IdleMode.kBrake);
         intakerMotor.setSmartCurrentLimit(15, 5);
+
+        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535);
+        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 65535);
+        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 65535);
+        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 65535);
     }
 
     public void setIntakerPower(double power) {

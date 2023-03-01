@@ -1,33 +1,65 @@
 package frc.robot.auto;
 
-import java.util.Optional;
+import java.lang.annotation.Target;
 
-import com.team254.lib.geometry.Translation2d;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import frc.robot.auto.modes.AutoModeBase;
-import frc.robot.auto.modes.MobilityAuto;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FieldConstants;
+import frc.robot.auto.basics.AutoActions;
+import frc.robot.commands.AutoScore;
+import frc.robot.states.ScoringTarget;
+import frc.robot.states.ScoringTarget.SCORING_GRID;
+import frc.robot.states.ScoringTarget.SCORING_ROW;
+import frc.robot.states.ScoringTarget.SCORING_SIDE;
+import frc.robot.subsystems.ArmAndExtender;
+import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
+import frc.robot.subsystems.TargetSelector;
 
 public class AutoSelector {
-    public enum AUTO_MODES {
-        INNER_CONE_CONE,
-        MOBILITY
+    public enum AUTO_START_POSITION {
+        INNER,
+        OUTER,
+        CENTER
     }
 
-    private AUTO_MODES mCachedDesiredMode = AUTO_MODES.MOBILITY;
+    public enum AUTO_ACTION {
+        DO_NOTHING,
+        MOBILITY,
+        SCORE_PRELOAD,
+        TWO_GAMEPIECE,
+        LINK
+    }
 
-    private AutoModeBase mAutoMode;
+    public enum AUTO_BALANCE {
+        YES,
+        NO
+    }
 
-    private final SendableChooser<AUTO_MODES> mModeChooser;
-
+    private final SendableChooser<AUTO_START_POSITION> autoStartPosition = new SendableChooser<>();
+    private final SendableChooser<AUTO_ACTION> autoAction = new SendableChooser<>();
+    private final SendableChooser<AUTO_BALANCE> autoBalance = new SendableChooser<>();
     private boolean autoWarning = false;
 
+    private final AutoActions autoBuilder;
+    private Command builtAutoCommand;
+
     private AutoSelector() {
-        mModeChooser = new SendableChooser<>();
-        mModeChooser.setDefaultOption("Mobility", AUTO_MODES.MOBILITY);
-        mModeChooser.addOption("Inner Cone and Cone", AUTO_MODES.INNER_CONE_CONE);
+        autoStartPosition.addOption("Inner (Field Side)", AUTO_START_POSITION.INNER);
+        autoStartPosition.addOption("Outer (Wall Side)", AUTO_START_POSITION.OUTER);
+        autoStartPosition.addOption("Middle", AUTO_START_POSITION.CENTER);
+
+        autoAction.setDefaultOption("Do Nothing", AUTO_ACTION.DO_NOTHING);
+        autoAction.addOption("Mobility", AUTO_ACTION.DO_NOTHING);
+        autoAction.addOption("Score Preload", AUTO_ACTION.SCORE_PRELOAD);
+        autoAction.addOption("Score Preload, then Get Cube", AUTO_ACTION.TWO_GAMEPIECE);
+        autoAction.addOption("Score Link", AUTO_ACTION.LINK);
+
+        autoBalance.setDefaultOption("DO NOT Balance", AUTO_BALANCE.NO);
+        autoBalance.setDefaultOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT", AUTO_BALANCE.YES);
+
+
+        autoBuilder = new AutoActions(SJTUSwerveMK5Drivebase.getInstance(), ArmAndExtender.getInstance(), Intaker.getInstance(), TargetSelector.getInstance());
     }
 
     public static AutoSelector getInstance() {
@@ -39,58 +71,16 @@ public class AutoSelector {
 
     private static AutoSelector instance;
 
-    public void updateModeCreator() {
-        AUTO_MODES desiredMode = mModeChooser.getSelected();
-        if (desiredMode == null) {
-            desiredMode = AUTO_MODES.MOBILITY;
-        }
-        if (mCachedDesiredMode != desiredMode) {
-            System.out.println("Auto Selection Changed:" + desiredMode.name());
-            mAutoMode = getAutoModeForParams(desiredMode).map(autoModeBase -> {
-                resetStartingPosition(autoModeBase.getStartingPose());
-                return autoModeBase;
-            }).orElseGet(() -> {
-                resetStartingPosition(new Pose2d());
-                return null;
-            });
-        }
-        mCachedDesiredMode = desiredMode;
+    public void update() {
+        this.builtAutoCommand = 
+            autoBuilder.intakeAndScore(
+                new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.INNER),
+                FieldConstants.StagingLocations.translations[3]
+            );
     }
 
-    private Optional<AutoModeBase> getAutoModeForParams(AUTO_MODES mode) {
-        switch (mode) {
-            case MOBILITY:
-                autoWarning = false;
-                return Optional.of(
-                    new MobilityAuto()
-                );
-
-            default:
-                autoWarning = true;
-                System.out.println("ERROR: unexpected auto mode: " + mode);
-                break;
-        }
-
-        autoWarning = true;
-        System.err.println("No valid auto mode found for  " + mode);
-        return Optional.empty();
-    }
-
-    public void reset() {
-        mAutoMode = null;
-        mCachedDesiredMode = null;
-    }
-
-    public void resetStartingPosition(Pose2d pose) {
-        SJTUSwerveMK5Drivebase.getInstance().resetPose(pose);
-    }
-
-    public Optional<AutoModeBase> getAutoMode() {
-        return Optional.ofNullable(mAutoMode);
-    }
-
-    public SendableChooser<AUTO_MODES> getSendableChooser() {
-        return mModeChooser;
+    public Command getAutoCommand() {
+        return builtAutoCommand;
     }
 
     public boolean getAutoWarning() {

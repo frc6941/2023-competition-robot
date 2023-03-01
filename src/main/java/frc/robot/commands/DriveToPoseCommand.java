@@ -25,6 +25,10 @@ public class DriveToPoseCommand extends CommandBase {
         addRequirements(mDrivebase);
     }
 
+    public DriveToPoseCommand(SJTUSwerveMK5Drivebase mDrivebase, Pose2d targetPose) {
+        this(mDrivebase, () -> targetPose);
+    }
+
     @Override
     public void initialize() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();

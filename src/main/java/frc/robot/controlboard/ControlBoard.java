@@ -49,7 +49,7 @@ public class ControlBoard {
         double forwardAxis = xLimiter.calculate(driver.getAxis(Side.LEFT, Axis.Y));
         double strafeAxis = yLimiter.calculate(driver.getAxis(Side.LEFT, Axis.X));
         // double strafeAxis = 0.0;
-        double pedal = driver.getTrigger(Side.RIGHT);
+        double brake = driver.getTrigger(Side.RIGHT);
 
         forwardAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_Y ? forwardAxis : -forwardAxis;
         strafeAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_X ? strafeAxis : -strafeAxis;
@@ -59,8 +59,8 @@ public class ControlBoard {
         if (Math.abs(tAxes.getNorm()) < kSwerveDeadband) {
             return new Translation2d();
         } else {
-            double pedalScale = 1.0 - Constants.CONTROLBOARD.CONTROLLER_PEDAL + Constants.CONTROLBOARD.CONTROLLER_PEDAL * pedal;
-            return tAxes.times(pedalScale);
+            double brakeScale = Constants.CONTROLBOARD.DRIVER_BRAKE_MAX * brake;
+            return tAxes.times(brakeScale);
         }
     }
 

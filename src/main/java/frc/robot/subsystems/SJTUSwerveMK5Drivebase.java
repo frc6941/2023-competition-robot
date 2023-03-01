@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -51,8 +52,8 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
 
     // Path Following Controller
     private final HolonomicTrajectoryFollower trajectoryFollower = new HolonomicTrajectoryFollower(
-            new PIDController(1.5, 0.0, 0.0),
-            new PIDController(1.5, 0.0, 0.0),
+            new PIDController(2.0, 0.0, 0.0),
+            new PIDController(2.0, 0.0, 0.0),
             this.headingController,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_FEEDFORWARD);
 
@@ -284,12 +285,11 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
      *                         trajectory.
      * @param requiredOnTarget Is on target required.
      */
-    public void follow(PathPlannerTrajectory targetTrajectory, boolean isLockAngle, boolean resetOnStart,
-            boolean requiredOnTarget) {
+    public void follow(PathPlannerTrajectory targetTrajectory, boolean isLockAngle, boolean resetOnStart, boolean requiredOnTarget) {
         this.trajectoryFollower.setLockAngle(isLockAngle);
         this.trajectoryFollower.setRequiredOnTarget(requiredOnTarget);
         if (resetOnStart) {
-            this.gyro.setYaw(targetTrajectory.getInitialHolonomicPose().getRotation().getDegrees());
+            this.gyro.setYaw(targetTrajectory.getInitialPose().getRotation().getDegrees());
             this.headingController.reset(getYaw(), getAngularVelocity());
         }
         this.trajectoryFollower.follow(targetTrajectory);

@@ -2,52 +2,75 @@ package frc.robot.auto.basics;
 
 import java.util.List;
 
+import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
-import edu.wpi.first.math.trajectory.constraint.TrajectoryConstraint;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 
 public class FollowTrajectory extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
-    Trajectory targetTrajectory;
-    
-    private final PIDController xController;
-    private final PIDController yController;
-    private final ProfiledPIDController thetaController;
-    private final SimpleMotorFeedforward feedforward;
+    private PathPlannerTrajectory targetTrajectory = null;
+    private List<PathPoint> wayPoints;
+    private boolean reverse;
 
-    private static final double maxVelocity = 3.0;
-    private static final double maxAcceleration = 3.0;
-    private static final double maxCentripetalAcceleration = 3.0;
+    private static final double maxVelocity = 3.5;
+    private static final double maxAcceleration = 5.0;
 
     public FollowTrajectory(
-        SJTUSwerveMK5Drivebase mDrivebase,
-        Pose2d startPose, Pose2d endPose, List<Translation2d> innerPoints,
-        List<TrajectoryConstraint> constraints) {
-        TrajectoryConfig config = new TrajectoryConfig(maxVelocity, maxAcceleration)
-                .setKinematics(mDrivebase.getKinematics())
-                .setEndVelocity(0.0)
-                .setStartVelocity(0.0)
-                .addConstraints(constraints)
-                .addConstraint(new CentripetalAccelerationConstraint(maxCentripetalAcceleration));
+            SJTUSwerveMK5Drivebase mDrivebase,
+            List<PathPoint> wayPoints,
+            boolean reverse) {
+        this.mDrivebase = mDrivebase;
+        this.wayPoints = wayPoints;
+        this.reverse = reverse;
+        addRequirements(mDrivebase);
+    }
 
-        targetTrajectory = TrajectoryGenerator.generateTrajectory(startPose, innerPoints, endPose, config);
+    public FollowTrajectory(
+            SJTUSwerveMK5Drivebase mDrivebase,
+            List<PathPoint> wayPoints) {
+        this.mDrivebase = mDrivebase;
+        this.wayPoints = wayPoints;
+        this.reverse = false;
+        addRequirements(mDrivebase);
+    }
+
+    public FollowTrajectory(
+            SJTUSwerveMK5Drivebase mDrivebase,
+            PathPlannerTrajectory trajectory) {
+        this.mDrivebase = mDrivebase;
+        this.targetTrajectory = trajectory;
+        this.reverse = false;
+        addRequirements(mDrivebase);
+    }
+
+    public FollowTrajectory(
+            SJTUSwerveMK5Drivebase mDrivebase,
+            PathPlannerTrajectory trajectory,
+            boolean reverse) {
+        this.mDrivebase = mDrivebase;
+        this.targetTrajectory = trajectory;
+        this.reverse = reverse;
+        addRequirements(mDrivebase);
     }
 
     @Override
     public void initialize() {
+        if (this.targetTrajectory == null || this.targetTrajectory.getStates().size() <= 1) {
+            try {
+                targetTrajectory = PathPlanner.generatePath(new PathConstraints(maxVelocity, maxAcceleration), reverse, wayPoints);
+            } catch (Exception e) {
+                System.out.println("Trajectory generation failed.");
+            }
+        }
+        this.targetTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(targetTrajectory, DriverStation.getAlliance());
+        this.mDrivebase.getFollower().cancel();
+        this.mDrivebase.follow(targetTrajectory, true, false, true);
     }
 
     @Override
@@ -56,9 +79,12 @@ public class FollowTrajectory extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
+        this.mDrivebase.cancelFollow();
+        this.mDrivebase.stopMovement();
     }
 
     @Override
     public boolean isFinished() {
+        return !this.mDrivebase.getFollower().isPathFollowing();
     }
 }
