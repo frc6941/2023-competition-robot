@@ -64,15 +64,15 @@ public class AutoScore {
 
         driveCommand = new DriveToPoseCommand(mDrivebase, drivetrainTargetSupplier).andThen(new InstantCommand(() -> mDrivebase.stopMovement()));
         armCommand = new ConditionalCommand(
-            new RequestSuperstructureStateAutoRetract(mSuperstructure, superstructureTargetSupplier),
+            new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier),
 
             new RequestExtenderCommand(mSuperstructure, 0.885, 0.05)
             .andThen(new RequestArmCommand(mSuperstructure, () -> superstructureTargetSupplier.get().armAngle.getDegrees(), 5.0)),
 
             () -> {
                 Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
-                return pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.50
-                && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 20.0;
+                return pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60
+                && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 25.0;
             }
         ).repeatedly().until(confirmation)
         .andThen(
