@@ -2,6 +2,7 @@ package frc.robot.controlboard;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.controlboard.CustomButtonBoard.BUTTON;
 import frc.robot.controlboard.CustomXboxController.Axis;
@@ -44,12 +45,26 @@ public class ControlBoard {
         driver.updateRumble(time);
     }
 
-    /* DRIVER METHODS */
+    /**
+     * DRIVER METHODS
+     * 
+     * LB - Cancel
+     * RB - Confirm
+     * LT - Brake
+     * RT - Auto Path
+     * 
+     * Start - Reset Gyro
+     * POV Left - Loading
+     * POV Right - Scoring
+     * Y - Arm Up
+     * A - Arm Down
+     * X - Intake
+     * B - Outtake
+     * 
+*/
     public Translation2d getSwerveTranslation() {
         double forwardAxis = xLimiter.calculate(driver.getAxis(Side.LEFT, Axis.Y));
         double strafeAxis = yLimiter.calculate(driver.getAxis(Side.LEFT, Axis.X));
-        // double strafeAxis = 0.0;
-        double brake = driver.getTrigger(Side.RIGHT);
 
         forwardAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_Y ? forwardAxis : -forwardAxis;
         strafeAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_X ? strafeAxis : -strafeAxis;
@@ -59,9 +74,12 @@ public class ControlBoard {
         if (Math.abs(tAxes.getNorm()) < kSwerveDeadband) {
             return new Translation2d();
         } else {
-            double brakeScale = Constants.CONTROLBOARD.DRIVER_BRAKE_MAX * brake;
-            return tAxes.times(brakeScale);
+            return tAxes.times(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
         }
+    }
+
+    public double getBrakeScale() {
+        return 1.0 - driver.getTrigger(Side.RIGHT) * Constants.CONTROLBOARD.DRIVER_BRAKE_MAX;
     }
 
     public double getSwerveRotation() {
@@ -71,17 +89,38 @@ public class ControlBoard {
         if (Math.abs(rotAxis) < kSwerveDeadband) {
             return 0.0;
         } else {
-            return (rotAxis - (Math.signum(rotAxis) * kSwerveDeadband)) / (1 - kSwerveDeadband);
+            return (rotAxis - (Math.signum(rotAxis) * kSwerveDeadband)) / (1 - kSwerveDeadband) * 3.0;
         }
     }
 
     public boolean getConfirmation() {
-        return driver.getController().getHID().getAButtonPressed();
+        return driver.getController().getHID().getRightBumperPressed();
     }
 
     public boolean getCancellation() {
-        return driver.getController().getHID().getBButtonPressed();
+        return driver.getController().getHID().getLeftBumperPressed();
     }
+
+    public Trigger getResetGyro() {
+        return driver.getController().start();
+    }
+
+    public Trigger getLoad() {
+        return driver.getController().povLeft();
+    }
+
+    public Trigger getScore() {
+        return driver.getController().povRight();
+    }
+
+    public Trigger getAutoPath() {
+        return driver.getController().rightTrigger(0.5);
+    }
+
+    
+    /**
+     * OPERATOR METHODS
+     */
 
     public boolean getTargetMoveRight() {
         return operator.getRawButtonPressed(BUTTON.MR);

@@ -72,11 +72,6 @@ public class AutoSelector {
     private static AutoSelector instance;
 
     public void update() {
-        this.builtAutoCommand = 
-            autoBuilder.intakeAndScore(
-                new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.INNER),
-                FieldConstants.StagingLocations.translations[3]
-            );
     }
 
     public Command getAutoCommand() {

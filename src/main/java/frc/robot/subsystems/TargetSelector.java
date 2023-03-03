@@ -8,15 +8,9 @@ import org.littletonrobotics.junction.Logger;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.networktables.DoubleArrayEntry;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
-import frc.robot.controlboard.CustomButtonBoard;
-import frc.robot.controlboard.CustomButtonBoard.BUTTON;
 import frc.robot.states.AssistedPoseBuilder;
 import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
@@ -48,6 +42,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private Direction loadingDirection = Direction.NEAR;
 
     private ControlBoard mControlBoard = ControlBoard.getInstance();
+    
     private AddressableLEDWrapper mIndicator;
 
     private static TargetSelector instance;

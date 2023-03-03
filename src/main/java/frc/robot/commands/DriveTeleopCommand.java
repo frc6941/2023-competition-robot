@@ -12,23 +12,21 @@ public class DriveTeleopCommand extends CommandBase {
     ArmAndExtender mSupersturcture;
     Supplier<Translation2d> translationSupplier;
     Supplier<Double> rotationSupplier;
+    Supplier<Double> multiplierSupplier;
     boolean isOpenLoop;
-
-    private Translation2d lastTranslation = new Translation2d();
-    private double lastRotation = 0.0;
-
-    private double linearAccMax = 25.0;
-    private double linearAccMin = 3.0;
 
     public DriveTeleopCommand(
             SJTUSwerveMK5Drivebase mDrivebase,
             ArmAndExtender mSuperstructure,
             Supplier<Translation2d> translationSupplier,
-            Supplier<Double> rotationSupplier, boolean isOpenLoop) {
+            Supplier<Double> rotationSupplier,
+            Supplier<Double> multiplierSupplier,
+            boolean isOpenLoop) {
         this.mDrivebase = mDrivebase;
         this.mSupersturcture = mSuperstructure;
         this.translationSupplier = translationSupplier;
         this.rotationSupplier = rotationSupplier;
+        this.multiplierSupplier = multiplierSupplier;
         this.isOpenLoop = isOpenLoop;
         addRequirements(mDrivebase);
     }
@@ -43,12 +41,8 @@ public class DriveTeleopCommand extends CommandBase {
         Translation2d translation = translationSupplier.get();
         double rotation = rotationSupplier.get();
 
-        if(!isOpenLoop) {
-            
-        }
-
         mDrivebase.setLockHeading(false);
-        mDrivebase.drive(translation, rotation, true, isOpenLoop);
+        mDrivebase.drive(translation.times(multiplierSupplier.get()), rotation, true, isOpenLoop);
     }
 
     @Override

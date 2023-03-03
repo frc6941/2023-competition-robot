@@ -300,7 +300,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         // Determine Outputs
         switch (armState) {
             case HOMING:
-                mPeriodicIO.armDemand = -0.15;
+                mPeriodicIO.armDemand = -0.25;
                 mPeriodicIO.armFeedforward = 0.0;
                 break;
             case ANGLE:
