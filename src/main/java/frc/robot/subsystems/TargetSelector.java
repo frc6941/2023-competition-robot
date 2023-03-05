@@ -2,15 +2,15 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
-import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.Logger;
 
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.controlboard.ControlBoard;
 import frc.robot.states.AssistedPoseBuilder;
 import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
@@ -24,14 +24,16 @@ import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
 
 public class TargetSelector extends SubsystemBase implements Updatable {
-    @AutoLog
     public static class TargetSelectorPeriodicIO {
-        // INPUT
-        public double[] targetSelect = new double[] { 6, 2 };
+        public long[] cursor = new long[] { 0, 0 };
+        public long[] target = new long[] { 0, 0 };
     }
     
-    public TargetSelectorPeriodicIOAutoLogged mPeriodicIO = new TargetSelectorPeriodicIOAutoLogged();
+    public TargetSelectorPeriodicIO mPeriodicIO = new TargetSelectorPeriodicIO();
 
+    private NetworkTable targetSelectorTable = NetworkTableInstance.getDefault().getTable("TargetSelector");
+    private IntegerArrayPublisher cursorTopic = targetSelectorTable.getIntegerArrayTopic("cursor").publish();
+    private IntegerArrayPublisher targetTopic = targetSelectorTable.getIntegerArrayTopic("target").publish();
 
     private GamePiece targetGamePiece = GamePiece.CONE;
     private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.MID, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
@@ -40,8 +42,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private Direction scoringDirection = Direction.NEAR;
     private Direction commutingDirection = Direction.NEAR;
     private Direction loadingDirection = Direction.NEAR;
-
-    private ControlBoard mControlBoard = ControlBoard.getInstance();
     
     private AddressableLEDWrapper mIndicator;
 
@@ -58,6 +58,9 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         mIndicator = new AddressableLEDWrapper(9, 10);
         mIndicator.setIntensity(1.0);
         mIndicator.start(0.05);
+        
+        cursorTopic.setDefault(new long[] { 0, 0 });
+        targetTopic.setDefault(new long[] { 0, 0 });
     }
 
     public GamePiece getTargetGamePiece() {
@@ -157,55 +160,25 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         }
     }
 
-    private int[] clampTargetSelect(int[] ids) {
-        return new int[] { (int) Util.clamp(ids[0], 0, 8), (int) Util.clamp(ids[1], 0, 2) };
+    public void setCursor(long[] cursor) {
+        mPeriodicIO.cursor = clampTargetSelect(cursor);
+    }
+
+    public void moveCursor(int rowDelta, int columnDelta) {
+        mPeriodicIO.cursor = clampTargetSelect(new long[] { mPeriodicIO.cursor[0] + rowDelta, mPeriodicIO.cursor[1] + columnDelta});
+    }
+
+    public void applyCursorToTarget() {
+        mPeriodicIO.target = mPeriodicIO.cursor;
+    }
+
+    private long[] clampTargetSelect(long[] ids) {
+        return new long[] { (long) Util.clamp(ids[0], 0, 8), (long) Util.clamp(ids[1], 0, 2) };
     }
 
     @Override
     public synchronized void read(double time, double dt){
-        double[] temp = mPeriodicIO.targetSelect;
-        if(mControlBoard.getTargetMoveDown()) {
-            temp[1] -= 1;
-        }
-        if(mControlBoard.getTargetMoveUp()) {
-            temp[1] += 1;
-        }
-        if(mControlBoard.getTargetMoveRight()) {
-            temp[0] -= 1;
-        }
-        if(mControlBoard.getTargetMoveLeft()) {
-            temp[0] += 1;
-        }
-
-        int[] transformed = new int[] { 0, 0 };
-        for(int i = 0; i < temp.length; i++) {
-            transformed[i] = (int) temp[i];
-        }
-        transformed = clampTargetSelect(transformed);
-
-        double[] record = new double[] { 0, 0 };
-        for(int i = 0; i < transformed.length; i++) {
-            record[i] = (double) transformed[i];
-        }
-
-        if(record.equals(mPeriodicIO.targetSelect)) {
-
-        } else {
-            mPeriodicIO.targetSelect = record;
-            scoringTarget = new ScoringTarget(transformed);
-            if(scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE) {
-                this.targetGamePiece = GamePiece.CUBE;
-            } else {
-                this.targetGamePiece = GamePiece.CONE;
-            }
-        }
-
-        if(mControlBoard.getLoadGround()) {
-            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.GROUND);
-        }
-        if(mControlBoard.getLoadStation()) {
-            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
-        }
+        
     }
     
     @Override
@@ -237,8 +210,8 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void telemetry(){
-        Logger.getInstance().processInputs("Target Selector", mPeriodicIO);
-
+        cursorTopic.set(mPeriodicIO.cursor);
+        targetTopic.set(mPeriodicIO.target);
     }
     
     @Override
@@ -253,44 +226,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void simulate(double time, double dt){
-        double[] temp = mPeriodicIO.targetSelect;
-        if(mControlBoard.getTargetMoveDown()) {
-            temp[1] -= 1;
-        }
-        if(mControlBoard.getTargetMoveUp()) {
-            temp[1] += 1;
-        }
-        if(mControlBoard.getTargetMoveRight()) {
-            temp[0] -= 1;
-        }
-        if(mControlBoard.getTargetMoveLeft()) {
-            temp[0] += 1;
-        }
-
-        int[] transformed = new int[] { 0, 0 };
-        for(int i = 0; i < temp.length; i++) {
-            transformed[i] = (int) temp[i];
-        }
-        transformed = clampTargetSelect(transformed);
-
-        double[] record = new double[] { 0, 0 };
-        for(int i = 0; i < transformed.length; i++) {
-            record[i] = (double) transformed[i];
-        }
-        mPeriodicIO.targetSelect = record;
-
-        scoringTarget = new ScoringTarget(transformed);
-        if(scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE) {
-            this.targetGamePiece = GamePiece.CUBE;
-        } else {
-            this.targetGamePiece = GamePiece.CONE;
-        }
-
-        if(mControlBoard.getLoadGround()) {
-            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.GROUND);
-        }
-        if(mControlBoard.getLoadStation()) {
-            this.loadingTarget.setLoadingLocation(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
-        }
+        read(time, dt);
     }
 }

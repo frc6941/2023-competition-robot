@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PulseHUD</title>
   <link rel="stylesheet" href="css/bulma.min.css">
+  <link rel="stylesheet" href="css/animations.css">
   <script src="js/vue.global.js"></script>
   <script type="module" src="js/index.js"></script>
 </head>
@@ -111,7 +112,8 @@
     }
 
     .cursor{
-      box-shadow: 0 0 7px rgb(0, 115, 255);
+      animation:pulsate-fwd 0.2s infinite;
+	    -webkit-animation:pulsate-fwd 0.2s infinite;
     }
 
     .separation {

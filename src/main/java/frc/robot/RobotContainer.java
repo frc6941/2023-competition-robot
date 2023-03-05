@@ -3,7 +3,6 @@ package frc.robot;
 import org.frcteam6941.looper.UpdateManager;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.AutoCommuteCommand;
@@ -39,11 +38,14 @@ public class RobotContainer {
             mSuperstructure,
             mIntaker,
             mEstimator,
-            mSelector);
+            mSelector,
+            mTracker
+        );
         bindControlBoard();
     }
     
     private void bindControlBoard() {
+        // Bind Driver
         mDrivebase.setDefaultCommand(
             new DriveTeleopCommand(
                 mDrivebase,
@@ -81,6 +83,23 @@ public class RobotContainer {
                     mTracker::isInLoad),
                 mTracker::inInScore
             )
+        );
+
+        // Bind Operator
+        mControlBoard.getTargetMoveForward().onTrue(
+            new InstantCommand(() -> mSelector.moveCursor(-1, 0))
+        );
+        mControlBoard.getTargetMoveBackward().onTrue(
+            new InstantCommand(() -> mSelector.moveCursor(1, 0))
+        );
+        mControlBoard.getTargetMoveLeft().onTrue(
+            new InstantCommand(() -> mSelector.moveCursor(0, 1))
+        );
+        mControlBoard.getTargetMoveRight().onTrue(
+            new InstantCommand(() -> mSelector.moveCursor(0, -1))
+        );
+        mControlBoard.getApplyCursor().onTrue(
+            new InstantCommand(() -> mSelector.applyCursorToTarget())
         );
     }
 

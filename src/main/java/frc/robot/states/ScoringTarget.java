@@ -1,7 +1,5 @@
 package frc.robot.states;
 
-import javax.security.auth.RefreshFailedException;
-
 public class ScoringTarget {
     public static enum SCORING_ROW {
         LOW,

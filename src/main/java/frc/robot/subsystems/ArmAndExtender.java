@@ -15,7 +15,6 @@ import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.team254.lib.drivers.LazyTalonFX;
 import com.team254.lib.util.Util;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;

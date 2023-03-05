@@ -4,11 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.PolygonObstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
+import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
+import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.FieldConstants;

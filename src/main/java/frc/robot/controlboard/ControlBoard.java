@@ -122,31 +122,31 @@ public class ControlBoard {
      * OPERATOR METHODS
      */
 
-    public boolean getTargetMoveRight() {
-        return operator.getRawButtonPressed(BUTTON.MR);
+    public Trigger getTargetMoveLeft() {
+        return operator.button(BUTTON.ML);
     }
 
-    public boolean getTargetMoveLeft() {
-        return operator.getRawButtonPressed(BUTTON.ML);
+    public Trigger getTargetMoveRight() {
+        return operator.button(BUTTON.MR);
     }
 
-    public boolean getTargetMoveUp() {
-        return operator.getRawButtonPressed(BUTTON.UM);
+    public Trigger getTargetMoveForward() {
+        return operator.button(BUTTON.UM);
     }
 
-    public boolean getTargetMoveDown() {
-        return operator.getRawButtonPressed(BUTTON.LM);
+    public Trigger getTargetMoveBackward() {
+        return operator.button(BUTTON.LM);
     }
 
-    public boolean getLoadStation() {
-        return operator.getRawButtonPressed(BUTTON.UL);
+    public Trigger getApplyCursor() {
+        return operator.button(BUTTON.MM);
     }
 
-    public boolean getLoadGround() {
-        return operator.getRawButtonPressed(BUTTON.UR);
+    public Trigger setLoadingStation() {
+        return operator.button(BUTTON.LL);
     }
 
-    public double getSweeperExtension() {
-        return driver.getTrigger(Side.LEFT);
+    public Trigger setGroundLoading() {
+        return operator.button(BUTTON.LR);
     }
 }

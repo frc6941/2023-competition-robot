@@ -1,16 +1,9 @@
 package frc.robot.auto;
 
-import java.lang.annotation.Target;
-
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.FieldConstants;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto.basics.AutoActions;
-import frc.robot.commands.AutoScore;
-import frc.robot.states.ScoringTarget;
-import frc.robot.states.ScoringTarget.SCORING_GRID;
-import frc.robot.states.ScoringTarget.SCORING_ROW;
-import frc.robot.states.ScoringTarget.SCORING_SIDE;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
@@ -72,6 +65,7 @@ public class AutoSelector {
     private static AutoSelector instance;
 
     public void update() {
+        this.builtAutoCommand = Commands.none();
     }
 
     public Command getAutoCommand() {

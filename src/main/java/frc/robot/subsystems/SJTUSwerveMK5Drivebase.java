@@ -2,10 +2,6 @@ package frc.robot.subsystems;
 
 import java.util.Optional;
 
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.team254.lib.util.MovingAverage;
-import com.team254.lib.util.Util;
-
 import org.frcteam6941.control.HolonomicDriveSignal;
 import org.frcteam6941.control.HolonomicTrajectoryFollower;
 import org.frcteam6941.drivers.Gyro;
@@ -16,6 +12,10 @@ import org.frcteam6941.swerve.SwerveDrivetrainBase;
 import org.frcteam6941.swerve.SwerveModuleBase;
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.team254.lib.util.MovingAverage;
+import com.team254.lib.util.Util;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,7 +25,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
