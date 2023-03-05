@@ -66,6 +66,7 @@ dependencies {
     implementation wpi.java.vendor.java()
     // https://mvnrepository.com/artifact/gov.nist.math/jama
     implementation 'gov.nist.math:jama:1.0.3'
+    implementation("io.javalin:javalin:5.4.0")
 
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PulseHUD</title>
+  <link rel="stylesheet" href="css/bulma.min.css">
+  <script src="js/vue.global.js"></script>
+  <script type="module" src="js/index.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <section id="match-info-display" class="hero is-info is-small">
+      <div class="hero-body level">
+        <div class="level-item">
+          <div>
+            <p class="subtitle is-5 is-spaced">
+              [{{ matchCode }}] {{ matchName }}
+            </p>
+            <p class="title is-2">
+              {{ period }}
+            </p>
+          </div>
+        </div>
+    
+        <div class="level-item">
+          <p class="title" style="font-size:5rem">
+            {{ matchTime }}
+          </p>
+        </div>
+    
+        <div class="level-item">
+          <nav class="columns">
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                    <img v-if="isConnected" src="icons/access-point-check.svg" style="filter: invert(100%);">
+                    <img v-else src="icons/access-point-off.svg" style="filter: invert(100%);">
+                </p>
+                <p class="heading">机器</p>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                  <img v-if="isDSAttached" src="icons/controller.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/controller-off.svg" style="filter: invert(100%);">
+                </p>
+                <p class="heading">DS</p>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                  <img v-if="allChecked" src="icons/check-all.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/exclamation-thick.svg" style="filter: invert(100%);">
+                </p>
+                <p class="heading">检查项</p>
+              </div>
+            </div>
+          </nav>
+            
+            
+        </div>
+      </div>
+    </section>
+    
+    
+    <section id="target-chooser container hero">
+      <div class="hero-body">
+        <div id="hybrid-nodes" class="columns is-variable is-1">
+          <div class="column" v-for="node in hybridNodes" :key="n">
+            <div :class="node"></div>
+          </div>
+        </div>
+    
+        <div id="mid-nodes" class="columns is-variable is-1">
+          <div class="column" v-for="node in midNodes">
+            <div :class="node"></div>
+          </div>
+        </div>
+    
+        <div id="high-nodes" class="columns is-variable is-1">
+          <div class="column" v-for="node in highNodes">
+            <div :class="node"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+
+  <style>
+    .cone {
+      background-color: #ffb600;
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+    .cube {
+      background-color: rgb(116, 8, 116);
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+    .active {
+      background-color: rgb(10, 116, 8);
+      box-shadow: none;
+    }
+
+    .cursor{
+      box-shadow: 0 0 7px rgb(0, 115, 255);
+    }
+
+    .separation {
+      background-color: rgb(255, 255, 255);
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+  </style>
+</body>
+
+</html>
