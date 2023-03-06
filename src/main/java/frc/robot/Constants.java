@@ -69,8 +69,8 @@ public final class Constants {
     }
 
     public static final class LED_CONTROL {
-        public static final int LED_PORT = 0;
-        public static final int LED_LENGTH = 51;
+        public static final int LED_PORT = 1;
+        public static final int LED_LENGTH = 15;
     }
 
     // Pneumatics Configurations

@@ -21,6 +21,7 @@ public class RobotStateEstimator implements Updatable {
     private Localizer localizer = SJTUSwerveMK5Drivebase.getInstance().getLocalizer();
     private SJTUSwerveMK5Drivebase drivebase = SJTUSwerveMK5Drivebase.getInstance();
     private ArrayList<EstimatedPoseProvider> providers = new ArrayList<>();
+    private boolean seeAprilTag = false;
 
     private PolynomialRegression xyStdDevModel = new PolynomialRegression(
             new double[] {
@@ -47,6 +48,10 @@ public class RobotStateEstimator implements Updatable {
         }
     }
 
+    public boolean seeAprilTag() {
+        return seeAprilTag;
+    }
+
     @Override
     public synchronized void read(double time, double dt) {
         // Auto Generated Method
@@ -58,6 +63,7 @@ public class RobotStateEstimator implements Updatable {
             try {
                 Optional<EstimatedPoseWithDistance> ePose = poseProvider.getEstimatedPose(localizer.getLatestPose());
                 if (ePose.isPresent()) {
+                    seeAprilTag = true;
                     if (Math.abs(ePose.get().pose.estimatedPose.toPose2d().getRotation().getDegrees())  > 1e-4  && ePose.get().distance < 3.5) {
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
                         EstimatedPoseWithDistance eposeWithDistance = ePose.get();
@@ -66,9 +72,10 @@ public class RobotStateEstimator implements Updatable {
                         double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
                         localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
                                 eposeWithDistance.pose.estimatedPose.toPose2d(),
-                                new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(20.0)));
+                                new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(1000.0)));
                     }
                 } else {
+                    seeAprilTag = false;
                     Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", false);
                 }
 

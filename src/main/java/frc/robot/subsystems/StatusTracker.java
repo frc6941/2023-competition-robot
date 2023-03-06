@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import java.nio.file.Paths;
 
 import org.frcteam6941.led.AddressableLEDPattern;
+import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -12,16 +13,17 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.Constants;
+import frc.robot.states.GamePiece;
 import frc.robot.utils.Lights;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 
 public class StatusTracker implements Updatable {
-    // public AddressableLEDWrapper led = new AddressableLEDWrapper(
-    //     Constants.LED_CONTROL.LED_PORT,
-    //     Constants.LED_CONTROL.LED_LENGTH);
+    public AddressableLEDWrapper led;
 
     public static class StatusTrackerPeriodicIO {
         public AddressableLEDPattern desiredPattern = Lights.CONNECTING;
@@ -35,9 +37,13 @@ public class StatusTracker implements Updatable {
         public MATCH_STAGE matchStage = MATCH_STAGE.DISCONNECTED;
         public String matchName = "Test Match";
         public MatchType matchType = MatchType.None;
+        public Alliance matchAlliance = Alliance.Invalid;
+
+        public boolean seeAprilTag = false;
+        public boolean isCube = false;
     }
 
-    public StatusTrackerPeriodicIO mPeriodicIO= new StatusTrackerPeriodicIO();
+    public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
 
     public NetworkTable matchInfoTable = NetworkTableInstance.getDefault().getTable("MatchInfo");
     public BooleanPublisher dsConnected = matchInfoTable.getBooleanTopic("dsConnected").publish();
@@ -46,12 +52,14 @@ public class StatusTracker implements Updatable {
     public StringPublisher matchStage = matchInfoTable.getStringTopic("matchStage").publish();
     public StringPublisher matchName = matchInfoTable.getStringTopic("matchName").publish();
     public StringPublisher matchType = matchInfoTable.getStringTopic("matchType").publish();
+    public StringPublisher matchAlliance = matchInfoTable.getStringTopic("matchAlliance").publish();
 
     Javalin app = Javalin.create(
-        config -> {
-            config.staticFiles.add(
-                Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(),"pulsehud").toString(), Location.EXTERNAL);
-    }).start(3000);
+            config -> {
+                config.staticFiles.add(
+                        Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "pulsehud").toString(),
+                        Location.EXTERNAL);
+            }).start(3000);
 
     private static StatusTracker instance;
 
@@ -62,6 +70,12 @@ public class StatusTracker implements Updatable {
         matchNumber.setDefault(-1);
         dsConnected.setDefault(false);
         matchType.setDefault(MatchType.None.toString());
+
+        led = new AddressableLEDWrapper(
+            Constants.LED_CONTROL.LED_PORT,
+            Constants.LED_CONTROL.LED_LENGTH);
+        led.setIntensity(1.0);
+        led.start(0.02);
     }
 
     public static StatusTracker getInstance() {
@@ -94,31 +108,68 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.isInScore = false;
     }
 
+    public void updateIndicator() {
+        switch (mPeriodicIO.matchStage) {
+            case PREP:
+                if (mPeriodicIO.matchAlliance == Alliance.Red) {
+                    mPeriodicIO.desiredPattern = Lights.ALLIANCE_RED;
+                } else if (mPeriodicIO.matchAlliance == Alliance.Blue) {
+                    mPeriodicIO.desiredPattern = Lights.ALLIANCE_BLUE;
+                } else {
+                    mPeriodicIO.desiredPattern = Lights.CONNECTING;
+                }
+                break;
+            case AUTO:
+                mPeriodicIO.desiredPattern = Lights.AUTO_SHOW;
+                break;
+            case TELEOP:
+            case ENDGAME:
+                if (mPeriodicIO.isInScore) {
+                    mPeriodicIO.desiredPattern = mPeriodicIO.seeAprilTag ? Lights.SCORING_HAS_VISION : Lights.SCORING;
+                } else if (mPeriodicIO.isInload) {
+                    mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.LOAD_CUBE : Lights.LOAD_CONE;
+                } else {
+                    mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE : Lights.COMMUTE_CONE;
+                }
+                break;
+            case ESTOP:
+                mPeriodicIO.desiredPattern = Lights.ESTOP;
+                break;
+            case DISCONNECTED:
+                mPeriodicIO.desiredPattern = Lights.CONNECTING;
+                break;
+        }
+    }
+
     @Override
     public synchronized void read(double time, double dt) {
         mPeriodicIO.dsConnected = DriverStation.isDSAttached();
+        mPeriodicIO.matchAlliance = DriverStation.getAlliance();
+        mPeriodicIO.seeAprilTag = RobotStateEstimator.getInstance().seeAprilTag();
+        mPeriodicIO.isCube = TargetSelector.getInstance().getTargetGamePiece() == GamePiece.CUBE;
 
-        if(mPeriodicIO.dsConnected) {
+        if (mPeriodicIO.dsConnected) {
             mPeriodicIO.matchTime = DriverStation.getMatchTime();
-            mPeriodicIO.matchName = DriverStation.getEventName();
-            if(mPeriodicIO.matchName == "") {
+            if (DriverStation.getEventName().length() == 0) {
                 mPeriodicIO.matchName = "Unknown";
+            } else {
+                mPeriodicIO.matchName = DriverStation.getEventName();
             }
             mPeriodicIO.matchNumber = DriverStation.getMatchNumber();
             mPeriodicIO.matchType = DriverStation.getMatchType();
-            
-            if(DriverStation.isEnabled()) {
-                if(DriverStation.isAutonomousEnabled()) {
+
+            if (DriverStation.isEnabled()) {
+                if (DriverStation.isAutonomousEnabled()) {
                     mPeriodicIO.matchStage = MATCH_STAGE.AUTO;
                 } else if (DriverStation.isTeleopEnabled()) {
-                    if(mPeriodicIO.matchTime > 30.0) {
+                    if (mPeriodicIO.matchTime > 30.0) {
                         mPeriodicIO.matchStage = MATCH_STAGE.TELEOP;
                     } else {
                         mPeriodicIO.matchStage = MATCH_STAGE.ENDGAME;
                     }
                 }
             } else {
-                if(DriverStation.isEStopped()) {
+                if (DriverStation.isEStopped()) {
                     mPeriodicIO.matchStage = MATCH_STAGE.ESTOP;
                 } else {
                     mPeriodicIO.matchStage = MATCH_STAGE.PREP;
@@ -135,7 +186,8 @@ public class StatusTracker implements Updatable {
 
     @Override
     public synchronized void update(double time, double dt) {
-        // led.setPattern(mPeriodicIO.desiredPattern);
+        updateIndicator();
+        led.setPattern(mPeriodicIO.desiredPattern);
     }
 
     @Override
@@ -151,6 +203,7 @@ public class StatusTracker implements Updatable {
         matchNumber.set(mPeriodicIO.matchNumber);
         dsConnected.set(mPeriodicIO.dsConnected);
         matchType.set(mPeriodicIO.matchType.toString());
+        matchAlliance.set(mPeriodicIO.matchAlliance.toString());
     }
 
     @Override

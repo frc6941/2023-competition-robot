@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import com.team254.lib.util.Util;
@@ -9,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.states.AssistedPoseBuilder;
@@ -25,8 +25,8 @@ import frc.robot.states.SuperstructureStateBuilder;
 
 public class TargetSelector extends SubsystemBase implements Updatable {
     public static class TargetSelectorPeriodicIO {
-        public long[] cursor = new long[] { 0, 0 };
-        public long[] target = new long[] { 0, 0 };
+        public long[] cursor = new long[] { 2, 6 };
+        public long[] target = new long[] { 2, 6 };
     }
     
     public TargetSelectorPeriodicIO mPeriodicIO = new TargetSelectorPeriodicIO();
@@ -34,16 +34,15 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private NetworkTable targetSelectorTable = NetworkTableInstance.getDefault().getTable("TargetSelector");
     private IntegerArrayPublisher cursorTopic = targetSelectorTable.getIntegerArrayTopic("cursor").publish();
     private IntegerArrayPublisher targetTopic = targetSelectorTable.getIntegerArrayTopic("target").publish();
+    private StringPublisher targetStringTopic = targetSelectorTable.getStringTopic("targetString").publish();
 
     private GamePiece targetGamePiece = GamePiece.CONE;
-    private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.MID, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
+    private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
     private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
 
     private Direction scoringDirection = Direction.NEAR;
     private Direction commutingDirection = Direction.NEAR;
     private Direction loadingDirection = Direction.NEAR;
-    
-    private AddressableLEDWrapper mIndicator;
 
     private static TargetSelector instance;
 
@@ -55,10 +54,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
     
     private TargetSelector() {
-        mIndicator = new AddressableLEDWrapper(9, 10);
-        mIndicator.setIntensity(1.0);
-        mIndicator.start(0.05);
-        
         cursorTopic.setDefault(new long[] { 0, 0 });
         targetTopic.setDefault(new long[] { 0, 0 });
     }
@@ -170,6 +165,11 @@ public class TargetSelector extends SubsystemBase implements Updatable {
 
     public void applyCursorToTarget() {
         mPeriodicIO.target = mPeriodicIO.cursor;
+        
+        int[] transformed = new int[] { 0, 0 };
+        transformed[0] = (int) mPeriodicIO.target[0];
+        transformed[1] = (int) mPeriodicIO.target[1];
+        scoringTarget = new ScoringTarget(transformed);
     }
 
     private long[] clampTargetSelect(long[] ids) {
@@ -212,6 +212,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     public synchronized void telemetry(){
         cursorTopic.set(mPeriodicIO.cursor);
         targetTopic.set(mPeriodicIO.target);
+        targetStringTopic.set(scoringTarget.toString());
     }
     
     @Override

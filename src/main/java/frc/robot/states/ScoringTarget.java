@@ -119,4 +119,10 @@ public class ScoringTarget {
     public int getPosition() {
         return scoringGrid.num + scoringSide.delta;
     }
+
+    @Override
+    public String toString() {
+        String pattern = "Scoring Target (%s): %s, %s, %s";
+        return String.format(pattern, getPosition(), scoringRow.toString(), scoringGrid.toString(), scoringSide.toString());
+    }
 }
