@@ -69,7 +69,7 @@ public final class Constants {
     }
 
     public static final class LED_CONTROL {
-        public static final int LED_PORT = 1;
+        public static final int LED_PORT = 0;
         public static final int LED_LENGTH = 15;
     }
 
@@ -129,7 +129,7 @@ public final class Constants {
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
         public static final double MASS = 2.9 + 0.9;
-        public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
+        public static final double GEAR_RATIO = (64.0 / 14.0) * (64.0 / 18.0) * (60 / 12.0);
         public static final double HOME_ANGLE = -98.2;
 
         public static final double KP = 0.3;
@@ -137,8 +137,8 @@ public final class Constants {
         public static final double KD = 0.15;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
-        public static final double CRUISE_V = 24000.0;
-        public static final double CRUIVE_ACC = 30000.0;
+        public static final double CRUISE_V = 15000.0;
+        public static final double CRUIVE_ACC = 10000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
         public static final double ANGLE_OFFSET_TO_HORIZONTAL = -14.467;
@@ -168,6 +168,8 @@ public final class Constants {
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
         public static final double HOLD_PERCENTAGE_CONE = 0.60;
         public static final double HOLD_DELAY = 0.25;
+        public static final double GEAR_RATIO = 10.0;
+        public static final double STOP_THRESHOLD = 0.25;
     }
 
     // Superstructure Constants

@@ -25,6 +25,7 @@ public class Intaker extends SubsystemBase implements Updatable{
         public double intakerMotorVoltage = 0.0;
         public boolean hasGamePiece = false;
         public double intakeMotorCurrent = 0.0;
+        public double intakerMotorVelocity = 0.0;
     
         // OUTPUT
         public double intakerMotorDemand = 0.0;
@@ -49,12 +50,6 @@ public class Intaker extends SubsystemBase implements Updatable{
     private Intaker() {
         intakerMotor.setIdleMode(IdleMode.kBrake);
         intakerMotor.setSmartCurrentLimit(15, 5);
-
-        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
-        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535);
-        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 65535);
-        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 65535);
-        intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 65535);
     }
 
     public void setIntakerPower(double power) {
@@ -87,6 +82,10 @@ public class Intaker extends SubsystemBase implements Updatable{
         }
     }
 
+    public void runOuttake() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE);
+    }
+
     public void stopIntake() {
         setIntakerPower(0.0);
     }
@@ -96,7 +95,8 @@ public class Intaker extends SubsystemBase implements Updatable{
     }
 
     public boolean hasGamePiece() {
-        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY);
+        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY)
+        && Math.abs(mPeriodicIO.intakerMotorVelocity) < Constants.SUBSYSTEM_INTAKE.STOP_THRESHOLD;
     }
 
     @Override
@@ -104,6 +104,7 @@ public class Intaker extends SubsystemBase implements Updatable{
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
         mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
         mPeriodicIO.intakeMotorCurrent = intakerMotor.getOutputCurrent();
+        mPeriodicIO.intakerMotorVelocity = intakerMotor.getEncoder().getVelocity() / Constants.SUBSYSTEM_INTAKE.GEAR_RATIO;
     }
     
     @Override

@@ -117,6 +117,14 @@ public class ControlBoard {
         return driver.getController().rightTrigger(0.5);
     }
 
+    public Trigger getSpit() {
+        return driver.getController().b();
+    }
+
+    public Trigger getIntake() {
+        return driver.getController().x();
+    }
+
     
     /**
      * OPERATOR METHODS

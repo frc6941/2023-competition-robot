@@ -170,6 +170,12 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         transformed[0] = (int) mPeriodicIO.target[0];
         transformed[1] = (int) mPeriodicIO.target[1];
         scoringTarget = new ScoringTarget(transformed);
+
+        if(transformed[0] == 0 || transformed[1] == 1 || transformed[1] == 4 || transformed[1] == 7) {
+            targetGamePiece = GamePiece.CUBE;
+        } else {
+            targetGamePiece = GamePiece.CONE;
+        }
     }
 
     private long[] clampTargetSelect(long[] ids) {
@@ -187,8 +193,8 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             case CONE:
                 if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                     scoringDirection = Direction.NEAR;
-                    commutingDirection = Direction.FAR;
-                    loadingDirection = Direction.FAR;
+                    commutingDirection = Direction.NEAR;
+                    loadingDirection = Direction.NEAR;
                 } else {
                     scoringDirection = Direction.FAR;
                     commutingDirection = Direction.FAR;

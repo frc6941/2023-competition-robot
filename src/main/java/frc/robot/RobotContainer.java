@@ -69,6 +69,18 @@ public class RobotContainer {
             .alongWith(new InstantCommand(mTracker::setLoad))
             .until(mControlBoard::getCancellation)
         );
+        mControlBoard.getSpit().onTrue(
+            new InstantCommand(mIntaker::runOuttake)
+        )
+        .onFalse(
+            new InstantCommand(mIntaker::stopIntake)
+        );
+        mControlBoard.getIntake().onTrue(
+            new InstantCommand(() -> mIntaker.runIntake(() -> mSelector.getTargetGamePiece()))
+        )
+        .onFalse(
+            new InstantCommand(mIntaker::stopIntake)
+        );
 
         AutoScore autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mSelector, () -> mControlBoard.getConfirmation(), () -> true);
         mControlBoard.getScore().onTrue(

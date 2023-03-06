@@ -1,5 +1,6 @@
 package org.frcteam6941.vision;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -68,11 +69,11 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider 
                 return Optional.empty();
             } else if (altDifference < bestDifference) {
                 lowestDeltaPose =
-                        new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds());
+                        new EstimatedRobotPose(altTransformPosition, result.getTimestampSeconds(), List.of());
                 distanceRecorder = target.getAlternateCameraToTarget().getTranslation().getNorm();
             } else if (bestDifference <= altDifference) {
                 lowestDeltaPose =
-                        new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds());
+                        new EstimatedRobotPose(bestTransformPosition, result.getTimestampSeconds(), List.of());
                 distanceRecorder = target.getBestCameraToTarget().getTranslation().getNorm();
             }
         }
