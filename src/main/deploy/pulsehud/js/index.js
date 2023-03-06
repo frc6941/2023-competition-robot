@@ -1,8 +1,37 @@
 import { NT4_Client } from '../js/NT4.js'
 
-const matchTimeTopic = "/matchInfo/matchTime"
+const matchTimeTopic = "/MatchInfo/matchTime"
+const matchTypeTopic = "/MatchInfo/matchType"
+const matchNameTopic = "/MatchInfo/matchName"
+const matchNumberTopic = "/MatchInfo/matchNumber"
+const matchStageTopic = "/MatchInfo/matchStage"
+const dsConnectedTopic = "/MatchInfo/dsConnected"
+
 const cursorTopic = "/TargetSelector/cursor"
 const targetTopic = "/TargetSelector/target"
+
+const targetCollection = [
+    matchTimeTopic, matchTypeTopic, matchNameTopic, matchNumberTopic, matchStageTopic, dsConnectedTopic,
+    cursorTopic, targetTopic
+]
+
+const stageMap = new Map()
+stageMap.set("PREP", "准备阶段")
+stageMap.set("AUTO", "自动阶段")
+stageMap.set("TELEOP", "手动阶段")
+stageMap.set("ENDGAME", "终局")
+stageMap.set("ESTOP", "急停")
+stageMap.set("DISCONNECTED", "未连接")
+
+const bannerClassPrefix = "hero is-small "
+const bannerMap = new Map()
+bannerMap.set("PREP", "is-info")
+bannerMap.set("AUTO", "is-link")
+bannerMap.set("TELEOP", "is-info")
+bannerMap.set("ENDGAME", "is-warning")
+bannerMap.set("ESTOP", "is-danger")
+bannerMap.set("DISCONNECTED", "is-disconnected")
+
 
 const { createApp } = Vue
 
@@ -11,15 +40,18 @@ let app = createApp({
     data() {
         return {
             matchTime: "-1.0",
-            matchCode: "PRAC",
+            matchType: "None",
+            matchNumber: 0,
             matchName: "练习",
-            period: "准备阶段",
+            matchStage: "准备阶段",
             isConnected: false,
             allChecked: false,
-            isDSAttached: false,
+            dsConnected: false,
 
             target: [2, 1],
             cursor: [2, 2],
+
+            bannerClass: bannerClassPrefix + "is-disconnected"
         }
     },
     methods: {
@@ -30,8 +62,19 @@ let app = createApp({
             this.isConnected = false
         },
         handleTopic(topic, value) {
-            if(topic == matchInfoTopic) {
-
+            if(topic == matchTimeTopic) {
+                this.matchTime = value.toFixed(1)
+            } else if(topic == matchTypeTopic) {
+                this.matchType = value
+            } else if(topic == matchNameTopic) {
+                this.matchName = value
+            } else if(topic == matchNumberTopic) {
+                this.matchNumber = value.toFixed(0)
+            } else if(topic == matchStageTopic) {
+                this.matchStage = stageMap.get(value)
+                this.bannerClass = bannerClassPrefix + bannerMap.get(value)
+            } else if(topic == dsConnectedTopic) {
+                this.dsConnected = value
             } else if (topic == cursorTopic) {
                 this.cursor = value
             } else if (topic == targetTopic) {
@@ -58,6 +101,7 @@ let app = createApp({
             return column == 2 || column == 5 
         },
         nodes(row) {
+            console.log(this.cursor)
             let result = []
             for (let i = 0; i < 9; i++) {
                 let temp = ""
@@ -95,7 +139,7 @@ let app = createApp({
     mounted() {
         let client = new NT4_Client(
             window.location.hostname,
-            "TargetSelector",
+            "PulseHUD",
             (topic) => {
                 // Topic announce
             },
@@ -103,6 +147,7 @@ let app = createApp({
                 // Topic unannounce
             },
             (topic, timestamp, value) => {
+                this.handleTopic(topic.name, value)
             },
             () => {
                 this.connected()
@@ -111,6 +156,13 @@ let app = createApp({
                 this.disconnected()
             }
         )
+
+        client.subscribe(
+            targetCollection,
+            false,
+            false,
+            0.02
+        );
         client.connect()
     }
 })

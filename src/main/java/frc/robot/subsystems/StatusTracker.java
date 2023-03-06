@@ -101,6 +101,9 @@ public class StatusTracker implements Updatable {
         if(mPeriodicIO.dsConnected) {
             mPeriodicIO.matchTime = DriverStation.getMatchTime();
             mPeriodicIO.matchName = DriverStation.getEventName();
+            if(mPeriodicIO.matchName == "") {
+                mPeriodicIO.matchName = "Unknown";
+            }
             mPeriodicIO.matchNumber = DriverStation.getMatchNumber();
             mPeriodicIO.matchType = DriverStation.getMatchType();
             

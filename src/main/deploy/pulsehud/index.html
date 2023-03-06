@@ -13,15 +13,15 @@
 
 <body>
   <div id="app">
-    <section id="match-info-display" class="hero is-info is-small">
+    <section id="match-info-display" :class="bannerClass">
       <div class="hero-body level">
         <div class="level-item">
           <div>
             <p class="subtitle is-5 is-spaced">
-              [{{ matchCode }}] {{ matchName }}
+              [{{ matchName }}] {{ matchType }} - {{ matchNumber }}
             </p>
             <p class="title is-2">
-              {{ period }}
+              {{ matchStage }}
             </p>
           </div>
         </div>
@@ -46,7 +46,7 @@
             <div class="column has-text-centered">
               <div>
                 <p class="icon is-large">
-                  <img v-if="isDSAttached" src="icons/controller.svg" style="filter: invert(100%);">
+                  <img v-if="dsConnected" src="icons/controller.svg" style="filter: invert(100%);">
                   <img v-else src="icons/controller-off.svg" style="filter: invert(100%);">
                 </p>
                 <p class="heading">DS</p>
@@ -72,7 +72,7 @@
     <section id="target-chooser container hero">
       <div class="hero-body">
         <div id="hybrid-nodes" class="columns is-variable is-1">
-          <div class="column" v-for="node in hybridNodes" :key="n">
+          <div class="column" v-for="node in hybridNodes">
             <div :class="node"></div>
           </div>
         </div>
@@ -120,6 +120,10 @@
       background-color: rgb(255, 255, 255);
       aspect-ratio: 1;
       box-shadow: none;
+    }
+
+    .is-disconnected{
+      background-color: grey;
     }
 
   </style>

@@ -40,16 +40,19 @@ public class ScoringTarget {
         this.scoringSide = scoringSide;
         this.scoringGrid = scoringGrid;
     }
-
+    
+    /*
+     * [ Row, Column ]
+     */
     public ScoringTarget(int[] ids) {
         int reference;
-        if(ids[0] >= 0 && ids[0] <= 2) {
+        if(ids[1] >= 0 && ids[1] <= 2) {
             this.scoringGrid = SCORING_GRID.OUTER;
             reference = 1;
-        } else if(ids[0] >= 3 && ids[0] <= 5) {
+        } else if(ids[1] >= 3 && ids[1] <= 5) {
             this.scoringGrid = SCORING_GRID.COOPERTITION;
             reference = 4;
-        } else if(ids[0] >= 6 && ids[0] <= 8) {
+        } else if(ids[1] >= 6 && ids[1] <= 8) {
             this.scoringGrid = SCORING_GRID.INNER;
             reference = 7;
         } else {
@@ -57,7 +60,7 @@ public class ScoringTarget {
             reference = -6941;
         }
 
-        int delta = ids[0] - reference;
+        int delta = ids[1] - reference;
         switch(delta) {
             case 1:
                 this.scoringSide = SCORING_SIDE.INNER;
@@ -73,7 +76,7 @@ public class ScoringTarget {
                 break;
         }
 
-        switch(ids[1]) {
+        switch(ids[0]) {
             case 0:
                 this.scoringRow = SCORING_ROW.LOW;
                 break;

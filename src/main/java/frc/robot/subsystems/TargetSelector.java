@@ -173,7 +173,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     private long[] clampTargetSelect(long[] ids) {
-        return new long[] { (long) Util.clamp(ids[0], 0, 8), (long) Util.clamp(ids[1], 0, 2) };
+        return new long[] { (long) Util.clamp(ids[0], 0, 2), (long) Util.clamp(ids[1], 0, 8) };
     }
 
     @Override

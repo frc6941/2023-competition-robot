@@ -185,6 +185,9 @@
           "open": true
         },
         "open": true
+      },
+      "TargetSelector": {
+        "open": true
       }
     }
   }
