@@ -50,8 +50,7 @@ public class AutoSelector {
 
         autoBalance.setDefaultOption("DO NOT Balance", AUTO_BALANCE.NO);
         autoBalance.setDefaultOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT", AUTO_BALANCE.YES);
-
-
+        
         autoBuilder = new AutoActions(SJTUSwerveMK5Drivebase.getInstance(), ArmAndExtender.getInstance(), Intaker.getInstance(), TargetSelector.getInstance());
     }
 

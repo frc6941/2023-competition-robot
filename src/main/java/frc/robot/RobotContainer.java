@@ -13,6 +13,8 @@ import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
+import frc.robot.states.LoadingTarget;
+import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.RobotStateEstimator;
@@ -100,6 +102,12 @@ public class RobotContainer {
         );
         mControlBoard.getApplyCursor().onTrue(
             new InstantCommand(() -> mSelector.applyCursorToTarget())
+        );
+        mControlBoard.getLoadingStation().onTrue(
+            new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER)))
+        );
+        mControlBoard.getGroundLoading().onTrue(
+            new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)))
         );
     }
 

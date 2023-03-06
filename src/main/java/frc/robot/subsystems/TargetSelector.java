@@ -187,8 +187,8 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             case CONE:
                 if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                     scoringDirection = Direction.NEAR;
-                    commutingDirection = Direction.NEAR;
-                    loadingDirection = Direction.NEAR;
+                    commutingDirection = Direction.FAR;
+                    loadingDirection = Direction.FAR;
                 } else {
                     scoringDirection = Direction.FAR;
                     commutingDirection = Direction.FAR;

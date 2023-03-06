@@ -142,11 +142,11 @@ public class ControlBoard {
         return operator.button(BUTTON.MM);
     }
 
-    public Trigger setLoadingStation() {
-        return operator.button(BUTTON.LL);
+    public Trigger getLoadingStation() {
+        return operator.button(BUTTON.UL);
     }
 
-    public Trigger setGroundLoading() {
-        return operator.button(BUTTON.LR);
+    public Trigger getGroundLoading() {
+        return operator.button(BUTTON.UR);
     }
 }
