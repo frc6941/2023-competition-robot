@@ -69,7 +69,7 @@
     </section>
     
     
-    <section id="target-chooser container hero">
+    <section id="target-chooser" class="container hero">
       <div class="hero-body">
         <div id="hybrid-nodes" class="columns is-variable is-1">
           <div class="column" v-for="node in hybridNodes">
@@ -87,6 +87,41 @@
           <div class="column" v-for="node in highNodes">
             <div :class="node"></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="auto-selector" class="container hero">
+      <div class="hero-body">
+        <div class="level">
+          
+          <div class="level-item">
+            <div class="select is-large">
+              <select>
+                <option>Select dropdown</option>
+                <option>With options</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="level-item">
+            <div class="select is-large">
+              <select>
+                <option>Select dropdown</option>
+                <option>With options</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="level-item">
+            <div class="select is-large">
+              <select>
+                <option>Select dropdown</option>
+                <option>With options</option>
+              </select>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

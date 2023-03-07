@@ -1,10 +1,5 @@
 {
   "HALProvider": {
-    "Analog Inputs": {
-      "window": {
-        "visible": true
-      }
-    },
     "Other Devices": {
       "Talon FX[8]": {
         "header": {
@@ -62,6 +57,9 @@
       "/LiveWindow/Ungrouped/Talon SRX [3]": "Motor Controller",
       "/LiveWindow/Ungrouped/Talon SRX [5]": "Motor Controller",
       "/LiveWindow/Ungrouped/Talon SRX [7]": "Motor Controller",
+      "/SmartDashboard/Auto Action": "String Chooser",
+      "/SmartDashboard/Auto Balance": "String Chooser",
+      "/SmartDashboard/Auto Start Position": "String Chooser",
       "/SmartDashboard/Game Piece": "String Chooser",
       "/SmartDashboard/Loading Location": "String Chooser",
       "/SmartDashboard/Mechanism": "Mechanism2d",
@@ -77,37 +75,7 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Game Piece": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Loading Location": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/SendableChooser[0]": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Simulated Game Piece": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Grid": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Row": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Side": {
+      "/SmartDashboard/Auto Action": {
         "window": {
           "visible": true
         }
@@ -130,9 +98,6 @@
             "open": true
           }
         }
-      },
-      "MatchInfo": {
-        "open": true
       },
       "Shuffleboard": {
         ".recording": {

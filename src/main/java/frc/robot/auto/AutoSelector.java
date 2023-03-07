@@ -1,7 +1,11 @@
 package frc.robot.auto;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.Publisher;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
@@ -190,6 +194,10 @@ public class AutoSelector {
             this.autoConfiguration = currentConfiguration;
             buildAuto(autoConfiguration);
         }
+
+        SmartDashboard.putData("Auto Start Position", autoStartPosition);
+        SmartDashboard.putData("Auto Action", autoAction);
+        SmartDashboard.putData("Auto Balance", autoBalance);
     }
 
     public Command getAutoCommand() {
