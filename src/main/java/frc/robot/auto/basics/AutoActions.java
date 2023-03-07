@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.FieldConstants;
+import frc.robot.auto.AutoSelector.AUTO_START_POSITION;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
@@ -52,7 +53,21 @@ public class AutoActions {
     private static final Translation2d innerLeftTransit = new Translation2d(xInnerMiddle, yLeftMiddle);
     private static final Translation2d innerRightTransit = new Translation2d(xInnerMiddle, yRightMiddle);
     private static final Translation2d outerLeftTransit = new Translation2d(xOuter, yLeftMiddle);
-    private static final Translation2d outerRightTrandit = new Translation2d(xOuter, yRightMiddle);
+    private static final Translation2d outerRightTransit = new Translation2d(xOuter, yRightMiddle);
+    private static final Translation2d innerMiddleTransit = new Translation2d();
+
+    private static final Pose2d innerResetPose = new Pose2d(
+        new Translation2d(1.80, 5.05),
+        Rotation2d.fromDegrees(180.0)
+    );
+    private static final Pose2d middleResetPose = new Pose2d(
+        new Translation2d(1.80, 3.30),
+        Rotation2d.fromDegrees(180.0)
+    );
+    private static final Pose2d outerResetPose = new Pose2d(
+        new Translation2d(1.80, 0.50),
+        Rotation2d.fromDegrees(180.0)
+    );
 
     public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
         this.mDrivebase = mDrivebase;
@@ -116,7 +131,7 @@ public class AutoActions {
                 break;
         }
         
-        return AllianceFlipUtil.apply(target);
+        return target;
     }
 
     private Pose2d getOuterTransitPose() {
@@ -137,7 +152,7 @@ public class AutoActions {
                 target = new Pose2d(outerLeftTransit, face);
                 break;
             case OUTER:
-                target = new Pose2d(outerRightTrandit, face);
+                target = new Pose2d(outerRightTransit, face);
                 break;
             case COOPERTITION:
             default:
@@ -145,7 +160,7 @@ public class AutoActions {
                 break;
         }
 
-        return AllianceFlipUtil.apply(target);
+        return target;
     }
 
     public Command driveToInnerTransit() {
@@ -218,56 +233,64 @@ public class AutoActions {
         return Commands.runOnce(() -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
     }
 
+    public Command resetPose(AUTO_START_POSITION startPosition) {
+        switch(startPosition) {
+            case INNER:
+                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(innerResetPose)));
+            case OUTER:
+                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(outerResetPose)));
+            case CENTER:
+                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(middleResetPose)));
+            default:
+                return Commands.none();
+        }
+    }
+
+
     public Command scorePreload(ScoringTarget target) {
-        return Commands.sequence(
-            configGroundIntake(),
-            configTargetSelector(target),
-            driveToInnerTransit()
-            .alongWith(
-                Commands.sequence(
-                    waitUntilHomed(),
-                    prepScore()
-                )
-            ),
-            driveToScoreTarget(),
-            score(),
-            driveToInnerTransit()
-        );
+        if(target == null) {
+            return Commands.none();
+        } else {
+            return Commands.sequence(
+                configGroundIntake(),
+                configTargetSelector(target),
+                waitUntilHomed(),
+                prepScore(),
+                new WaitCommand(0.5),
+                score(),
+                driveToInnerTransit()
+            );
+        }
     }
 
     public Command intakeAndScore(ScoringTarget target, Translation2d intakePosition) {
-        return Commands.sequence(
-            configGroundIntake(),
-            driveToInnerTransit(),
-            configTargetSelector(target),
-            pathInnerToIntake(intakePosition)
-            .deadlineWith(
-                Commands.sequence(
-                    commute(),
-                    waitUntilDirectionFit(getOuterTransitPose()),
-                    groundIntake()
-                )
-            ),
-            pathIntakeToInner(intakePosition)
-            .alongWith(
-                Commands.sequence(
-                    commute(),
-                    waitUntilDirectionFit(getInnerTransitPose()),
-                    prepScore()
-                )
-            ),
-            driveToScoreTarget(),
-            score(),
-            driveToInnerTransit()
-        );
+        if(target == null) {
+            return Commands.none();
+        } else {
+            return Commands.sequence(
+                configGroundIntake(),
+                driveToInnerTransit(),
+                configTargetSelector(target),
+                pathInnerToIntake(intakePosition)
+                .deadlineWith(
+                    Commands.sequence(
+                        commute(),
+                        waitUntilDirectionFit(getOuterTransitPose()),
+                        groundIntake()
+                    )
+                ),
+                pathIntakeToInner(intakePosition)
+                .alongWith(
+                    Commands.sequence(
+                        commute(),
+                        waitUntilDirectionFit(getInnerTransitPose()),
+                        prepScore()
+                    )
+                ),
+                driveToScoreTarget(),
+                score(),
+                driveToInnerTransit()
+            );
+        }
     }
-
-    public Command scoreTwo(ScoringTarget target1, ScoringTarget target2, Translation2d intakeTarget1) {
-        return scorePreload(target1).andThen(intakeAndScore(target2, intakeTarget1)).andThen(commute());
-    }
-
-    public Command scoreLink(ScoringTarget target1, ScoringTarget target2, ScoringTarget target3, Translation2d intakeTarget1, Translation2d intakeTarget2) {
-        return scorePreload(target1).andThen(intakeAndScore(target2, intakeTarget1)).andThen(intakeAndScore(target3, intakeTarget2)).andThen(commute());
-    }
-
 }

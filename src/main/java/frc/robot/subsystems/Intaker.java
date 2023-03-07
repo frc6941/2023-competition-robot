@@ -9,7 +9,6 @@ import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.team254.lib.util.TimeDelayedBoolean;
 import com.team254.lib.util.Util;
 

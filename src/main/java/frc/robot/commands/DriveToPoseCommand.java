@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
+import frc.robot.utils.AllianceFlipUtil;
 
 public class DriveToPoseCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
@@ -45,7 +46,8 @@ public class DriveToPoseCommand extends CommandBase {
     @Override
     public void execute() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
-        Translation2d deltaTranslation = currentPose.getTranslation().minus(targetPose.get().getTranslation());
+        Pose2d transformedPose = AllianceFlipUtil.apply(this.targetPose.get());
+        Translation2d deltaTranslation = currentPose.getTranslation().minus(transformedPose.getTranslation());
         double driveGain = driveController.calculate(deltaTranslation.getNorm(), 0.0);
         Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle());
 

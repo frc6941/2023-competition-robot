@@ -3,8 +3,6 @@ package frc.robot.utils;
 import org.frcteam6941.led.AddressableLEDPattern;
 import org.frcteam6941.led.patterns.AlternatingColorPattern;
 import org.frcteam6941.led.patterns.BlinkingPattern;
-import org.frcteam6941.led.patterns.ChaosPattern;
-import org.frcteam6941.led.patterns.RainbowPattern;
 import org.frcteam6941.led.patterns.ScannerPattern;
 import org.frcteam6941.led.patterns.SolidColorPattern;
 

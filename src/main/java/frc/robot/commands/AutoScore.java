@@ -109,12 +109,12 @@ public class AutoScore {
         double maxDistance = getMaxSuperstructureExtension(target, direction, endEffectorZ);
         
         if(alignedScore) {
-            return AllianceFlipUtil.apply(new Pose2d(
+            return new Pose2d(
                 new Translation2d(
                     Math.max(minDriveX, endEffectorXYPlane.getX() + maxDistance), endEffectorXYPlane.getY()
                 ),
                 direction == Direction.FAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0)
-            ));
+            );
         }
 
         double distanceFromNode = Util.clamp(

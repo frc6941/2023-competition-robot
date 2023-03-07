@@ -167,7 +167,7 @@ public final class Constants {
         public static final double OUTTAKING_FAST_PERCENTAGE = -0.70;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
         public static final double HOLD_PERCENTAGE_CONE = 0.60;
-        public static final double HOLD_DELAY = 0.25;
+        public static final double HOLD_DELAY = 0.2;
         public static final double GEAR_RATIO = 10.0;
         public static final double STOP_THRESHOLD = 0.25;
     }
