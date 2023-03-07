@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.FieldConstants;
-import frc.robot.utils.AllianceFlipUtil;
 
 public class AssistedPoseBuilder {
     // TODO: change this to fit real field
@@ -36,11 +35,11 @@ public class AssistedPoseBuilder {
     public static Pose2d buildLoadingPose2d(LoadingTarget loadingTarget, Direction direction) {
         switch (loadingTarget.getLoadingLocation()) {
             case DOUBLE_SUBSTATION_OUTER:
-                return AllianceFlipUtil.apply(direction == Direction.NEAR ? doubleSubstationRightPose
-                        : doubleSubstationLeftPose.transformBy(turn));
+                return direction == Direction.NEAR ? doubleSubstationRightPose
+                        : doubleSubstationLeftPose.transformBy(turn);
             case DOUBLE_SUBSTATION_INNER:
-                return AllianceFlipUtil.apply(direction == Direction.NEAR ? doubleSubstationLeftPose
-                        : doubleSubstationRightPose.transformBy(turn));
+                return direction == Direction.NEAR ? doubleSubstationLeftPose
+                        : doubleSubstationRightPose.transformBy(turn);
             case GROUND:
                 return null;
             default:
@@ -57,8 +56,6 @@ public class AssistedPoseBuilder {
         }
 
         double targetY = FieldConstants.Grids.complexLowTranslations[scoringTarget.getPosition()].getY();
-        return AllianceFlipUtil.apply(
-            new Pose2d(minDriveX, targetY, Rotation2d.fromDegrees(directionDegrees))
-        );
+        return new Pose2d(minDriveX, targetY, Rotation2d.fromDegrees(directionDegrees));
     }
 }

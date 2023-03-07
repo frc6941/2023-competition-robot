@@ -456,7 +456,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
         simArmMotor.setBusVoltage(RobotController.getBatteryVoltage());
         simExtenderMotor.setBusVoltage(RobotController.getBatteryVoltage());
-        simArm.setInputVoltage(simArmMotor.getMotorOutputLeadVoltage());
+        simArm.setInputVoltage(simArmMotor.getMotorOutputLeadVoltage() * 0.50);
         simElevator.setInputVoltage(simExtenderMotor.getMotorOutputLeadVoltage());
 
         mPeriodicIO.armAngle = Units.radiansToDegrees(simArm.getAngleRads());

@@ -13,6 +13,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
@@ -76,9 +77,10 @@ public class AutoScore {
         ).repeatedly().until(confirmation)
         .andThen(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetLoweredSupplier)
-            .andThen(new WaitCommand(0.3))
+            .andThen(new WaitCommand(0.5))
             .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
         )
+        .andThen(new PrintCommand("Ejecting Gamepiece"))
         .andThen(new InstantCommand(mIntaker::eject))
         .andThen(new WaitCommand(0.3))
         .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector));
