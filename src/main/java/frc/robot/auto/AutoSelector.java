@@ -1,9 +1,6 @@
 package frc.robot.auto;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.Publisher;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,12 +70,12 @@ public class AutoSelector {
     private boolean autoWarning = false;
 
     private final AutoActions autoBuilder;
-    private Command builtAutoCommand;
+    private Command builtAutoCommand = Commands.none();
 
     private AutoSelector() {
         autoStartPosition.addOption("Inner (Field Side)", AUTO_START_POSITION.INNER);
         autoStartPosition.addOption("Outer (Wall Side)", AUTO_START_POSITION.OUTER);
-        autoStartPosition.addOption("Middle", AUTO_START_POSITION.CENTER);
+        autoStartPosition.setDefaultOption("Middle", AUTO_START_POSITION.CENTER);
 
         autoAction.setDefaultOption("Do Nothing", AUTO_ACTION.DO_NOTHING);
         autoAction.addOption("Mobility", AUTO_ACTION.DO_NOTHING);
@@ -87,7 +84,7 @@ public class AutoSelector {
         autoAction.addOption("Score Link", AUTO_ACTION.LINK);
 
         autoBalance.setDefaultOption("DO NOT Balance", AUTO_BALANCE.NO);
-        autoBalance.setDefaultOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT", AUTO_BALANCE.YES);
+        autoBalance.addOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT", AUTO_BALANCE.YES);
 
         autoConfiguration = new AutoConfiguration(
                 autoStartPosition.getSelected(), autoAction.getSelected(), autoBalance.getSelected());
@@ -154,33 +151,59 @@ public class AutoSelector {
                 break;
         }
 
-        switch (config.action) {
-            case DO_NOTHING:
-            case MOBILITY:
-                actionStage = Commands.none();
-                break;
-            case SCORE_PRELOAD:
-                actionStage = autoBuilder.scorePreload(objective1);
-                break;
-            case TWO_GAMEPIECE:
-                actionStage = Commands.sequence(
-                        autoBuilder.scorePreload(objective1),
-                        autoBuilder.intakeAndScore(objective2, intakeTarget1),
-                        autoBuilder.commute());
-                break;
-            case LINK:
-                actionStage = Commands.sequence(
-                        autoBuilder.scorePreload(objective1),
-                        autoBuilder.intakeAndScore(objective2, intakeTarget1),
-                        autoBuilder.intakeAndScore(objective3, intakeTarget2),
-                        autoBuilder.commute());
-                break;
-            default:
-                actionStage = Commands.none();
-                break;
+        boolean isLeft = config.startPosition == AUTO_START_POSITION.INNER;
+
+        if(config.startPosition != AUTO_START_POSITION.CENTER) {
+            switch (config.action) {
+                case DO_NOTHING:
+                case MOBILITY:
+                    actionStage = Commands.none();
+                    break;
+                case SCORE_PRELOAD:
+                    actionStage = autoBuilder.scorePreload(isLeft, objective1);
+                    break;
+                case TWO_GAMEPIECE:
+                    actionStage = Commands.sequence(
+                            autoBuilder.scorePreload(isLeft, objective1),
+                            autoBuilder.intakeAndScore(isLeft, objective2, intakeTarget1),
+                            autoBuilder.commute());
+                    break;
+                case LINK:
+                    actionStage = Commands.sequence(
+                            autoBuilder.scorePreload(isLeft, objective1),
+                            autoBuilder.intakeAndScore(isLeft, objective2, intakeTarget1),
+                            autoBuilder.intakeAndScore(isLeft, objective3, intakeTarget2),
+                            autoBuilder.commute());
+                    break;
+                default:
+                    actionStage = Commands.none();
+                    break;
+            }
+        } else {
+            switch (config.action) {
+                case DO_NOTHING:
+                case MOBILITY:
+                    actionStage = Commands.none();
+                    break;
+                case SCORE_PRELOAD:
+                    actionStage = autoBuilder.scorePreload(isLeft, objective1);
+                    break;
+                case TWO_GAMEPIECE:
+                case LINK:
+                default:
+                    actionStage = Commands.none();
+                    break;
+            }
         }
 
-        balanceStage = Commands.none();
+        switch(config.ifBalance) {
+            case YES:
+                balanceStage = autoBuilder.balance(isLeft);
+                break;
+            case NO:
+            default:
+                balanceStage = Commands.none();
+        }
 
         return Commands.sequence(
                 resetStage,
@@ -192,7 +215,7 @@ public class AutoSelector {
         AutoConfiguration currentConfiguration = getChoosedAutoConfiguration();
         if(!currentConfiguration.equals(autoConfiguration)) {
             this.autoConfiguration = currentConfiguration;
-            buildAuto(autoConfiguration);
+            this.builtAutoCommand = buildAuto(autoConfiguration);
         }
 
         SmartDashboard.putData("Auto Start Position", autoStartPosition);

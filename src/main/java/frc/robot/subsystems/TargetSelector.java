@@ -4,14 +4,14 @@ import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import com.team254.lib.util.Util;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.states.AssistedPoseBuilder;
 import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
 import frc.robot.states.LoadingTarget;
@@ -27,6 +27,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     public static class TargetSelectorPeriodicIO {
         public long[] cursor = new long[] { 2, 6 };
         public long[] target = new long[] { 2, 6 };
+        public long loadingTarget = -1;
     }
     
     public TargetSelectorPeriodicIO mPeriodicIO = new TargetSelectorPeriodicIO();
@@ -34,11 +35,12 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private NetworkTable targetSelectorTable = NetworkTableInstance.getDefault().getTable("TargetSelector");
     private IntegerArrayPublisher cursorTopic = targetSelectorTable.getIntegerArrayTopic("cursor").publish();
     private IntegerArrayPublisher targetTopic = targetSelectorTable.getIntegerArrayTopic("target").publish();
+    private IntegerPublisher loadingTopic = targetSelectorTable.getIntegerTopic("load").publish();
     private StringPublisher targetStringTopic = targetSelectorTable.getStringTopic("targetString").publish();
 
     private GamePiece targetGamePiece = GamePiece.CONE;
     private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
-    private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_OUTER);
+    private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION);
 
     private Direction scoringDirection = Direction.NEAR;
     private Direction commutingDirection = Direction.NEAR;
@@ -56,6 +58,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private TargetSelector() {
         cursorTopic.setDefault(new long[] { 0, 0 });
         targetTopic.setDefault(new long[] { 0, 0 });
+        loadingTopic.setDefault(-1);
     }
 
     public GamePiece getTargetGamePiece() {
@@ -109,10 +112,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     public SuperstructureState getScoreLowerDelSuperstructureState() {
         return SuperstructureStateBuilder.buildScoringSupertructureStateLowerDelta(scoringTarget, scoringDirection, targetGamePiece);
     }
-    
-    public Pose2d getScorePose2d() {
-        return AssistedPoseBuilder.buildScoringPose2d(scoringTarget, scoringDirection, targetGamePiece);
-    }
 
     public SuperstructureState getLoadSuperstructureState() {
         return SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection);
@@ -123,10 +122,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection).armAngle,
             Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
         );
-    }
-
-    public Pose2d getLoadPose2d() {
-        return AssistedPoseBuilder.buildLoadingPose2d(loadingTarget, loadingDirection);
     }
 
     public SuperstructureState getHairTriggerSuperstructureState() {
@@ -189,22 +184,49 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void update(double time, double dt){
-        switch(targetGamePiece) {
-            case CONE:
-                if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
-                    scoringDirection = Direction.NEAR;
-                    commutingDirection = Direction.NEAR;
-                    loadingDirection = Direction.NEAR;
-                } else {
+        if(this.scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE || this.scoringTarget.getScoringRow() == SCORING_ROW.LOW) {
+            this.targetGamePiece = GamePiece.CUBE;
+        } else {
+            this.targetGamePiece = GamePiece.CONE;
+        }
+
+        if(DriverStation.isAutonomous()) {
+            scoringDirection = Direction.NEAR;
+            commutingDirection = Direction.FAR;
+            loadingDirection = Direction.FAR;
+        } else {
+            switch(targetGamePiece) {
+                case CONE:
+                    if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+                        scoringDirection = Direction.NEAR;
+                        commutingDirection = Direction.NEAR;
+                        loadingDirection = Direction.NEAR;
+                    } else {
+                        scoringDirection = Direction.FAR;
+                        commutingDirection = Direction.FAR;
+                        loadingDirection = Direction.FAR;
+                    }
+                    break;
+                case CUBE:
                     scoringDirection = Direction.FAR;
                     commutingDirection = Direction.FAR;
                     loadingDirection = Direction.FAR;
-                }
+                    break;
+            }
+        }
+
+        switch(loadingTarget.getLoadingLocation()) {
+            case DOUBLE_SUBSTATION:
+                mPeriodicIO.loadingTarget = 0;
                 break;
-            case CUBE:
-                scoringDirection = Direction.FAR;
-                commutingDirection = Direction.FAR;
-                loadingDirection = Direction.FAR;
+            case SINGLE_SUBSTATION:
+                mPeriodicIO.loadingTarget = 1;
+                break;
+            case GROUND:
+                mPeriodicIO.loadingTarget = 2;
+                break;
+            default:
+                mPeriodicIO.loadingTarget = -1;
                 break;
         }
     }
@@ -219,6 +241,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         cursorTopic.set(mPeriodicIO.cursor);
         targetTopic.set(mPeriodicIO.target);
         targetStringTopic.set(scoringTarget.toString());
+        loadingTopic.set((long) mPeriodicIO.loadingTarget);
     }
     
     @Override

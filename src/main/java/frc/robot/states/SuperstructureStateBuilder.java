@@ -157,7 +157,7 @@ public class SuperstructureStateBuilder {
 
     public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction) {
         switch (target.getLoadingLocation()) {
-            case DOUBLE_SUBSTATION_OUTER:
+            case DOUBLE_SUBSTATION:
                 if (direction == Direction.NEAR) {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleNear.get()),
                             Loading.shelfLengthNear.get());
@@ -165,7 +165,7 @@ public class SuperstructureStateBuilder {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleFar.get()),
                             Loading.shelfLengthFar.get());
                 }
-            case DOUBLE_SUBSTATION_INNER:
+            case SINGLE_SUBSTATION:
                 if (direction == Direction.NEAR) {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleNear.get()),
                             Loading.shelfLengthNear.get());

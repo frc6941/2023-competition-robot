@@ -162,7 +162,7 @@ public class StatusTracker implements Updatable {
                 if (DriverStation.isAutonomousEnabled()) {
                     mPeriodicIO.matchStage = MATCH_STAGE.AUTO;
                 } else if (DriverStation.isTeleopEnabled()) {
-                    if (mPeriodicIO.matchTime > 30.0) {
+                    if (mPeriodicIO.matchTime > 30.0 || mPeriodicIO.matchTime < 0.0) {
                         mPeriodicIO.matchStage = MATCH_STAGE.TELEOP;
                     } else {
                         mPeriodicIO.matchStage = MATCH_STAGE.ENDGAME;

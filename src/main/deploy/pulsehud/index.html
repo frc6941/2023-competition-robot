@@ -37,28 +37,28 @@
             <div class="column has-text-centered">
               <div>
                 <p class="icon is-large">
-                    <img v-if="isConnected" src="icons/access-point-check.svg" style="filter: invert(100%);">
-                    <img v-else src="icons/access-point-off.svg" style="filter: invert(100%);">
+                    <img v-if="isConnected" src="icons/robot-excited.svg" style="filter: invert(100%);">
+                    <img v-else src="icons/robot-dead.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
                 </p>
-                <p class="heading">机器</p>
+                <p class="subtitle">机器</p>
               </div>
             </div>
             <div class="column has-text-centered">
               <div>
                 <p class="icon is-large">
                   <img v-if="dsConnected" src="icons/controller.svg" style="filter: invert(100%);">
-                  <img v-else src="icons/controller-off.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/controller-off.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
                 </p>
-                <p class="heading">DS</p>
+                <p class="subtitle">DS</p>
               </div>
             </div>
             <div class="column has-text-centered">
               <div>
                 <p class="icon is-large">
                   <img v-if="allChecked" src="icons/check-all.svg" style="filter: invert(100%);">
-                  <img v-else src="icons/exclamation-thick.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/exclamation-thick.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
                 </p>
-                <p class="heading">检查项</p>
+                <p class="subtitle">预检</p>
               </div>
             </div>
           </nav>
@@ -69,60 +69,45 @@
     </section>
     
     
-    <section id="target-chooser" class="container hero">
+    <section id="target-chooser" class="hero full-width">
       <div class="hero-body">
-        <div id="hybrid-nodes" class="columns is-variable is-1">
-          <div class="column" v-for="node in hybridNodes">
-            <div :class="node"></div>
-          </div>
-        </div>
-    
-        <div id="mid-nodes" class="columns is-variable is-1">
-          <div class="column" v-for="node in midNodes">
-            <div :class="node"></div>
-          </div>
-        </div>
-    
-        <div id="high-nodes" class="columns is-variable is-1">
-          <div class="column" v-for="node in highNodes">
-            <div :class="node"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="auto-selector" class="container hero">
-      <div class="hero-body">
-        <div class="level">
-          
-          <div class="level-item">
-            <div class="select is-large">
-              <select>
-                <option>Select dropdown</option>
-                <option>With options</option>
-              </select>
+        <div class="columns is-vcentered is-mutliline">
+          <div class="column center is-10">
+            <div id="hybrid-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in hybridNodes">
+                <div :class="node"></div>
+              </div>
+            </div>
+        
+            <div id="mid-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in midNodes">
+                <div :class="node"></div>
+              </div>
+            </div>
+        
+            <div id="high-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in highNodes">
+                <div :class="node"></div>
+              </div>
             </div>
           </div>
 
-          <div class="level-item">
-            <div class="select is-large">
-              <select>
-                <option>Select dropdown</option>
-                <option>With options</option>
-              </select>
-            </div>
+          <div class="column center">
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[0]" class="selected" src="icons/lightning-bolt-single.svg">
+              <img v-else class="unselected" src="icons/lightning-bolt-single.svg">
+            </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[1]" class="selected" src="icons/slope-downhill.svg" style="filter: invert(75%);">
+              <img v-else class="unselected" src="icons/slope-downhill.svg" style="filter: invert(75%);">
+            </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[2]" class="selected" src="icons/chevron-double-down.svg" style="filter: invert(75%);">
+              <img v-else class="unselected" src="icons/chevron-double-down.svg" style="filter: invert(75%);">
+            </p><br>
           </div>
 
-          <div class="level-item">
-            <div class="select is-large">
-              <select>
-                <option>Select dropdown</option>
-                <option>With options</option>
-              </select>
-            </div>
-          </div>
-
-        </div>
+        </div>        
       </div>
     </section>
   </div>
@@ -151,6 +136,16 @@
 	    -webkit-animation:pulsate-fwd 0.2s infinite;
     }
 
+    .unselected {
+      filter: invert(75%);
+    }
+
+    .selected {
+      animation:pulsate-fwd 0.2s infinite;
+      -webkit-animation:pulsate-fwd 0.2s infinite;
+      filter: invert(25%);
+    }
+
     .separation {
       background-color: rgb(255, 255, 255);
       aspect-ratio: 1;
@@ -159,6 +154,15 @@
 
     .is-disconnected{
       background-color: grey;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .is-extralarge {
+      width: 7em;
+      height: 7em;
     }
 
   </style>

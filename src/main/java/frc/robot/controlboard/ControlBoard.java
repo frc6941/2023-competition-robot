@@ -1,5 +1,7 @@
 package frc.robot.controlboard;
 
+import com.team254.lib.util.Util;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -125,11 +127,36 @@ public class ControlBoard {
         return driver.getController().x();
     }
 
+    private double armDelta = 0.0;
+
+    public double getArmDelta() {
+        return armDelta;
+    }
+
+    public void clearArmDelta() {
+        armDelta = 0.0;
+    }
+
+    public Trigger getArmIncrease() {
+        return driver.getController().y();
+    }
+
+    public Trigger getArmDecrease() {
+        return driver.getController().a();
+    }
+
+    public void increaseArm() {
+        armDelta = Util.clamp(armDelta + Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA, -20.0, 20.0);
+    }
+
+    public void decreaseArm() {
+        armDelta = Util.clamp(armDelta - Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA, -20.0, 20.0);
+    }
+
     
     /**
      * OPERATOR METHODS
      */
-
     public Trigger getTargetMoveLeft() {
         return operator.button(BUTTON.ML);
     }

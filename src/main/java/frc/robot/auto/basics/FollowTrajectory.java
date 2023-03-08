@@ -2,6 +2,8 @@ package frc.robot.auto.basics;
 
 import java.util.List;
 
+import org.frcteam6328.utils.LoggedTunableNumber;
+
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
@@ -18,8 +20,8 @@ public class FollowTrajectory extends CommandBase {
     private List<PathPoint> wayPoints;
     private boolean reverse;
 
-    private static final double maxVelocity = 3.5;
-    private static final double maxAcceleration = 5.0;
+    private static final LoggedTunableNumber maxVelocity = new LoggedTunableNumber("maxAcceleration", 1.0);
+    private static final LoggedTunableNumber maxAcceleration = new LoggedTunableNumber("maxAcceleration", 2.0);
 
     public FollowTrajectory(
             SJTUSwerveMK5Drivebase mDrivebase,
@@ -63,7 +65,7 @@ public class FollowTrajectory extends CommandBase {
     public void initialize() {
         if (this.targetTrajectory == null || this.targetTrajectory.getStates().size() <= 1) {
             try {
-                targetTrajectory = PathPlanner.generatePath(new PathConstraints(maxVelocity, maxAcceleration), reverse, wayPoints);
+                targetTrajectory = PathPlanner.generatePath(new PathConstraints(maxVelocity.get(), maxAcceleration.get()), reverse, wayPoints);
             } catch (Exception e) {
                 System.out.println("Trajectory generation failed.");
             }

@@ -3,8 +3,8 @@ package frc.robot.states;
 public class LoadingTarget {
     public static enum LOADING_LOCATION {
         GROUND,
-        DOUBLE_SUBSTATION_OUTER,
-        DOUBLE_SUBSTATION_INNER
+        SINGLE_SUBSTATION,
+        DOUBLE_SUBSTATION,
     }
 
     private LOADING_LOCATION loadingLocation;

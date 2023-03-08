@@ -6,10 +6,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.AutoCommuteCommand;
-import frc.robot.commands.AutoLoadCommand;
+import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveTeleopCommand;
-import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
@@ -64,11 +63,7 @@ public class RobotContainer {
             new AutoCommuteCommand(mSuperstructure, mIntaker, mSelector)
             .alongWith(new InstantCommand(mTracker::clear))
         );
-        mControlBoard.getLoad().onTrue(
-            new AutoLoadCommand(mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation, () -> false)
-            .alongWith(new InstantCommand(mTracker::setLoad))
-            .until(mControlBoard::getCancellation)
-        );
+        
         mControlBoard.getSpit().onTrue(
             new InstantCommand(mIntaker::runOuttake)
         )
@@ -81,23 +76,39 @@ public class RobotContainer {
         .onFalse(
             new InstantCommand(mIntaker::stopIntake)
         );
+        mControlBoard.getArmIncrease().whileTrue(
+            new InstantCommand(mControlBoard::increaseArm).repeatedly()
+        );
+        mControlBoard.getArmDecrease().whileTrue(
+            new InstantCommand(mControlBoard::decreaseArm).repeatedly()
+        );
 
-        AutoScore autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mSelector, () -> mControlBoard.getConfirmation(), () -> true);
+        AutoLoad autoLoad = new AutoLoad(mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation, mControlBoard::getArmDelta);
+        mControlBoard.getLoad().onTrue(
+            Commands.sequence(
+                Commands.runOnce(mControlBoard::clearArmDelta),
+                autoLoad.getArmCommand().alongWith(new InstantCommand(mTracker::setLoad))
+            ).until(mControlBoard::getCancellation)
+        );
+
+        AutoScore autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation, () -> true);
         mControlBoard.getScore().onTrue(
             autoScore.getArmCommand().alongWith(new InstantCommand(mTracker::setScore))
             .andThen(new WaitUntilNoCollision(() -> mDrivebase.getPose(), mSuperstructure, mIntaker, mSelector))
             .until(mControlBoard::getCancellation)
         );
+        
         mControlBoard.getAutoPath().whileTrue(
             Commands.either(
                 autoScore.getDriveCommand(),
                 Commands.either(
-                    new DriveToPoseCommand(mDrivebase, mSelector.getLoadPose2d()),
-                    new InstantCommand(),
+                    autoLoad.getDriveCommand(),
+                    Commands.none(),
                     mTracker::isInLoad),
                 mTracker::inInScore
             )
         );
+        
 
         // Bind Operator
         mControlBoard.getTargetMoveForward().onTrue(
@@ -116,7 +127,7 @@ public class RobotContainer {
             new InstantCommand(() -> mSelector.applyCursorToTarget())
         );
         mControlBoard.getLoadingStation().onTrue(
-            new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER)))
+            new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION)))
         );
         mControlBoard.getGroundLoading().onTrue(
             new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)))

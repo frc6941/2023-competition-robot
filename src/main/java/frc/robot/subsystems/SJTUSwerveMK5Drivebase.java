@@ -69,7 +69,9 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     private Translation2d translation = new Translation2d();
     private Pose2d pose = new Pose2d();
     private SwerveModulePosition[] swerveModsPositions;
-    private MovingAverage angularVelocity;
+    private MovingAverage pitchVelocity;
+    private MovingAverage rollVelocity;
+    private MovingAverage yawVelocity;
 
     private HolonomicDriveSignal inputDriveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
     private HolonomicDriveSignal driveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
@@ -132,7 +134,9 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
 
         gyro.setYaw(0.0);
         swerveLocalizer.reset(new Pose2d(), getModulePositions());
-        angularVelocity = new MovingAverage(10);
+        yawVelocity = new MovingAverage(10);
+        pitchVelocity = new MovingAverage(10);
+        rollVelocity = new MovingAverage(10);
     }
 
     /**
@@ -152,7 +156,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     @Override
     public void setLockHeading(boolean status) {
         if (this.isLockHeading != status) {
-            headingController.reset(swerveLocalizer.getLatestPose().getRotation().getDegrees(), getAngularVelocity());
+            headingController.reset(swerveLocalizer.getLatestPose().getRotation().getDegrees(), getYawVelocity());
         }
         this.isLockHeading = status;
     }
@@ -249,12 +253,20 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     public synchronized void resetHeadingController() {
         headingController.reset(
             swerveLocalizer.getLatestPose().getRotation().getDegrees(),
-            getAngularVelocity()
+            getYawVelocity()
         );
     }
 
-    public synchronized double getAngularVelocity() {
-        return angularVelocity.getAverage();
+    public synchronized double getYawVelocity() {
+        return yawVelocity.getAverage();
+    }
+
+    public synchronized double getPtichVelocity() {
+        return pitchVelocity.getAverage();
+    }
+
+    public synchronized double getRollVelocity() {
+        return rollVelocity.getAverage();
     }
 
     /**
@@ -269,6 +281,14 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
             boolean isOpenLoop) {
         inputDriveSignal = new HolonomicDriveSignal(translationalVelocity, rotationalVelocity, isFieldOriented,
                 isOpenLoop);
+    }
+
+    public void brake() {
+        setState(STATE.BRAKE);
+    }
+
+    public void unbrake() {
+        setState(STATE.DRIVE);
     }
 
     public void stopMovement() {
@@ -289,7 +309,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         this.trajectoryFollower.setRequiredOnTarget(requiredOnTarget);
         if (resetOnStart) {
             this.gyro.setYaw(targetTrajectory.getInitialPose().getRotation().getDegrees());
-            this.headingController.reset(getYaw(), getAngularVelocity());
+            this.headingController.reset(getYaw(), getYawVelocity());
         }
         this.trajectoryFollower.follow(targetTrajectory);
     }
@@ -408,7 +428,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     public synchronized void update(double time, double dt) {
         updateOdometry(time, dt);
         Optional<HolonomicDriveSignal> trajectorySignal = trajectoryFollower.update(getPose(), getTranslation(),
-                getAngularVelocity(), time, dt);
+                getYawVelocity(), time, dt);
         if (trajectorySignal.isPresent()) {
             setState(STATE.PATH_FOLLOWING);
             driveSignal = trajectorySignal.get();
@@ -439,7 +459,9 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         }
 
         gyro.updateIO();
-        angularVelocity.addNumber(gyro.getRaw()[2]);
+        rollVelocity.addNumber(gyro.getRaw()[0]);
+        pitchVelocity.addNumber(gyro.getRaw()[1]);
+        yawVelocity.addNumber(gyro.getRaw()[2]);
     }
 
     @Override

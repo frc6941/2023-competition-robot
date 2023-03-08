@@ -9,10 +9,11 @@ const dsConnectedTopic = "/MatchInfo/dsConnected"
 
 const cursorTopic = "/TargetSelector/cursor"
 const targetTopic = "/TargetSelector/target"
+const loadingTargetTopic = "/TargetSelector/load"
 
 const targetCollection = [
     matchTimeTopic, matchTypeTopic, matchNameTopic, matchNumberTopic, matchStageTopic, dsConnectedTopic,
-    cursorTopic, targetTopic
+    cursorTopic, targetTopic, loadingTargetTopic
 ]
 
 const stageMap = new Map()
@@ -50,6 +51,7 @@ let app = createApp({
 
             target: [2, 1],
             cursor: [2, 2],
+            loadTarget: [false, false, false],
 
             bannerClass: bannerClassPrefix + "is-disconnected"
         }
@@ -79,6 +81,11 @@ let app = createApp({
                 this.cursor = value
             } else if (topic == targetTopic) {
                 this.target = value
+            } else if (topic == loadingTargetTopic) {
+                this.loadTarget = [false, false, false]
+                if(value != -1) {
+                    this.loadTarget[value] = true
+                } 
             }
         },
         isActive(row, column) {
@@ -101,7 +108,6 @@ let app = createApp({
             return column == 2 || column == 5 
         },
         nodes(row) {
-            console.log(this.cursor)
             let result = []
             for (let i = 0; i < 9; i++) {
                 let temp = ""

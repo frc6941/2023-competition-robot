@@ -33,7 +33,7 @@ public class DriveTeleopCommand extends CommandBase {
 
     @Override
     public void initialize() {
-
+        mDrivebase.unbrake();
     }
 
     @Override
