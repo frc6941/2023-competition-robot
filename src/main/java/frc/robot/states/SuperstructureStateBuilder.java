@@ -258,7 +258,7 @@ public class SuperstructureStateBuilder {
         Loading.groundLengthNear.initDefault(1.35);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(225.0);
+        Loading.groundAngleFar.initDefault(222.0);
         Loading.groundLengthFar.initDefault(1.35);
 
         /* Commuting */

@@ -225,7 +225,7 @@ public final class Constants {
 
     // Controller
     public static final class CONTROLBOARD {
-        public static final double CONTROLLER_DEADBAND = 0.10;
+        public static final double CONTROLLER_DEADBAND = 0.05;
 
         public static final int DRIVER_CONTROLLER_PORT = 0;
         public static final boolean CONTROLLER_INVERT_X = false;

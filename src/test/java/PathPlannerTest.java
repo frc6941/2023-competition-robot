@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.frcteam6941.pathplanning.astar.AStarPathPlanner;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
-import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.AXIS;
 import org.frcteam6941.pathplanning.astar.obstacles.InfiniteBarrierObstacle.DIRECTION;
+import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
+import org.frcteam6941.pathplanning.astar.obstacles.RectangularObstacle;
 import org.frcteam6941.pathplanning.smoothing.FloydTrimming;
 import org.frcteam6941.pathplanning.trajectory.TrajectoryGenerationUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -20,15 +19,10 @@ import org.junit.jupiter.api.Test;
 
 import com.pathplanner.lib.PathConstraints;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.FieldConstants;
 import frc.robot.motion.FieldObstacles;
-import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 
 public class PathPlannerTest {
     @BeforeEach
@@ -125,9 +119,5 @@ public class PathPlannerTest {
         System.out.println(FloydTrimming.trimPath(
             pathPlanner.plan(startPoint, endPoint, FieldObstacles.getObstacles(), 0.05, 0.05, 1.5, 5.0)  
         ).getLength());
-    }
-
-    public static void main(String[] args) {
-        
     }
 }

@@ -423,8 +423,8 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
     @Override
     public synchronized void stop() {
-        armMotorLeader.setNeutralMode(NeutralMode.Coast);
-        armMotorFollower.setNeutralMode(NeutralMode.Coast);
+        armMotorLeader.setNeutralMode(NeutralMode.Brake);
+        armMotorFollower.setNeutralMode(NeutralMode.Brake);
     }
 
     @Override

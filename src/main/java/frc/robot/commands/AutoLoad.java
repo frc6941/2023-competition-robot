@@ -52,8 +52,9 @@ public class AutoLoad {
             ),
             () -> mTargetSelector.getLoadingTarget().getLoadingLocation() == LOADING_LOCATION.GROUND
         );
+
         armCommand = Commands.either(
-            new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector, armDelta),
+            new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector),
             new LoadShelfCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation),
             () -> mTargetSelector.getLoadingTarget().getLoadingLocation() == LOADING_LOCATION.GROUND
         );
