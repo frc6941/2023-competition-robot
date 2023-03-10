@@ -60,7 +60,6 @@ let app = createApp({
             matchName: "练习",
             matchStage: "准备阶段",
             isConnected: false,
-            allChecked: false,
             dsConnected: false,
 
             target: [2, 1],
@@ -174,7 +173,6 @@ let app = createApp({
         nonEmptyAlertGroups() {
             var validAlerts = {}
             for(var key in this.alerts) {
-                console.log(this.alerts[key][errorSuffix])
                 if(
                     this.alerts[key][errorSuffix].length != 0
                     || this.alerts[key][warningSuffix].length != 0
@@ -184,6 +182,16 @@ let app = createApp({
                 }
             }
             return validAlerts
+        },
+        isCheckPassed() {
+            var passed = true;
+            for(var key in this.alerts) {
+                if(this.alerts[key][errorSuffix].length != 0
+                || this.alerts[key][warningSuffix].length != 0) {
+                    passed = false;
+                }
+            }
+            return passed
         }
     },
     mounted() {

@@ -40,6 +40,7 @@ public class StatusTracker implements Updatable {
         public Alliance matchAlliance = Alliance.Invalid;
 
         public boolean seeAprilTag = false;
+        public boolean hasGamePiece = false;
         public boolean isCube = false;
         public boolean inManual = false;
     }
@@ -138,7 +139,11 @@ public class StatusTracker implements Updatable {
                 } else if (mPeriodicIO.isInScore) {
                     mPeriodicIO.desiredPattern = mPeriodicIO.seeAprilTag ? Lights.SCORING_HAS_VISION : Lights.SCORING;
                 } else if (mPeriodicIO.isInload) {
-                    mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.LOAD_CUBE : Lights.LOAD_CONE;
+                    if(mPeriodicIO.hasGamePiece) {
+                        mPeriodicIO.desiredPattern = Lights.HAS_GAMEPIECE;
+                    } else {
+                        mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.LOAD_CUBE : Lights.LOAD_CONE;
+                    }
                 } else {
                     mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE : Lights.COMMUTE_CONE;
                 }
@@ -158,6 +163,7 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.matchAlliance = DriverStation.getAlliance();
         mPeriodicIO.seeAprilTag = RobotStateEstimator.getInstance().seeAprilTag();
         mPeriodicIO.isCube = TargetSelector.getInstance().getTargetGamePiece() == GamePiece.CUBE;
+        mPeriodicIO.hasGamePiece = Intaker.getInstance().hasGamePiece();
 
         if (mPeriodicIO.dsConnected) {
             mPeriodicIO.matchTime = DriverStation.getMatchTime();
