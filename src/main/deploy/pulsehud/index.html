@@ -114,40 +114,18 @@
     <section id="robot-info" class="hero container" >
       <div class="columns is-vcentered">
         <div class="column">
-          {{nonEmptyAlertGroups}}
           <article class="panel is-info">
             <p class="panel-heading">
               预检项
             </p>
-            <p class="panel-tabs">
-              <a class="is-active">All</a>
-              <a>Error</a>
-              <a>Warning</a>
-              <a>Info</a>
-            </p>
-            <a class="panel-block is-active">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
-              </span>
-              bulma
-            </a>
             <a class="panel-block">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
-              </span>
-              marksheet
-            </a>
-            <a class="panel-block">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
-              </span>
-              minireset.css
-            </a>
-            <a class="panel-block">
-              <span class="panel-icon">
-                <i class="fas fa-book" aria-hidden="true"></i>
-              </span>
-              jgthms.github.io
+              <div v-for="alert in nonEmptyAlertGroups">
+
+                <span class="panel-icon">
+                  <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                bulma
+              </div>
             </a>
           </article>
         </div>

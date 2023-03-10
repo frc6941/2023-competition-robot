@@ -10,13 +10,12 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import com.pathplanner.lib.server.PathPlannerServer;
-
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
+import frc.robot.states.SuperstructureStateBuilder;
 import frc.robot.subsystems.ArmAndExtender;
 
 /**
@@ -57,10 +56,8 @@ public class Robot extends LoggedRobot {
         }
 
         logger.start();
-        // CameraServer.startAutomaticCapture();
-        if (Constants.AUTO_TUNING) {
-            PathPlannerServer.startServer(6941);
-        }
+
+        SuperstructureStateBuilder.initTunables();
     }
 
     @Override

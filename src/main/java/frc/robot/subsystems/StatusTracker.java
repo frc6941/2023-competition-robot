@@ -41,6 +41,7 @@ public class StatusTracker implements Updatable {
 
         public boolean seeAprilTag = false;
         public boolean isCube = false;
+        public boolean inManual = false;
     }
 
     public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
@@ -89,8 +90,16 @@ public class StatusTracker implements Updatable {
         return mPeriodicIO.isInload;
     }
 
-    public boolean inInScore() {
+    public boolean isInScore() {
         return mPeriodicIO.isInScore;
+    }
+
+    public boolean isInManual() {
+        return mPeriodicIO.inManual;
+    }
+
+    public void setInManual(boolean value) {
+        mPeriodicIO.inManual = value;
     }
 
     public void setLoad() {
@@ -124,7 +133,9 @@ public class StatusTracker implements Updatable {
                 break;
             case TELEOP:
             case ENDGAME:
-                if (mPeriodicIO.isInScore) {
+                if (mPeriodicIO.inManual) {
+                    mPeriodicIO.desiredPattern = Lights.MANUAL;
+                } else if (mPeriodicIO.isInScore) {
                     mPeriodicIO.desiredPattern = mPeriodicIO.seeAprilTag ? Lights.SCORING_HAS_VISION : Lights.SCORING;
                 } else if (mPeriodicIO.isInload) {
                     mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.LOAD_CUBE : Lights.LOAD_CONE;

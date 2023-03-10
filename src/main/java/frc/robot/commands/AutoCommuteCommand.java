@@ -1,18 +1,15 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.ArmAndExtender;
-import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.TargetSelector;
 
-public class AutoCommuteCommand extends SequentialCommandGroup{
-    public AutoCommuteCommand(ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
+public class AutoCommuteCommand extends SequentialCommandGroup {
+    public AutoCommuteCommand(ArmAndExtender mSuperstructure, TargetSelector mTargetSelector) {
         addCommands(
             new RequestSuperstructureStateAutoRetract(
                 mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState()
-            ).alongWith(new InstantCommand(mIntaker::stopIntake))
-            .unless(() -> !mSuperstructure.isHomed())
+            ).unless(() -> !mSuperstructure.isHomed())
         );
     }
 

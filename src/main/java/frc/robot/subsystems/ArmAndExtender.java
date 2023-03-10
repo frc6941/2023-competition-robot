@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -443,6 +444,8 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         Logger.getInstance().processInputs("Arm and Extender", mPeriodicIO);
         Logger.getInstance().recordOutput("Arm Mechanism", mechDrawing);
         Logger.getInstance().recordOutput("Mechanism3d/" + "Arm", armPose, extenderPose);
+
+        SmartDashboard.putData("Subsystem Superstructure", this);
     }
 
     @Override
@@ -487,6 +490,10 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         if (simArm.wouldHitLowerLimit(simArm.getAngleRads() - 0.0001) && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_NEGATIVE_ANGLE);
         }
+        if (simArm.wouldHitUpperLimit(simArm.getAngleRads() + 0.0001) && !armIsHomed) {
+            homeArm(Constants.SUBSYSTEM_ARM.HOME_POSITIVE_ANGLE);
+        }
+
         if (simElevator.wouldHitLowerLimit(simElevator.getPositionMeters() - 0.0001) && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }

@@ -32,4 +32,5 @@ public class Lights {
     public static final AddressableLEDPattern COMMUTE_CUBE = new BlinkingPattern(Color.kPurple, 0.5);
     public static final AddressableLEDPattern SCORING = new SolidColorPattern(Color.kWhite);
     public static final AddressableLEDPattern SCORING_HAS_VISION = new BlinkingPattern(Color.kWhite, 0.2);
+    public static final AddressableLEDPattern MANUAL = new BlinkingPattern(Color.kRed, 0.05);
 }

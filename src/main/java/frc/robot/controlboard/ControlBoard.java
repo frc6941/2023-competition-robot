@@ -78,7 +78,7 @@ public class ControlBoard {
     }
 
     public double getBrakeScale() {
-        return 1.0 - driver.getTrigger(Side.RIGHT) * Constants.CONTROLBOARD.DRIVER_BRAKE_MAX;
+        return 1.0 - driver.getTrigger(Side.LEFT) * Constants.CONTROLBOARD.DRIVER_BRAKE_MAX;
     }
 
     public double getSwerveRotation() {

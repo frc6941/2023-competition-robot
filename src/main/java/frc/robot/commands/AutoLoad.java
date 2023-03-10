@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -11,6 +12,7 @@ import frc.robot.FieldConstants;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
+import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
 
 public class AutoLoad {
@@ -36,28 +38,30 @@ public class AutoLoad {
     public static final double minDriveY = 0.5;
     public static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
 
-    public AutoLoad(ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, DoubleSupplier armDelta) {
+    public static Map<Object, Command> loadArmCommandMap;
+    public static Map<Object, Command> loadDriveCommandMap;
+
+    public AutoLoad(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, DoubleSupplier armDelta) {
         this.mSuperstructure = mSuperstructure;
         this.mIntaker = mIntaker;
         this.mTargetSelector = mTargetSelector;
         this.confirmation = confirmation;
         this.armDelta = armDelta;
 
-        driveCommand = Commands.either(
-            Commands.none(),
-            Commands.either(
-                Commands.none(),
-                Commands.none(),
-                () -> false
-            ),
-            () -> mTargetSelector.getLoadingTarget().getLoadingLocation() == LOADING_LOCATION.GROUND
+        loadDriveCommandMap = Map.of(
+            LOADING_LOCATION.DOUBLE_SUBSTATION, new DriveToDoubleSubstationCommand(mDrivebase, mTargetSelector),
+            LOADING_LOCATION.SINGLE_SUBSTATION, new DriveToSingleSubstationCommand(mDrivebase),
+            LOADING_LOCATION.GROUND, Commands.none()
         );
+        loadArmCommandMap = Map.of(
+            LOADING_LOCATION.DOUBLE_SUBSTATION, new LoadShelfCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation),
+            LOADING_LOCATION.SINGLE_SUBSTATION, new LoadSingleSubstationCommand(mSuperstructure, mIntaker, mTargetSelector),
+            LOADING_LOCATION.GROUND, new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector)
+        );
+        
 
-        armCommand = Commands.either(
-            new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector),
-            new LoadShelfCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation),
-            () -> mTargetSelector.getLoadingTarget().getLoadingLocation() == LOADING_LOCATION.GROUND
-        );
+        driveCommand = Commands.select(loadDriveCommandMap, () -> mTargetSelector.getLoadingTarget().getLoadingLocation());
+        armCommand = Commands.select(loadArmCommandMap, () -> mTargetSelector.getLoadingTarget().getLoadingLocation());
     }
     
     public Command getDriveCommand() {
