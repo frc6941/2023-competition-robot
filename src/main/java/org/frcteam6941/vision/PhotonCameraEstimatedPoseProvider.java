@@ -25,6 +25,11 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider 
     }
 
     @Override
+    public boolean isConnected() {
+        return camera.isConnected();
+    }
+
+    @Override
     public Optional<EstimatedPoseWithDistance> getEstimatedPose(Pose2d prevEstimatedRobotPose) {
         if (prevEstimatedRobotPose == null) {
             DriverStation.reportError(

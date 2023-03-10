@@ -11,10 +11,24 @@ const cursorTopic = "/TargetSelector/cursor"
 const targetTopic = "/TargetSelector/target"
 const loadingTargetTopic = "/TargetSelector/load"
 
+const alertsPrefix = "SmartDashboard"
+const errorSuffix = "errors"
+const warningSuffix = "warnings"
+const infoSuffix = "infos"
+
+const alerts = ["Vision System", "Superstructure"]
+var alertTopics = []
+for(let i = 0; i < alerts.length; i++) {
+    alertTopics.push("/" + alertsPrefix + "/" + alerts[i] + "/" + errorSuffix)
+    alertTopics.push("/" + alertsPrefix + "/" + alerts[i] + "/" + warningSuffix)
+    alertTopics.push("/" + alertsPrefix + "/" + alerts[i] + "/" + infoSuffix)
+}
+
 const targetCollection = [
     matchTimeTopic, matchTypeTopic, matchNameTopic, matchNumberTopic, matchStageTopic, dsConnectedTopic,
     cursorTopic, targetTopic, loadingTargetTopic
-]
+].concat(alertTopics)
+
 
 const stageMap = new Map()
 stageMap.set("PREP", "准备阶段")
@@ -53,7 +67,8 @@ let app = createApp({
             cursor: [2, 2],
             loadTarget: [false, false, false],
 
-            bannerClass: bannerClassPrefix + "is-disconnected"
+            bannerClass: bannerClassPrefix + "is-disconnected",
+            alerts: {}
         }
     },
     methods: {
@@ -86,6 +101,8 @@ let app = createApp({
                 if(value != -1) {
                     this.loadTarget[value] = true
                 } 
+            } else {
+                this.handleAlerts(topic, value)
             }
         },
         isActive(row, column) {
@@ -130,6 +147,19 @@ let app = createApp({
             }
             return result
         },
+        handleAlerts(topic, value) {
+            var seperated = topic.split("/").slice(1,4)
+            
+            if(seperated[0] != alertsPrefix || !alerts.includes(seperated[1])) {
+                return
+            }
+            try {
+                this.alerts[seperated[1]][seperated[2]]
+            } catch {
+                this.alerts[seperated[1]] = {}
+            }
+            this.alerts[seperated[1]][seperated[2]] = value;
+        }
     },
     computed: {
         hybridNodes() {
@@ -140,6 +170,20 @@ let app = createApp({
         },
         highNodes() {
             return this.nodes(2)
+        },
+        nonEmptyAlertGroups() {
+            var validAlerts = {}
+            for(var key in this.alerts) {
+                console.log(this.alerts[key][errorSuffix])
+                if(
+                    this.alerts[key][errorSuffix].length != 0
+                    || this.alerts[key][warningSuffix].length != 0
+                    || this.alerts[key][infoSuffix].length != 0
+                ){
+                    validAlerts[key] = this.alerts[key]  
+                }
+            }
+            return validAlerts
         }
     },
     mounted() {

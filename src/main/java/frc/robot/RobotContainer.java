@@ -63,19 +63,7 @@ public class RobotContainer {
             new AutoCommuteCommand(mSuperstructure, mIntaker, mSelector)
             .alongWith(new InstantCommand(mTracker::clear))
         );
-        
-        mControlBoard.getSpit().onTrue(
-            new InstantCommand(mIntaker::runOuttake)
-        )
-        .onFalse(
-            new InstantCommand(mIntaker::stopIntake)
-        );
-        mControlBoard.getIntake().onTrue(
-            new InstantCommand(() -> mIntaker.runIntake(() -> mSelector.getTargetGamePiece()))
-        )
-        .onFalse(
-            new InstantCommand(mIntaker::stopIntake)
-        );
+
         mControlBoard.getArmIncrease().whileTrue(
             new InstantCommand(mControlBoard::increaseArm).repeatedly()
         );
@@ -107,6 +95,24 @@ public class RobotContainer {
                     mTracker::isInLoad),
                 mTracker::inInScore
             )
+        );
+
+        mIntaker.setDefaultCommand(
+            Commands.runOnce(mIntaker::stopIntake, mIntaker)
+        );
+        
+        mControlBoard.getSpit().whileTrue(
+            new InstantCommand(mIntaker::runOuttake, mIntaker).repeatedly()
+        )
+        .onFalse(
+            new InstantCommand(mIntaker::stopIntake)
+        );
+
+        mControlBoard.getIntake().whileTrue(
+            new InstantCommand(() -> mIntaker.runIntake(mSelector::getTargetGamePiece), mIntaker).repeatedly()
+        )
+        .onFalse(
+            new InstantCommand(mIntaker::stopIntake)
         );
         
 

@@ -105,8 +105,12 @@ public class AutoActions {
 
     public Command score() {
         return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-        .andThen(new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece)))
-        .andThen(new WaitCommand(0.5));
+        .andThen(new InstantCommand(mIntaker::runOuttake))
+        .andThen(new WaitCommand(0.2));
+    }
+
+    public Command delayExtenderAction(boolean value) {
+        return Commands.runOnce(() -> mSuperstructure.setDelayExtenderAction(value));
     }
 
     public Command commute() {
@@ -229,11 +233,14 @@ public class AutoActions {
             return Commands.none();
         } else {
             return Commands.sequence(
+                delayExtenderAction(true),
                 configGroundIntake(),
                 configTargetSelector(target),
+                Commands.runOnce(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece)),
+                Commands.waitSeconds(0.5),
+                delayExtenderAction(false),
                 waitUntilHomed(),
                 prepScore(),
-                new WaitCommand(0.3),
                 score(),
                 driveToInnerTransit(isLeft)
             );

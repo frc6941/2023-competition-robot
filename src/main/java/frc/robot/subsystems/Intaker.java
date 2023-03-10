@@ -47,15 +47,16 @@ public class Intaker extends SubsystemBase implements Updatable{
     }
     
     private Intaker() {
+        intakerMotor.setCANTimeout(0);
         intakerMotor.setIdleMode(IdleMode.kBrake);
         intakerMotor.setSmartCurrentLimit(15, 5);
     }
 
-    public void setIntakerPower(double power) {
+    private void setIntakerPower(double power) {
         mPeriodicIO.intakerMotorDemand = Util.clamp(power, -1.0, 1.0);
     }
 
-    public void setHoldPower(double power) {
+    private void setHoldPower(double power) {
         mPeriodicIO.intakeMotorHoldDemand = Util.clamp(power, -1.0, 1.0);;
     }
 
@@ -89,10 +90,6 @@ public class Intaker extends SubsystemBase implements Updatable{
         setIntakerPower(0.0);
     }
 
-    public void eject() {
-        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE);
-    }
-
     public boolean hasGamePiece() {
         return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY)
         && Math.abs(mPeriodicIO.intakerMotorVelocity) < Constants.SUBSYSTEM_INTAKE.STOP_THRESHOLD;
@@ -101,7 +98,7 @@ public class Intaker extends SubsystemBase implements Updatable{
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
-        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
+        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0;
         mPeriodicIO.intakeMotorCurrent = intakerMotor.getOutputCurrent();
         mPeriodicIO.intakerMotorVelocity = intakerMotor.getEncoder().getVelocity() / Constants.SUBSYSTEM_INTAKE.GEAR_RATIO;
     }

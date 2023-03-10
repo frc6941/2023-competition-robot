@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
+import frc.robot.subsystems.ArmAndExtender;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -82,6 +83,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledPeriodic() {
         mAutoSelector.update();
+        ArmAndExtender.getInstance().disabledUpdate();
     }
 
     /**

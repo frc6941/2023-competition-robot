@@ -75,6 +75,11 @@
           "visible": true
         }
       },
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto Action": {
         "window": {
           "visible": true
@@ -100,6 +105,9 @@
             "open": true
           }
         },
+        "Intaker": {
+          "open": true
+        },
         "RealOutputs": {
           "Coordinator": {
             "open": true
@@ -107,7 +115,8 @@
           "Drivetrain": {
             "open": true
           }
-        }
+        },
+        "open": true
       },
       "Shuffleboard": {
         ".recording": {
@@ -115,9 +124,6 @@
         }
       },
       "SmartDashboard": {
-        "Auto Action": {
-          "open": true
-        },
         "TunableNumbers": {
           "Commuting": {
             "Near": {

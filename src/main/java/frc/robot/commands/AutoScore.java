@@ -63,7 +63,8 @@ public class AutoScore {
         initSuppliers();
 
         driveCommand = new DriveToPoseCommand(mDrivebase, drivetrainTargetSupplier).andThen(new InstantCommand(() -> mDrivebase.stopMovement()));
-        armCommand = new ConditionalCommand(
+        armCommand =
+        new ConditionalCommand(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier),
 
             new RequestExtenderCommand(mSuperstructure, 0.885, 0.05)
@@ -72,16 +73,20 @@ public class AutoScore {
             () -> {
                 Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
                 return pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60
-                && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 25.0;
+                && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 30.0
+                && Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);
             }
         ).repeatedly().until(confirmation)
+        // new RequestSuperstructureStateAutoRetract(mSuperstructure, superstructureTargetSupplier).andThen(
+        //     new WaitUntilCommand(confirmation)
+        // )
         .andThen(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetLoweredSupplier)
             .andThen(new WaitCommand(0.5))
             .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
         )
         .andThen(new PrintCommand("Ejecting Gamepiece"))
-        .andThen(new InstantCommand(mIntaker::eject))
+        .andThen(new InstantCommand(mIntaker::runOuttake))
         .andThen(new WaitCommand(0.3))
         .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector));
     }

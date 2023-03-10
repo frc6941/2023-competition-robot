@@ -1,8 +1,11 @@
 package frc.robot.subsystems;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
+import org.frcteam6328.utils.Alert;
+import org.frcteam6328.utils.Alert.AlertType;
 import org.frcteam6941.localization.Localizer;
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.frcteam6941.vision.CameraConstants;
@@ -13,6 +16,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.utils.PolynomialRegression;
@@ -21,6 +25,7 @@ public class RobotStateEstimator implements Updatable {
     private Localizer localizer = SJTUSwerveMK5Drivebase.getInstance().getLocalizer();
     private SJTUSwerveMK5Drivebase drivebase = SJTUSwerveMK5Drivebase.getInstance();
     private ArrayList<EstimatedPoseProvider> providers = new ArrayList<>();
+    private HashMap<EstimatedPoseProvider, Alert> alerts = new HashMap<>();
     private boolean seeAprilTag = false;
 
     private PolynomialRegression xyStdDevModel = new PolynomialRegression(
@@ -44,7 +49,13 @@ public class RobotStateEstimator implements Updatable {
 
     private RobotStateEstimator() {
         for (CameraConstants camera : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
-            providers.add(new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT));
+            PhotonCameraEstimatedPoseProvider provider = new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT);
+            providers.add(provider);
+            alerts.put(
+                provider,
+                new Alert("Vision System", String.format("%s Vision Module Disconnected.", provider.getName()),
+                AlertType.WARNING)
+            );
         }
     }
 
@@ -60,11 +71,13 @@ public class RobotStateEstimator implements Updatable {
     @Override
     public synchronized void update(double time, double dt) {
         for (EstimatedPoseProvider poseProvider : providers) {
+            alerts.get(poseProvider).set(!poseProvider.isConnected());
             try {
                 Optional<EstimatedPoseWithDistance> ePose = poseProvider.getEstimatedPose(localizer.getLatestPose());
                 if (ePose.isPresent()) {
                     seeAprilTag = true;
-                    if (Math.abs(ePose.get().pose.estimatedPose.toPose2d().getRotation().getDegrees())  > 1e-4  && ePose.get().distance < 3.5) {
+                    if (Math.abs(ePose.get().pose.estimatedPose.toPose2d().getRotation().getDegrees())  > 1e-4  && ePose.get().distance < 3.5
+                        && DriverStation.isTeleopEnabled()) {
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
                         EstimatedPoseWithDistance eposeWithDistance = ePose.get();
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",

@@ -15,13 +15,12 @@ public class LoadShelfCommand extends SequentialCommandGroup {
             TargetSelector mTargetSelector, BooleanSupplier confirmation) {
         addCommands(
             new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> mTargetSelector.getLoadSuperstructureStateMinExtenderLength()),
-            new InstantCommand(() -> mIntaker.setIntakerPower(mTargetSelector.getIntakerIntakePercentage())),
-            new InstantCommand(() -> mIntaker.setHoldPower(mTargetSelector.getIntakerHoldPercentage())),
+            new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece)),
             new WaitUntilCommand(confirmation),
             new RequestExtenderCommand(mSuperstructure, 1.35, 0.20).alongWith(
                     new WaitUntilCommand(() -> mIntaker.hasGamePiece())).unless(() -> mIntaker.hasGamePiece()),
             new PrintCommand("Got GamePiece!"),
-            new InstantCommand(() -> mIntaker.setIntakerPower(0.0)),
+            new InstantCommand(mIntaker::stopIntake),
             new RequestExtenderCommand(mSuperstructure, 0.885, 0.20),
             new RequestSuperstructureStateAutoRetract(mSuperstructure,
                     () -> mTargetSelector.getCommuteSuperstructureState()));
