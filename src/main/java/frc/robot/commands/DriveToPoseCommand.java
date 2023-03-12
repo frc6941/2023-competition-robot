@@ -14,14 +14,14 @@ import frc.robot.utils.AllianceFlipUtil;
 public class DriveToPoseCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
     // Pose Assist Controller
-    private ProfiledPIDController driveController = new ProfiledPIDController(3.0, 0.001, 0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
+    private ProfiledPIDController driveController = new ProfiledPIDController(3.2, 0.01, 0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
 
     private Supplier<Pose2d> targetPose;
 
     public DriveToPoseCommand(SJTUSwerveMK5Drivebase mDrivebase, Supplier<Pose2d> targetPose) {
         this.mDrivebase = mDrivebase;
         this.targetPose = targetPose;
-        driveController.setIntegratorRange(-0.2, 0.2);
+        driveController.setIntegratorRange(-0.5, 0.5);
         addRequirements(mDrivebase);
     }
 
@@ -56,7 +56,7 @@ public class DriveToPoseCommand extends CommandBase {
         if(deltaTranslation.getNorm() < 0.05) {
             mDrivebase.stopMovement();
         } else {
-            mDrivebase.drive(velocity, 0.0, true, false);
+            mDrivebase.drive(velocity, 0.0, true, false, true);
         }
     }
 
@@ -70,6 +70,6 @@ public class DriveToPoseCommand extends CommandBase {
     public boolean isFinished() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
         Transform2d delta = targetPose.get().minus(currentPose);
-        return delta.getTranslation().getNorm() < 0.05 && Math.abs(delta.getRotation().getDegrees()) < 3.0;
+        return delta.getTranslation().getNorm() < 0.05 && Math.abs(delta.getRotation().getDegrees()) < 1.0;
     }
 }

@@ -10,6 +10,7 @@ import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
+import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
@@ -55,7 +56,8 @@ public class RobotContainer {
                 mSuperstructure,
                 mControlBoard::getSwerveTranslation,
                 mControlBoard::getSwerveRotation,
-                mControlBoard::getBrakeScale,
+                () -> mTracker.isInScore() || mTracker.isInLoad(),
+                mSuperstructure::getExtensionPercentage,
                 false));
         mControlBoard.getResetGyro().onTrue(new ResetGyroCommand(mDrivebase, new Rotation2d()));
 
@@ -78,11 +80,10 @@ public class RobotContainer {
         );
 
         AutoScore autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mSelector,
-                mControlBoard::getConfirmation, () -> true);
+                mControlBoard::getConfirmation, mControlBoard::getForceExtendInScore, () -> true);
         mControlBoard.getScore().onTrue(
             autoScore.getArmCommand().alongWith(new InstantCommand(mTracker::setScore))
-                .andThen(new WaitUntilNoCollision(() -> mDrivebase.getPose(), mSuperstructure, mIntaker,
-                        mSelector))
+                .andThen(new WaitUntilNoCollision(() -> mDrivebase.getPose()))
                 .until(mControlBoard::getCancellation)
                 .finallyDo((interrupted) -> mIntaker.stopIntake()));
 
@@ -100,10 +101,6 @@ public class RobotContainer {
             Commands.runOnce(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)).repeatedly())
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
 
-        mControlBoard.getDriverController().getController().povDown().whileTrue(
-            new AutoBalanceCommand(mDrivebase, () -> 180.0)
-        );
-
         // Bind Operator
         mControlBoard.getTargetMoveForward().onTrue(
             new InstantCommand(() -> mSelector.moveCursor(-1, 0)));
@@ -117,9 +114,19 @@ public class RobotContainer {
             new InstantCommand(() -> mSelector.applyCursorToTarget()));
         mControlBoard.getLoadingStation().onTrue(
             new InstantCommand(
-                        () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION))));
+                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION))));
         mControlBoard.getGroundLoading().onTrue(
-            new InstantCommand(() -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND))));
+            new InstantCommand(
+                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND))));
+        mControlBoard.getSingleSubstation().onTrue(
+            new InstantCommand(
+                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.SINGLE_SUBSTATION))));
+        mControlBoard.getGroundTipped().onTrue(
+            new InstantCommand(
+                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND_TIPPED))
+            )
+        );
+        
 
         mControlBoard.getArmIncrease().whileTrue(
             Commands.runOnce(() -> mSuperstructure.setArmPercentage(0.15), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(

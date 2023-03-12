@@ -17,7 +17,7 @@ public class LoadSingleSubstationCommand extends SequentialCommandGroup {
                 new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece), mIntaker),
                 new WaitUntilCommand(mIntaker::hasGamePiece),
                 new InstantCommand(mIntaker::stopIntake),
-                new RequestExtenderCommand(mSuperstructure, 0.885, 0.20),
+                new RequestExtenderCommand(mSuperstructure, 0.885, 0.05),
                 new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState())
             ).unless(mIntaker::hasGamePiece)
         );

@@ -4,7 +4,8 @@ import java.util.function.DoubleSupplier;
 
 import org.frcteam6328.utils.LoggedTunableNumber;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import com.team254.lib.util.TimeDelayedBoolean;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,12 +15,12 @@ import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 public class AutoBalanceCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
-    private static final LoggedTunableNumber autoBalanceAdjustmentSpeed = new LoggedTunableNumber(
-            "Auto Balance Adjustment Speed", 0.15);
+    private static final LoggedTunableNumber autoBalanceAdjustmentTime = new LoggedTunableNumber(
+            "Auto Balance Back Adjustment Time", 0.10);
     private static final LoggedTunableNumber autoBalanceClimbSpeed = new LoggedTunableNumber("Auto Balance Climb Speed",
             0.4);
     private static final LoggedTunableNumber autoBalanceDashSpeed = new LoggedTunableNumber("Auto Balance Dash Speed",
-            0.8);
+            1.0);
     private static final LoggedTunableNumber autoOnPlatformDegreeThreshold = new LoggedTunableNumber(
             "On Platform Angle Degree Threshold", 8.0);
 
@@ -27,9 +28,10 @@ public class AutoBalanceCommand extends CommandBase {
             "Auto Balance Angle Degree Threshold", 10.0);
 
     private static final LoggedTunableNumber autoBalanceAngularVelocityThreshold = new LoggedTunableNumber(
-            "Auto Balance Angular Velocity DegSec Threshold", 2.0);
+            "Auto Balance Angular Velocity DegSec Threshold", 1.0);
 
     private DoubleSupplier direction;
+    private TimeDelayedBoolean brake = new TimeDelayedBoolean();
 
     private boolean isOnPlatform;
     private boolean isInitialPositive;
@@ -38,10 +40,17 @@ public class AutoBalanceCommand extends CommandBase {
     public AutoBalanceCommand(SJTUSwerveMK5Drivebase mDrivebase, DoubleSupplier direction) {
         this.mDrivebase = mDrivebase;
         this.direction = direction;
+        this.isOnPlatform = false;
+        this.isInitialPositive = false;
+        this.hasOvershooted = false;
     }
 
     public void initialize() {
         this.mDrivebase.unbrake();
+        this.isOnPlatform = false;
+        this.isInitialPositive = false;
+        this.hasOvershooted = false;
+        brake.update(false, 0.0);
     }
 
     public void execute() {
@@ -70,26 +79,22 @@ public class AutoBalanceCommand extends CommandBase {
             }
 
             if(hasOvershooted) {
-                if (stationTipping && stationLevel) {
+                if (brake.update(true, autoBalanceAdjustmentTime.get())) {
                     mDrivebase.brake();
                 } else {
                     mDrivebase.unbrake();
-                    mDrivebase.drive(new Translation2d(autoBalanceAdjustmentSpeed.get() * (angle > 0.0 ? 1.0 : -1.0), 0.0), 0.0, true,
-                        false);
+                    mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (isInitialPositive ? - 1.0 : 1.0), 0.0), 0.0, true,
+                        false, true);
                     mDrivebase.setHeadingTarget(direction.getAsDouble());
                     mDrivebase.setLockHeading(true);
                 }
             } else {
                 mDrivebase.unbrake();
                 mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (angle > 0.0 ? 1.0 : -1.0), 0.0), 0.0, true,
-                        false);
-                mDrivebase.setHeadingTarget(direction.getAsDouble());
-                mDrivebase.setLockHeading(true);
+                        false, true);
             }
         } else {
-            mDrivebase.drive(new Translation2d(autoBalanceDashSpeed.get(), 0.0), 0.0, true, false);
-            mDrivebase.setHeadingTarget(direction.getAsDouble());
-            mDrivebase.setLockHeading(true);
+            mDrivebase.drive(new Translation2d(autoBalanceDashSpeed.get(), 0.0), 0.0, true, false, true);
         }
 
         SmartDashboard.putNumber("Auto Balance Angle", angle);
@@ -100,8 +105,10 @@ public class AutoBalanceCommand extends CommandBase {
 
     public void end(boolean interrupted) {
         mDrivebase.unbrake();
-        isOnPlatform = false;
         mDrivebase.setLockHeading(false);
+        this.isOnPlatform = false;
+        this.isInitialPositive = false;
+        this.hasOvershooted = false;
     }
 
     public boolean isFinished() {

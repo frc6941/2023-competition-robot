@@ -10,7 +10,6 @@ import frc.robot.controlboard.CustomXboxController.Axis;
 import frc.robot.controlboard.CustomXboxController.Side;
 
 public class ControlBoard {
-    public final double kSwerveDeadband = Constants.CONTROLBOARD.CONTROLLER_DEADBAND;
     private static ControlBoard instance = null;
 
     public static ControlBoard getInstance() {
@@ -69,12 +68,7 @@ public class ControlBoard {
         strafeAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_X ? strafeAxis : -strafeAxis;
 
         Translation2d tAxes = new Translation2d(forwardAxis, strafeAxis);
-
-        if (Math.abs(tAxes.getNorm()) < kSwerveDeadband) {
-            return new Translation2d();
-        } else {
-            return tAxes.times(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
-        }
+        return tAxes;
     }
 
     public double getBrakeScale() {
@@ -84,12 +78,7 @@ public class ControlBoard {
     public double getSwerveRotation() {
         double rotAxis = driver.getAxis(Side.RIGHT, Axis.X) * 1.0;
         rotAxis = Constants.CONTROLBOARD.CONTROLLER_INVERT_R ? rotAxis : -rotAxis;
-
-        if (Math.abs(rotAxis) < kSwerveDeadband) {
-            return 0.0;
-        } else {
-            return (rotAxis - (Math.signum(rotAxis) * kSwerveDeadband)) / (1 - kSwerveDeadband) * 3.0;
-        }
+        return rotAxis;
     }
 
     public boolean getConfirmation() {
@@ -98,6 +87,10 @@ public class ControlBoard {
 
     public boolean getCancellation() {
         return driver.getController().getHID().getLeftBumperPressed();
+    }
+
+    public boolean getForceExtendInScore() {
+        return driver.getController().povUp().getAsBoolean();
     }
 
     public Trigger getResetGyro() {
@@ -154,6 +147,22 @@ public class ControlBoard {
     /**
      * OPERATOR METHODS
      */
+    // public Trigger getTargetMoveLeft() {
+    //     return operator.axisLessThan(1, -0.5);
+    // }
+
+    // public Trigger getTargetMoveRight() {
+    //     return operator.axisGreaterThan(1, 0.5);
+    // }
+
+    // public Trigger getTargetMoveForward() {
+    //     return operator.axisGreaterThan(0, 0.5);
+    // }
+
+    // public Trigger getTargetMoveBackward() {
+    //     return operator.axisLessThan(0, -0.5);
+    // }
+
     public Trigger getTargetMoveLeft() {
         return operator.button(BUTTON.ML);
     }
@@ -180,5 +189,13 @@ public class ControlBoard {
 
     public Trigger getGroundLoading() {
         return operator.button(BUTTON.UR);
+    }
+
+    public Trigger getSingleSubstation() {
+        return operator.button(BUTTON.LL);
+    }
+
+    public Trigger getGroundTipped() {
+        return operator.button(BUTTON.LR);
     }
 }

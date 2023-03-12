@@ -44,7 +44,7 @@ public class RobotStateEstimator implements Updatable {
                     3.223358, 4.093358
             },
             new double[] {
-                    1.0, 2.0, 3.0, 3.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0
+                    0.05, 0.07, 0.10, 0.12, 0.5, 1.0, 2.0, 2.5, 5.0, 10.0
             },
             1);
 

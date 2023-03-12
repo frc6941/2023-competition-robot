@@ -171,13 +171,8 @@ public class SuperstructureStateBuilder {
                             Loading.shelfLengthFar.get());
                 }
             case SINGLE_SUBSTATION:
-                if (direction == Direction.NEAR) {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.singleAngle.get()),
-                            Loading.shelfLengthNear.get());
-                } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.singleLength.get()),
-                            Loading.shelfLengthFar.get());
-                }
+                return new SuperstructureState(Rotation2d.fromDegrees(Loading.singleAngle.get()),
+                        Loading.singleLength.get());
             case GROUND:
                 if (direction == Direction.NEAR) {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
@@ -186,6 +181,9 @@ public class SuperstructureStateBuilder {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
                             Loading.groundLengthFar.get());
                 }
+            case GROUND_TIPPED:
+                return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarLow.get()),
+                    Loading.groundLengthFarLow.get());
             default:
                 return null;
         }
@@ -268,10 +266,10 @@ public class SuperstructureStateBuilder {
         Loading.groundLengthNear.initDefault(1.38);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(218.0);
+        Loading.groundAngleFar.initDefault(220.0);
         Loading.groundLengthFar.initDefault(1.36);
-        Loading.groundAngleFarLow.initDefault(226.0);
-        Loading.groundLengthFarLow.initDefault(1.36);
+        Loading.groundAngleFarLow.initDefault(225.0);
+        Loading.groundLengthFarLow.initDefault(1.37);
 
         // Loading - Single Substation
         Loading.singleAngle.initDefault(225.0);

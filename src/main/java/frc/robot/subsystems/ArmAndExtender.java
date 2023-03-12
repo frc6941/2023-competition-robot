@@ -229,6 +229,16 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         return inputedSuperstructureState;
     }
 
+    public double getExtensionPercentage() {
+        if(Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.DANGEROUS_NEGATIVE.inRange(getAngle())
+        || Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.DANGEROUS_POSITIVE.inRange(getAngle())
+        ) {
+            return 0.0;
+        } else {
+            return Math.abs(currentSuperstructureState.armAngle.getCos());
+        }
+    }
+
     public synchronized boolean isOnTarget() {
         return currentSuperstructureState.isOnTarget(desiredSuperstructureState,
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.ARM,
@@ -292,7 +302,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                 Rotation2d.fromDegrees(mPeriodicIO.armAngle),
                 mPeriodicIO.extenderLength);
 
-        if (mPeriodicIO.armRevLimitReached && !armIsHomed) {
+        if (mPeriodicIO.armRevLimitReached) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_NEGATIVE_ANGLE);
         } else if (mPeriodicIO.armCurrent > 7.0 && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_POSITIVE_ANGLE);
@@ -331,7 +341,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         switch (armState) {
             case HOMING:
                 if(!armIsHomed) {
-                    mPeriodicIO.armDemand = 0.15;
+                    mPeriodicIO.armDemand = 0.2;
                     mPeriodicIO.armFeedforward = 0.0;
                 } else {
                     mPeriodicIO.armDemand = 0.0;
@@ -356,7 +366,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
         switch (extenderState) {
             case HOMING:
-                mPeriodicIO.extenderDemand = -0.2;
+                mPeriodicIO.extenderDemand = -0.25;
                 mPeriodicIO.extenderFeedforward = 0.0;
                 break;
             case LENGTH:
@@ -467,6 +477,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
     @Override
     public synchronized void start() {
+        extenderIsHomed = false;
         armMotorLeader.setNeutralMode(NeutralMode.Brake);
         armMotorFollower.setNeutralMode(NeutralMode.Brake);
     }

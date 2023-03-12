@@ -18,6 +18,7 @@ import frc.robot.auto.AutoSelector.AUTO_START_POSITION;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveToPoseCommand;
+import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
 import frc.robot.commands.WaitUntilNoCollision;
@@ -83,7 +84,7 @@ public class AutoActions {
         this.mIntaker = mIntaker;
         this.mTargetSelector = mTargetSelector;
 
-        autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mTargetSelector, () -> false, () -> true);
+        autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mTargetSelector, () -> false, () -> false, () -> true);
         scoreSuperstructureStateSupplier = autoScore.getSuperstructureTargetSupplier();
         scoreSuperstructureStateSupplierLower = autoScore.getSuperstructureTargetSupplierLower();
         scoreDriveTargetSupplier = autoScore.getDrivetrainTargetSupplier();
@@ -105,6 +106,7 @@ public class AutoActions {
 
     public Command score() {
         return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
+        .andThen(new WaitCommand(0.5))
         .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
         .andThen(new WaitCommand(0.2));
     }
@@ -195,7 +197,7 @@ public class AutoActions {
     }
 
     public Command waitUntilRetractSafe() {
-        return new WaitUntilNoCollision(mDrivebase.getLocalizer()::getLatestPose, mSuperstructure, mIntaker, mTargetSelector);
+        return new WaitUntilNoCollision(mDrivebase.getLocalizer()::getLatestPose);
     }
 
     public Command waitUntilDirectionFit(Pose2d targetPose) {
@@ -212,6 +214,18 @@ public class AutoActions {
 
     public Command configGroundIntake() {
         return Commands.runOnce(() -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
+    }
+
+    public Command overrideAndGrabFarEnd() {
+        return Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
+        .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
+        .andThen(new RequestExtenderCommand(mSuperstructure, 1.07, 0.02))
+        .andThen(Commands.waitUntil(mIntaker::hasGamePiece))
+        .andThen(Commands.runOnce(() -> mSuperstructure.overrideProtection(false)));
+    }
+
+    public Command returnToSafe() {
+        return Commands.runOnce(() -> mSuperstructure.overrideProtection(false));
     }
 
     public Command resetPose(AUTO_START_POSITION startPosition) {
@@ -233,13 +247,11 @@ public class AutoActions {
             return Commands.none();
         } else {
             return Commands.sequence(
-                delayExtenderAction(true),
                 configGroundIntake(),
                 configTargetSelector(target),
-                Commands.runOnce(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece)),
-                Commands.waitSeconds(0.5),
-                delayExtenderAction(false),
                 waitUntilHomed(),
+                overrideAndGrabFarEnd(),
+                Commands.waitSeconds(0.2),
                 prepScore(),
                 score(),
                 driveToInnerTransit(isLeft)
@@ -270,11 +282,11 @@ public class AutoActions {
         }
     }
 
-    public Command balance(boolean isLeft) {
+    public Command balance(boolean isLeft, double direction) {
         return Commands.sequence(
             driveToInnerTransit(isLeft).alongWith(commute()),
             pathInnerToChargingStation(isLeft),
-            new AutoBalanceCommand(mDrivebase)
+            new AutoBalanceCommand(mDrivebase, () -> direction)
         );
     }
 }

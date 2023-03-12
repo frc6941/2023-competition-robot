@@ -17,7 +17,6 @@ public class LoadGroundCommand extends SequentialCommandGroup{
         addCommands(
             Commands.sequence(
                 new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> {
-                    System.out.println(mTargetSelector.getLoadSuperstructureState());
                     return mTargetSelector.getLoadSuperstructureState();
                 }), 
                 new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece)),
@@ -30,7 +29,7 @@ public class LoadGroundCommand extends SequentialCommandGroup{
                     return SuperstructureKinematics.inverseKinematics2d(tempState.plus(raiseUp));
                 }),
                 new WaitCommand(0.3),
-                new RequestSuperstructureStateCommand(mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState())
+                new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState())
             ).unless(mIntaker::hasGamePiece)
         );
     }

@@ -91,7 +91,8 @@ public final class Constants {
 
     // Swerve Drivetrain Constants
     public static final class SUBSYSTEM_DRIVETRAIN {
-        public static final double DRIVE_MAX_VELOCITY = 4.0;
+        public static final double DRIVE_MAX_LINEAR_VELOCITY = 4.0;
+        public static final double DRIVE_MAX_ANGULAR_VELOCITY = 200.0;
 
         public static final double MODULE_MAX_VELOCITY = 4.0;
         public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.125);
@@ -109,8 +110,8 @@ public final class Constants {
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 35.0;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.0000;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 42.0;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.008;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.005;
         
 
@@ -121,9 +122,9 @@ public final class Constants {
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
 
-        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(2.0, 2.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(2.5, 1.5);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
-                450.0, 4000.0);
+                300.0, 600.0);
     }
 
     // Arm Constants
@@ -164,7 +165,7 @@ public final class Constants {
     public static final class SUBSYSTEM_INTAKE {
         public static final double INTAKING_PERCENTAGE_CONE = 1.00;
         public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
-        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.45;
+        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.40;
         public static final double OUTTAKING_FAST_PERCENTAGE = -0.70;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
         public static final double HOLD_PERCENTAGE_CONE = 0.70;
@@ -194,7 +195,7 @@ public final class Constants {
             public static Range ARM_RANGE = new Range(-98.0, 239.0);
             public static Range EXTENDER_RANGE = new Range(0.89, 1.36);
             public static Range HEIGHT_RANGE = new Range(0.01, 1.90);
-            public static Range DANGEROUS_POSITIVE = new Range(230.5, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_POSITIVE = new Range(231, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
             public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -70.0);
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
                 HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE

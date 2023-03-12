@@ -26,8 +26,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -40,7 +40,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     public static final double kLooperDt = Constants.LOOPER_DT;
 
     // Drivetrain Definitions
-    public static final double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY;
+    public static final double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY;
 
     // Snap Rotation Controller
     private final ProfiledPIDController headingController = new ProfiledPIDController(
@@ -74,6 +74,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     private MovingAverage pitchVelocity;
     private MovingAverage rollVelocity;
     private MovingAverage yawVelocity;
+    private boolean wantAngleOffset;
 
     private HolonomicDriveSignal inputDriveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
     private HolonomicDriveSignal driveSignal = new HolonomicDriveSignal(new Translation2d(0, 0), 0, true, true);
@@ -129,8 +130,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         };
 
         headingController.enableContinuousInput(0, 360.0); // Enable continuous rotation
-        headingController.setTolerance(3.0);
-        headingController.setIntegratorRange(-0.5, 0.5);
+        headingController.setIntegratorRange(-4.0, 4.0);
 
         swerveLocalizer = new SwerveLocalizer(swerveKinematics, getModulePositions(), 100, 15, 15);
 
@@ -221,19 +221,38 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
      */
     private void updateModules(HolonomicDriveSignal driveSignal, double dt) {
         ChassisSpeeds chassisSpeeds;
-
+        Rotation2d delta = Rotation2d.fromDegrees(180.0);
+        
         if (driveSignal == null) {
             chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
         } else {
             double x = driveSignal.getTranslation().getX();
             double y = driveSignal.getTranslation().getY();
             double rotation = driveSignal.getRotation();
+
+            Rotation2d robotAngle = Rotation2d.fromDegrees(getYaw());
+            if(DriverStation.getAlliance() == Alliance.Red && wantAngleOffset) {
+                robotAngle = robotAngle.plus(delta);
+            }
+
             if (driveSignal.isFieldOriented()) {
-                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rotation, Rotation2d.fromDegrees(getYaw()));
+                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rotation, robotAngle);
             } else {
                 chassisSpeeds = new ChassisSpeeds(x, y, rotation);
             }
         }
+
+        var twist = new Pose2d().log(
+            new Pose2d(
+                new Translation2d(
+                    chassisSpeeds.vxMetersPerSecond * Constants.LOOPER_DT,
+                    chassisSpeeds.vyMetersPerSecond * Constants.LOOPER_DT
+                ),
+                new Rotation2d(chassisSpeeds.omegaRadiansPerSecond * Constants.LOOPER_DT)
+            )
+        );
+
+        chassisSpeeds = new ChassisSpeeds(twist.dx / Constants.LOOPER_DT, twist.dy / Constants.LOOPER_DT, twist.dtheta / Constants.LOOPER_DT);
 
         SwerveModuleState[] swerveModuleStates = swerveKinematics.toSwerveModuleStates(chassisSpeeds,
                 new Translation2d());
@@ -244,7 +263,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
             }
         } else {
             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
-                    Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_VELOCITY);
+                    Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY);
             for (SwerveModuleBase mod : mSwerveMods) {
                 mod.setDesiredState(swerveModuleStates[mod.getModuleNumber()], false, false);
             }
@@ -280,9 +299,10 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
      * @param isFieldOriented       Is the drive signal field oriented.
      */
     public void drive(Translation2d translationalVelocity, double rotationalVelocity, boolean isFieldOriented,
-            boolean isOpenLoop) {
+            boolean isOpenLoop, boolean wantAngleOffset) {
         inputDriveSignal = new HolonomicDriveSignal(translationalVelocity, rotationalVelocity, isFieldOriented,
                 isOpenLoop);
+        this.wantAngleOffset = wantAngleOffset;
     }
 
     public void brake() {

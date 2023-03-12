@@ -39,9 +39,9 @@ public class AutoScore {
     Supplier<SuperstructureState> superstructureTargetLoweredSupplier;
     BooleanSupplier alignedScore;
 
-    private static final Translation3d higherDeltaCone = new Translation3d(-0.15, 0.0, 0.30);
-    private static final Translation3d higherDeltaCube = new Translation3d(0.05, 0.0, 0.45);
-    private static final double minDriveX = FieldConstants.Grids.outerX + 0.5;
+    private static final Translation3d higherDeltaCone = new Translation3d(-0.15, 0.0, 0.32);
+    private static final Translation3d higherDeltaCube = new Translation3d(0.10, 0.0, 0.45);
+    private static final double minDriveX = FieldConstants.Grids.outerX + 0.4;
     private static final double minDriveY = 0.5;
     private static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
 
@@ -54,7 +54,7 @@ public class AutoScore {
     private Command armCommand;
     
 
-    public AutoScore(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier alignedScore) {
+    public AutoScore(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, BooleanSupplier forceExtend, BooleanSupplier alignedScore) {
         this.mDrivebase = mDrivebase;
         this.mTargetSelector = mTargetSelector;
         this.mSuperstructure = mSuperstructure;
@@ -73,9 +73,12 @@ public class AutoScore {
 
             () -> {
                 Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
-                return pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60
-                && Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 30.0
-                && Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);
+                boolean onTranslation = pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60;
+                boolean onRotation = Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 30.0;
+                boolean armOnTarget = Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);
+                boolean override = forceExtend.getAsBoolean();
+
+                return (onTranslation && onRotation && armOnTarget) || override;
             }
         ).repeatedly().until(confirmation)
         // new RequestSuperstructureStateAutoRetract(mSuperstructure, superstructureTargetSupplier).andThen(
@@ -89,7 +92,7 @@ public class AutoScore {
         .andThen(new PrintCommand("Ejecting Gamepiece"))
         .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
         .andThen(new WaitCommand(0.3))
-        .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector));
+        .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose()));
     }
 
     public void initSuppliers() {
@@ -106,7 +109,7 @@ public class AutoScore {
             mTargetSelector.getScoringTarget(),
             mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
-            0.20
+            0.25
         );
     }
 

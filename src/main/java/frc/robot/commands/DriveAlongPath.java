@@ -54,7 +54,7 @@ public class DriveAlongPath extends CommandBase {
 
                 mDrivebase.setLockHeading(true);
                 mDrivebase.setHeadingTarget(trackingPose.getRotation().getDegrees());
-                mDrivebase.drive(velocity, 0.0, true, false);
+                mDrivebase.drive(velocity, 0.0, true, false, false);
             });
         }
     };

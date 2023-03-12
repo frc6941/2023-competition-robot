@@ -274,11 +274,13 @@ public final class FieldConstants {
     static {
         for (int id : aprilTags.keySet()) {
             // TODO: Change this to fit real field
-            if(id == 4) {
-                TAGS.add(new AprilTag(4, new Pose3d(StagingLocations.translations[1].getX(), StagingLocations.translations[1].getY(), Units.inchesToMeters(27.38), new Rotation3d(0.0, 0.0, Math.PI))));
-            } else {
+        //     if(id == 4) {
+        //         TAGS.add(new AprilTag(4, new Pose3d(StagingLocations.translations[1].getX(), StagingLocations.translations[1].getY(), Units.inchesToMeters(27.38), new Rotation3d(0.0, 0.0, Math.PI))));
+        //     } else {
+        //         TAGS.add(new AprilTag(id, aprilTags.get(id)));
+        //     }   
+        
                 TAGS.add(new AprilTag(id, aprilTags.get(id)));
-            }            
         }
 
         LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);

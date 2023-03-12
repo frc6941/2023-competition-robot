@@ -160,7 +160,7 @@ public class AutoSelector {
                     actionStage = Commands.none();
                     break;
                 case SCORE_PRELOAD:
-                    actionStage = autoBuilder.scorePreload(isLeft, objective1);
+                    actionStage = autoBuilder.scorePreload(isLeft, objective1).andThen(autoBuilder.commute());
                     break;
                 case TWO_GAMEPIECE:
                     actionStage = Commands.sequence(
@@ -198,7 +198,7 @@ public class AutoSelector {
 
         switch(config.ifBalance) {
             case YES:
-                balanceStage = autoBuilder.balance(isLeft);
+                balanceStage = autoBuilder.balance(isLeft, 0.0);
                 break;
             case NO:
             default:
