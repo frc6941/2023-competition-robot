@@ -31,10 +31,8 @@ public class SuperstructureConstraint {
 
         // Judge dangerous positive and negative, retract if needed
         if (dangerousPositiveArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
-            clampedDesiredState.extenderLength = extenderRange.min;
-            if (!currentState.isExtenderOnTarget(clampedDesiredState,
-                    Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
-                clampedDesiredState.armAngle = Rotation2d.fromDegrees(dangerousPositiveArmRange.min);
+            if(clampedDesiredState.extenderLength > extenderRange.min + 0.15){
+                clampedDesiredState.extenderLength = extenderRange.min + 0.15;
             }
         } else if (dangerousNegativeArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
             clampedDesiredState.extenderLength = extenderRange.min;

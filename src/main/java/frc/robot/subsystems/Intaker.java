@@ -82,8 +82,20 @@ public class Intaker extends SubsystemBase implements Updatable{
         }
     }
 
-    public void runOuttake() {
+    public void runOuttake(Supplier<GamePiece> gamePiece) {
+        if(gamePiece.get() == GamePiece.CONE) {
+            runOuttakeCone();
+        } else {
+            runOuttakeCube();
+        }
+    }
+
+    public void runOuttakeCone() {
         setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE);
+    }
+
+    public void runOuttakeCube() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_SLOW_PERCENTAGE);
     }
 
     public void stopIntake() {

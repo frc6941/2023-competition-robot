@@ -105,7 +105,7 @@ public class AutoActions {
 
     public Command score() {
         return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-        .andThen(new InstantCommand(mIntaker::runOuttake))
+        .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
         .andThen(new WaitCommand(0.2));
     }
 

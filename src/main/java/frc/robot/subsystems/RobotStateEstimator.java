@@ -37,6 +37,16 @@ public class RobotStateEstimator implements Updatable {
                     0.005, 0.01, 0.015, 0.02, 0.5, 0.7, 0.15, 0.25, 0.35, 0.50
             },
             1);
+    
+    private PolynomialRegression thetaStdDevModel = new PolynomialRegression(
+            new double[] {
+                    0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
+                    3.223358, 4.093358
+            },
+            new double[] {
+                    1.0, 2.0, 3.0, 3.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0
+            },
+            1);
 
     private static RobotStateEstimator instance;
 
@@ -83,9 +93,10 @@ public class RobotStateEstimator implements Updatable {
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                 eposeWithDistance.pose.estimatedPose.toPose2d());
                         double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
+                        double thetaStdDev = thetaStdDevModel.predict(eposeWithDistance.distance);
                         localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
                                 eposeWithDistance.pose.estimatedPose.toPose2d(),
-                                new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(1000.0)));
+                                new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(thetaStdDev)));
                     }
                 } else {
                     seeAprilTag = false;

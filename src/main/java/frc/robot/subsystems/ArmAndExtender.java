@@ -105,6 +105,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
     private boolean armIsHomed = false;
     private boolean extenderIsHomed = false;
+    private boolean overrideProtection = false;
 
     private SuperstructureState inputedSuperstructureState = new SuperstructureState();
     private SuperstructureState desiredSuperstructureState = new SuperstructureState();
@@ -234,6 +235,14 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER);
     }
 
+    public synchronized boolean isArmOnTarget() {
+        return currentSuperstructureState.isArmOnTarget(desiredSuperstructureState, 1.0);
+    }
+
+    public synchronized boolean isExtenderOnTarget() {
+        return currentSuperstructureState.isExtenderOnTarget(desiredSuperstructureState, 0.02);
+    }
+
     public void setRetractInMotionOverrdie(boolean override) {
         mPeriodicIO.retractInMotionOverride = override;
     }
@@ -254,6 +263,10 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                         homingLength / Constants.SUBSYSTEM_EXTENDER.WHEEL_CIRCUMFERENCE * 360.0,
                         Constants.SUBSYSTEM_EXTENDER.GEAR_RATIO));
         extenderIsHomed = true;
+    }
+
+    public void overrideProtection(boolean value) {
+        this.overrideProtection = value;
     }
 
     @Override
@@ -303,8 +316,12 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
             extenderState = EXTENDER_STATE.HOMING;
         }
 
-        desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
+        if(!overrideProtection){
+            desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
                 .optimize(inputedSuperstructureState, currentSuperstructureState);
+        } else {
+            desiredSuperstructureState = inputedSuperstructureState;
+        }
         mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage
                 : desiredSuperstructureState.armAngle.getDegrees();
         mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage

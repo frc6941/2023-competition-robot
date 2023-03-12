@@ -183,8 +183,8 @@ public class SuperstructureStateBuilder {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
                             Loading.groundLengthNear.get());
                 } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarLow.get()),
-                            Loading.groundLengthFarLow.get());
+                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
+                            Loading.groundLengthFar.get());
                 }
             default:
                 return null;
@@ -268,7 +268,7 @@ public class SuperstructureStateBuilder {
         Loading.groundLengthNear.initDefault(1.38);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(226.0);
+        Loading.groundAngleFar.initDefault(218.0);
         Loading.groundLengthFar.initDefault(1.36);
         Loading.groundAngleFarLow.initDefault(226.0);
         Loading.groundLengthFarLow.initDefault(1.36);
@@ -281,6 +281,6 @@ public class SuperstructureStateBuilder {
         Commuting.commuteAngleNear.initDefault(-90);
         Commuting.commuteLengthNear.initDefault(0.89);
         Commuting.commuteAngleFar.initDefault(235.0);
-        Commuting.commuteLengthFar.initDefault(0.89);
+        Commuting.commuteLengthFar.initDefault(0.95);
     }
 }

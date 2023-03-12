@@ -39,7 +39,8 @@ public class AutoScore {
     Supplier<SuperstructureState> superstructureTargetLoweredSupplier;
     BooleanSupplier alignedScore;
 
-    private static final Translation3d higherDelta = new Translation3d(-0.10, 0.0, 0.30);
+    private static final Translation3d higherDeltaCone = new Translation3d(-0.15, 0.0, 0.30);
+    private static final Translation3d higherDeltaCube = new Translation3d(0.05, 0.0, 0.45);
     private static final double minDriveX = FieldConstants.Grids.outerX + 0.5;
     private static final double minDriveY = 0.5;
     private static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
@@ -86,29 +87,31 @@ public class AutoScore {
             .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
         )
         .andThen(new PrintCommand("Ejecting Gamepiece"))
-        .andThen(new InstantCommand(mIntaker::runOuttake))
+        .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
         .andThen(new WaitCommand(0.3))
         .andThen(new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose(), mSuperstructure, mIntaker, mTargetSelector));
     }
 
     public void initSuppliers() {
-        drivetrainTargetSupplier = () -> getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean());
+        drivetrainTargetSupplier = () -> getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean());
         superstructureTargetSupplier = () -> getSupertructureStateTarget(
-            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
+            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
             mTargetSelector.getScoringTarget(),
+            mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
             0.0
         );
         superstructureTargetLoweredSupplier = () -> getSupertructureStateTarget(
-            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
+            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
             mTargetSelector.getScoringTarget(),
+            mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
-            0.10
+            0.20
         );
     }
 
-    public static Pose2d getDrivetrainTarget(Pose2d currentPose, ScoringTarget target, Direction direction, boolean alignedScore) {
-        Translation3d endEffectorTarget = getEndEffectorTargetPosition(target);
+    public static Pose2d getDrivetrainTarget(Pose2d currentPose, ScoringTarget target, GamePiece gamepiece, Direction direction, boolean alignedScore) {
+        Translation3d endEffectorTarget = getEndEffectorTargetPosition(target, gamepiece);
         double endEffectorZ = endEffectorTarget.getZ();
         Translation2d endEffectorXYPlane = endEffectorTarget.toTranslation2d();
 
@@ -165,8 +168,8 @@ public class AutoScore {
         return driveTarget;
     }
 
-    public static SuperstructureState getSupertructureStateTarget(Pose2d currentPose, ScoringTarget target, Direction direction, double lower) {
-        Translation3d endEffectorTarget = getEndEffectorTargetPosition(target);
+    public static SuperstructureState getSupertructureStateTarget(Pose2d currentPose, ScoringTarget target, GamePiece gamepiece, Direction direction, double lower) {
+        Translation3d endEffectorTarget = getEndEffectorTargetPosition(target, gamepiece);
         Translation2d endEffectorXZPlane = new Translation2d(endEffectorTarget.getX(), endEffectorTarget.getZ());
         Translation2d endEffectorXYPlane = endEffectorTarget.toTranslation2d();
 
@@ -182,18 +185,25 @@ public class AutoScore {
         return armTarget;
     }
 
-    public static Translation3d getEndEffectorTargetPosition(ScoringTarget target) {
+    public static Translation3d getEndEffectorTargetPosition(ScoringTarget target, GamePiece targetGamepiece) {
         Translation3d targetEndEffectorPosition;
+        Translation3d delta;
+        if(targetGamepiece == GamePiece.CUBE) {
+            delta = higherDeltaCube;
+        } else {
+            delta = higherDeltaCone;
+        }
+
         switch(target.getScoringRow()){
             case HIGH:
-                targetEndEffectorPosition = FieldConstants.Grids.high3dTranslations[target.getPosition()].plus(higherDelta);
+                targetEndEffectorPosition = FieldConstants.Grids.high3dTranslations[target.getPosition()].plus(delta);
                 break;
             case MID:
-                targetEndEffectorPosition = FieldConstants.Grids.mid3dTranslations[target.getPosition()].plus(higherDelta);
+                targetEndEffectorPosition = FieldConstants.Grids.mid3dTranslations[target.getPosition()].plus(delta);
                 break;
             case LOW:
                 Translation2d temp = FieldConstants.Grids.complexLowTranslations[target.getPosition()];
-                targetEndEffectorPosition = new Translation3d(temp.getX(), temp.getY(), 0.0).plus(higherDelta);
+                targetEndEffectorPosition = new Translation3d(temp.getX(), temp.getY(), 0.0).plus(delta);
                 break;
             default:
                 targetEndEffectorPosition = null;

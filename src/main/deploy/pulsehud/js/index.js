@@ -101,7 +101,7 @@ let app = createApp({
                     this.loadTarget[value] = true
                 } 
             } else {
-                this.handleAlerts(topic, value)
+                // this.handleAlerts(topic, value)
             }
         },
         isActive(row, column) {
@@ -147,17 +147,17 @@ let app = createApp({
             return result
         },
         handleAlerts(topic, value) {
-            var seperated = topic.split("/").slice(1,4)
+            // var seperated = topic.split("/").slice(1,4)
             
-            if(seperated[0] != alertsPrefix || !alerts.includes(seperated[1])) {
-                return
-            }
-            try {
-                this.alerts[seperated[1]][seperated[2]]
-            } catch {
-                this.alerts[seperated[1]] = {}
-            }
-            this.alerts[seperated[1]][seperated[2]] = value;
+            // if(seperated[0] != alertsPrefix || !alerts.includes(seperated[1])) {
+            //     return
+            // }
+            // try {
+            //     this.alerts[seperated[1]][seperated[2]]
+            // } catch {
+            //     this.alerts[seperated[1]] = {}
+            // }
+            // this.alerts[seperated[1]][seperated[2]] = value;
         }
     },
     computed: {
