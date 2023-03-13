@@ -44,7 +44,7 @@ public final class Constants {
     }
 
     // Looper Configurations
-    public static final double LOOPER_DT = 1.0 / 60.0; // The robot is running at 60Hz
+    public static final double LOOPER_DT = 1.0 / 70.0; // The robot is running at 70Hz
 
     // CAN ID Configurations
     public static final class CANID {
@@ -108,10 +108,8 @@ public final class Constants {
         public static final double BACK_LEFT_OFFSET = -249.43359375000003 + 90.0 + 180.0;
         public static final double BACK_RIGHT_OFFSET = -49.21875 + 90.0 + 180.0;
 
-        public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
-
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 1.0 / 42.0;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.008;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.01;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.005;
         
 
@@ -171,7 +169,7 @@ public final class Constants {
         public static final double HOLD_PERCENTAGE_CONE = 0.70;
         public static final double HOLD_DELAY = 0.2;
         public static final double GEAR_RATIO = 10.0;
-        public static final double STOP_THRESHOLD = 0.75;
+        public static final double STOP_THRESHOLD = 2.0;
     }
 
     // Superstructure Constants

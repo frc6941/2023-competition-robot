@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.utils.AllianceFlipUtil;
 
 /**
  * Rectangular Swerve Drivetrain composed of SJTU Swerve Module MK5s. This is a
@@ -42,7 +43,6 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     // Drivetrain Definitions
     public static final double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY;
 
-    // Snap Rotation Controller
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KP,
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KI,
@@ -231,7 +231,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
             double rotation = driveSignal.getRotation();
 
             Rotation2d robotAngle = Rotation2d.fromDegrees(getYaw());
-            if(DriverStation.getAlliance() == Alliance.Red && wantAngleOffset) {
+            if(AllianceFlipUtil.shouldFlip() && wantAngleOffset) {
                 robotAngle = robotAngle.plus(delta);
             }
 
@@ -326,13 +326,11 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
      *                         trajectory.
      * @param requiredOnTarget Is on target required.
      */
-    public void follow(PathPlannerTrajectory targetTrajectory, boolean isLockAngle, boolean resetOnStart, boolean requiredOnTarget) {
+    public void follow(PathPlannerTrajectory targetTrajectory, boolean isLockAngle, boolean requiredOnTarget) {
+        this.wantAngleOffset = false;
         this.trajectoryFollower.setLockAngle(isLockAngle);
         this.trajectoryFollower.setRequiredOnTarget(requiredOnTarget);
-        if (resetOnStart) {
-            this.gyro.setYaw(targetTrajectory.getInitialPose().getRotation().getDegrees());
-            this.headingController.reset(getYaw(), getYawVelocity());
-        }
+        this.headingController.reset(getYaw(), getYawVelocity());
         this.trajectoryFollower.follow(targetTrajectory);
     }
 
@@ -540,8 +538,14 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
                 rotation = driveSignal.getRotation();
             }
 
+            Rotation2d delta = Rotation2d.fromDegrees(180.0);
+            Rotation2d robotAngle = Rotation2d.fromDegrees(getYaw());
+            if(DriverStation.getAlliance() == Alliance.Red && wantAngleOffset) {
+                robotAngle = robotAngle.plus(delta);
+            }
+
             if (driveSignal.isFieldOriented()) {
-                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rotation, Rotation2d.fromDegrees(getYaw()));
+                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rotation, robotAngle);
             } else {
                 chassisSpeeds = new ChassisSpeeds(x, y, rotation);
             }

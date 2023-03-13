@@ -25,7 +25,7 @@ public class LoadGroundCommand extends SequentialCommandGroup{
                 new RequestSuperstructureStateCommand(mSuperstructure, () -> {
                     SuperstructureState intakeState = mTargetSelector.getLoadSuperstructureState();
                     Translation2d tempState = SuperstructureKinematics.forwardKinematics2d(intakeState);
-                    Translation2d raiseUp = new Translation2d(tempState.getX() < 0.0 ? -0.10 : 0.10, 0.30);
+                    Translation2d raiseUp = new Translation2d(tempState.getX() < 0.0 ? -0.10 : 0.10, 0.20);
                     return SuperstructureKinematics.inverseKinematics2d(tempState.plus(raiseUp));
                 }),
                 new WaitCommand(0.3),

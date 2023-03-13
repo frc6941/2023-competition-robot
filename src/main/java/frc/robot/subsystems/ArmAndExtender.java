@@ -304,11 +304,11 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
         if (mPeriodicIO.armRevLimitReached) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_NEGATIVE_ANGLE);
-        } else if (mPeriodicIO.armCurrent > 7.0 && !armIsHomed) {
+        } else if (mPeriodicIO.armCurrent > 10.0 && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_POSITIVE_ANGLE);
         }
 
-        if (mPeriodicIO.extenderCurrent > 7.0 && !extenderIsHomed) {
+        if (mPeriodicIO.extenderCurrent > 10.0 && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
     }
@@ -366,7 +366,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
         switch (extenderState) {
             case HOMING:
-                mPeriodicIO.extenderDemand = -0.25;
+                mPeriodicIO.extenderDemand = -0.30;
                 mPeriodicIO.extenderFeedforward = 0.0;
                 break;
             case LENGTH:

@@ -25,7 +25,9 @@ public class DriveTeleopCommand extends CommandBase {
     Supplier<Double> extesionPercentageSupplier;
     boolean isOpenLoop;
 
+
     private ChassisSpeeds previousVelocity;
+    private Double lockAngleRecorder = null;
 
     private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.0);
     private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 10.0);
@@ -55,6 +57,7 @@ public class DriveTeleopCommand extends CommandBase {
     public void initialize() {
         mDrivebase.unbrake();
         previousVelocity = new ChassisSpeeds();
+        lockAngleRecorder = null;
     }
 
     @Override
@@ -108,11 +111,23 @@ public class DriveTeleopCommand extends CommandBase {
 
         mDrivebase.setLockHeading(false);
         mDrivebase.drive(new Translation2d(desiredVelocity.vxMetersPerSecond, desiredVelocity.vyMetersPerSecond), rotationalVelocity, true, isOpenLoop, true);
+
+        if(rotationalVelocity == 0.0) {
+            if(lockAngleRecorder == null) {
+                lockAngleRecorder = mDrivebase.getYaw();
+            }
+            mDrivebase.setLockHeading(true);
+            mDrivebase.setHeadingTarget(lockAngleRecorder);
+        } else {
+            mDrivebase.setLockHeading(false);
+            lockAngleRecorder = null;
+        }
     }
 
     @Override
     public void end(boolean interrupted) {
         mDrivebase.stopMovement();
+        mDrivebase.setLockHeading(false);
     }
 
     @Override

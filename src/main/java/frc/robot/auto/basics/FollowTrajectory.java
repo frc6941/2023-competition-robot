@@ -9,9 +9,9 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
+import frc.robot.utils.AllianceFlipUtil;
 
 public class FollowTrajectory extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
@@ -70,9 +70,9 @@ public class FollowTrajectory extends CommandBase {
                 System.out.println("Trajectory generation failed.");
             }
         }
-        this.targetTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(targetTrajectory, DriverStation.getAlliance());
+        
         this.mDrivebase.getFollower().cancel();
-        this.mDrivebase.follow(targetTrajectory, true, false, true);
+        this.mDrivebase.follow(AllianceFlipUtil.apply(targetTrajectory), true, true);
     }
 
     @Override

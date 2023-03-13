@@ -2,24 +2,21 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8,
-        "y": 1.0609422973231921
+        "x": 1.8116616328019393,
+        "y": 5.043402788227378
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8000000000000105,
-        "y": 1.0609422973231921
+        "x": 2.8116616328019504,
+        "y": 5.043402788227378
       },
-      "holonomicAngle": 0,
+      "holonomicAngle": -180.0,
       "isReversal": false,
-      "velOverride": null,
+      "velOverride": 1.0,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [
-          "归零（initial state：preload cube，机械臂反转至bottom row对应角度，伸长至对应长度）",
-          "intaker轮子release cube，后调整高度至从地面拾取cube的高度"
-        ],
+        "names": [],
         "executionBehavior": "sequential",
         "waitBehavior": "none",
         "waitTime": 0
@@ -27,20 +24,20 @@
     },
     {
       "anchorPoint": {
-        "x": 4.3527666002700425,
-        "y": 1.0609422973231921
+        "x": 3.5782772987346925,
+        "y": 5.0244069208517566
       },
       "prevControl": {
-        "x": 4.385462690202127,
-        "y": 1.0609422973231921
+        "x": 3.2979946213755698,
+        "y": 5.0244069208517566
       },
       "nextControl": {
-        "x": 4.385462690202127,
-        "y": 1.0609422973231921
+        "x": 4.794161206931479,
+        "y": 5.0244069208517566
       },
-      "holonomicAngle": 0,
-      "isReversal": true,
-      "velOverride": null,
+      "holonomicAngle": -180.0,
+      "isReversal": false,
+      "velOverride": 1.0,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
@@ -52,15 +49,15 @@
     },
     {
       "anchorPoint": {
-        "x": 6.6,
-        "y": 0.9
+        "x": 7.09251276322458,
+        "y": 4.578004037524663
       },
       "prevControl": {
-        "x": 6.299513259227891,
-        "y": 0.9
+        "x": 5.990752455438562,
+        "y": 5.08139452297862
       },
       "nextControl": null,
-      "holonomicAngle": 0,
+      "holonomicAngle": 154.53665493812844,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -73,14 +70,5 @@
       }
     }
   ],
-  "markers": [
-    {
-      "position": 1.0,
-      "names": [
-        "event",
-        "Rotation for 180° while moving",
-        "调整intaker至ground对应角度和长度"
-      ]
-    }
-  ]
+  "markers": []
 }

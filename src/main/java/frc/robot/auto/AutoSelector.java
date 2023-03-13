@@ -1,5 +1,9 @@
 package frc.robot.auto;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -7,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.auto.basics.AutoActions;
+import frc.robot.auto.basics.FollowTrajectory;
 import frc.robot.states.ScoringTarget;
 import frc.robot.states.ScoringTarget.SCORING_GRID;
 import frc.robot.states.ScoringTarget.SCORING_ROW;
@@ -15,6 +20,7 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
+import frc.robot.utils.AllianceFlipUtil;
 
 public class AutoSelector {
     public enum AUTO_START_POSITION {
@@ -108,7 +114,7 @@ public class AutoSelector {
     }
 
     public Command buildAuto(AutoConfiguration config) {
-        Command resetStage;
+        Command resetStage = Commands.none();
         Command actionStage;
         Command balanceStage;
 
@@ -117,8 +123,6 @@ public class AutoSelector {
         ScoringTarget objective3;
         Translation2d intakeTarget1;
         Translation2d intakeTarget2;
-
-        resetStage = autoBuilder.resetPose(config.startPosition);
 
         switch (config.startPosition) {
             case INNER:
@@ -160,17 +164,17 @@ public class AutoSelector {
                     actionStage = Commands.none();
                     break;
                 case SCORE_PRELOAD:
-                    actionStage = autoBuilder.scorePreload(isLeft, objective1).andThen(autoBuilder.commute());
+                    actionStage = autoBuilder.scorePreload(objective1).andThen(autoBuilder.commute());
                     break;
                 case TWO_GAMEPIECE:
                     actionStage = Commands.sequence(
-                            autoBuilder.scorePreload(isLeft, objective1),
+                            autoBuilder.scorePreload(objective1),
                             autoBuilder.intakeAndScore(isLeft, objective2, intakeTarget1),
                             autoBuilder.commute());
                     break;
                 case LINK:
                     actionStage = Commands.sequence(
-                            autoBuilder.scorePreload(isLeft, objective1),
+                            autoBuilder.scorePreload(objective1),
                             autoBuilder.intakeAndScore(isLeft, objective2, intakeTarget1),
                             autoBuilder.intakeAndScore(isLeft, objective3, intakeTarget2),
                             autoBuilder.commute());
@@ -186,7 +190,7 @@ public class AutoSelector {
                     actionStage = Commands.none();
                     break;
                 case SCORE_PRELOAD:
-                    actionStage = autoBuilder.scorePreload(isLeft, objective1);
+                    actionStage = autoBuilder.scorePreload(objective1);
                     break;
                 case TWO_GAMEPIECE:
                 case LINK:
@@ -223,8 +227,22 @@ public class AutoSelector {
         SmartDashboard.putData("Auto Balance", autoBalance);
     }
 
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("Test Grab Cube", new PathConstraints(2.0, 2.0));
+
     public Command getAutoCommand() {
-        return builtAutoCommand;
+        // trajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(trajectory, DriverStation.getAlliance());
+        // SJTUSwerveMK5Drivebase mDrivebase = SJTUSwerveMK5Drivebase.getInstance();
+        // return Commands.runOnce(() -> mDrivebase.resetPose(trajectory.getInitialHolonomicPose())).andThen(new FollowTrajectoryWithEvents(mDrivebase, trajectory, new HashMap<>()));
+        return 
+        Commands.runOnce(() -> SJTUSwerveMK5Drivebase.getInstance().resetPose(AllianceFlipUtil.apply(trajectory.getInitialHolonomicPose())))
+        // .andThen(autoBuilder.scorePreload(new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.INNER)))
+        // .andThen(autoBuilder.configGroundIntake())
+        .andThen(
+            new FollowTrajectory(
+                SJTUSwerveMK5Drivebase.getInstance(),
+                trajectory
+            )
+        );
     }
 
     public boolean getAutoWarning() {

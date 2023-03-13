@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.FieldConstants;
-import frc.robot.auto.AutoSelector.AUTO_START_POSITION;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveToPoseCommand;
@@ -32,7 +31,6 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
-import frc.robot.utils.AllianceFlipUtil;
 import frc.robot.utils.PathPointUtil;
 
 public class AutoActions {
@@ -65,19 +63,6 @@ public class AutoActions {
     private static final Translation2d leftChargingStation = new Translation2d(xChargingStation, yChargingStationLeft);
     private static final Translation2d rightChargingStation = new Translation2d(xChargingStation, yChargingStationRight);
 
-    private static final Pose2d innerResetPose = new Pose2d(
-        new Translation2d(1.80, 5.05),
-        Rotation2d.fromDegrees(180.0)
-    );
-    private static final Pose2d middleResetPose = new Pose2d(
-        new Translation2d(1.80, 3.30),
-        Rotation2d.fromDegrees(180.0)
-    );
-    private static final Pose2d outerResetPose = new Pose2d(
-        new Translation2d(1.80, 0.50),
-        Rotation2d.fromDegrees(180.0)
-    );
-
     public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
         this.mDrivebase = mDrivebase;
         this.mSuperstructure = mSuperstructure;
@@ -108,7 +93,7 @@ public class AutoActions {
         return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
         .andThen(new WaitCommand(0.5))
         .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
-        .andThen(new WaitCommand(0.2));
+        .andThen(new WaitCommand(0.1));
     }
 
     public Command delayExtenderAction(boolean value) {
@@ -220,7 +205,7 @@ public class AutoActions {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
         .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
         .andThen(new RequestExtenderCommand(mSuperstructure, 1.07, 0.02))
-        .andThen(Commands.waitUntil(mIntaker::hasGamePiece))
+        .andThen(Commands.waitSeconds(0.2).deadlineWith(Commands.waitUntil(mIntaker::hasGamePiece)))
         .andThen(Commands.runOnce(() -> mSuperstructure.overrideProtection(false)));
     }
 
@@ -228,33 +213,19 @@ public class AutoActions {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(false));
     }
 
-    public Command resetPose(AUTO_START_POSITION startPosition) {
-        switch(startPosition) {
-            case INNER:
-                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(innerResetPose)));
-            case OUTER:
-                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(outerResetPose)));
-            case CENTER:
-                return Commands.runOnce(() -> mDrivebase.resetPose(AllianceFlipUtil.apply(middleResetPose)));
-            default:
-                return Commands.none();
-        }
-    }
-
-
-    public Command scorePreload(boolean isLeft, ScoringTarget target) {
+    public Command scorePreload(ScoringTarget target) {
         if(target == null) {
             return Commands.none();
         } else {
             return Commands.sequence(
                 configGroundIntake(),
                 configTargetSelector(target),
+                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
                 waitUntilHomed(),
                 overrideAndGrabFarEnd(),
-                Commands.waitSeconds(0.2),
                 prepScore(),
                 score(),
-                driveToInnerTransit(isLeft)
+                commute()
             );
         }
     }
