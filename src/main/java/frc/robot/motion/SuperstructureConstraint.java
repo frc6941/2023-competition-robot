@@ -2,10 +2,8 @@ package frc.robot.motion;
 
 import org.frcteam6941.utils.Range;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Constants;
 import frc.robot.states.SuperstructureState;
 
 public class SuperstructureConstraint {
@@ -35,16 +33,14 @@ public class SuperstructureConstraint {
             if(clampedDesiredState.extenderLength > extenderRange.min + 0.15){
                 clampedDesiredState.extenderLength = extenderRange.min + 0.15;
             }
-            if (!currentState.isExtenderOnTarget(clampedDesiredState,
-                    Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
+            if (currentState.extenderLength > extenderRange.min + 0.17) {
                 clampedDesiredState.armAngle = Rotation2d.fromDegrees(dangerousNegativeArmRange.max);
             }
         } else if (dangerousNegativeArmRange.inRange(clampedDesiredState.armAngle.getDegrees())) {
             if(clampedDesiredState.extenderLength > extenderRange.min){
                 clampedDesiredState.extenderLength = extenderRange.min;
             }
-            if (!currentState.isExtenderOnTarget(clampedDesiredState,
-                    Constants.SUBSYSTEM_SUPERSTRUCTURE.THRESHOLD.EXTENDER)) {
+            if (currentState.extenderLength > extenderRange.min + 0.07) {
                 clampedDesiredState.armAngle = Rotation2d.fromDegrees(dangerousNegativeArmRange.max);
             }
         } else {
@@ -61,9 +57,5 @@ public class SuperstructureConstraint {
         }
 
         return clampedDesiredState;
-    }
-
-    public static void main(String[] args) {
-
     }
 }

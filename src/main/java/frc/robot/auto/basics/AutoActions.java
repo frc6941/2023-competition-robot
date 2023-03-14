@@ -72,7 +72,7 @@ public class AutoActions {
                                 .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
                                         () -> mTargetSelector.getLoadSuperstructureState()))
                                 .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
-                                .andThen(commute());
+                                .andThen(commute().alongWith(stopIntake()));
     }
 
     public Command prepScore() {
@@ -87,7 +87,7 @@ public class AutoActions {
                         .andThen(new WaitCommand(0.4))
                         .andThen(new InstantCommand(
                                 () -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
-                        .andThen(new WaitCommand(0.1));
+                        .andThen(new WaitCommand(0.2));
     }
 
     public Command delayExtenderAction(boolean value) {

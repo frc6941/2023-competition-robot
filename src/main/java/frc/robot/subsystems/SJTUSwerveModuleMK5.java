@@ -16,6 +16,7 @@ import org.frcteam6941.utils.LazyTalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /**
@@ -118,6 +119,11 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
             mAngleMotor.set(ControlMode.MotionMagic, recordAngle);
         }
 
+
+        SmartDashboard.putNumber(String.format("Swerve Mod %s Actual Angle", moduleNumber), getState().angle.getDegrees());
+        SmartDashboard.putNumber(String.format("Swerve Mod %s Actual Speed", moduleNumber), getState().speedMetersPerSecond);
+        SmartDashboard.putNumber(String.format("Swerve Mod %s Desired Angle", moduleNumber), optimizedState.angle.getDegrees());
+        SmartDashboard.putNumber(String.format("Swerve Mod %s Desired Speed", moduleNumber), optimizedState.speedMetersPerSecond);
     }
 
     /** Configurations for the angle motor. */

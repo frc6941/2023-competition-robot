@@ -454,6 +454,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
             extenderMotor.set(ControlMode.PercentOutput, 0.0);
         }
         
+        System.out.println(this.getCurrentCommand());
     }
 
     @Override
