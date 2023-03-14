@@ -4,24 +4,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.checkerframework.checker.units.qual.min;
-
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.FieldConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
-import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
@@ -36,7 +32,6 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
-import frc.robot.utils.AllianceFlipUtil;
 import frc.robot.utils.PathPointUtil;
 
 public class AutoActions {
@@ -89,7 +84,7 @@ public class AutoActions {
         return new RequestSuperstructureStateCommand(mSuperstructure,
                 scoreSuperstructureStateSupplierLower)
                         .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-                        .andThen(new WaitCommand(0.5))
+                        .andThen(new WaitCommand(0.4))
                         .andThen(new InstantCommand(
                                 () -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
                         .andThen(new WaitCommand(0.1));
@@ -100,9 +95,13 @@ public class AutoActions {
     }
 
     public Command commute() {
-        return new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                () -> SuperstructureStateBuilder.buildCommutingSuperstructureState(
-                        mTargetSelector.getCommutingDirection()));
+        return new RequestSuperstructureStateAutoRetract(
+            mSuperstructure,
+            () -> {
+                return SuperstructureStateBuilder.buildCommutingSuperstructureState(
+                        mTargetSelector.getCommutingDirection());
+            }
+        );
     }
 
     public Command waitUntilRetractSafe() {

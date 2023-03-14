@@ -329,17 +329,9 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         if(!overrideProtection){
             desiredSuperstructureState = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT
                 .optimize(inputedSuperstructureState, currentSuperstructureState);
-            SuperstructureState selfOptimized = Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.SUPERSTRUCTURE_LIMIT.optimize(currentSuperstructureState, currentSuperstructureState);
-                if(!selfOptimized.equals(currentSuperstructureState)) {
-                    desiredSuperstructureState.extenderLength = selfOptimized.extenderLength;
-                    desiredSuperstructureState.armAngle = selfOptimized.armAngle;
-                }
         } else {
             desiredSuperstructureState = inputedSuperstructureState;
         }
-
-        
-
         mPeriodicIO.armDemand = armOpenLoopPercentage != null ? armOpenLoopPercentage
                 : desiredSuperstructureState.armAngle.getDegrees();
         mPeriodicIO.extenderDemand = extenderOpenLoopPercentage != null ? extenderOpenLoopPercentage

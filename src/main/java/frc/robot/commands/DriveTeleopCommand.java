@@ -112,9 +112,9 @@ public class DriveTeleopCommand extends CommandBase {
         mDrivebase.setLockHeading(false);
         mDrivebase.drive(new Translation2d(desiredVelocity.vxMetersPerSecond, desiredVelocity.vyMetersPerSecond), rotationalVelocity, true, isOpenLoop, true);
 
-        if(rotationalVelocity == 0.0) {
+        if(rotationalVelocity == 0.0 && Math.abs(mDrivebase.getLocalizer().getMeasuredVelocity().getRotation().getDegrees()) < 5.0) {
             if(lockAngleRecorder == null) {
-                lockAngleRecorder = mDrivebase.getYaw();
+                lockAngleRecorder = mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees();
             }
             mDrivebase.setLockHeading(true);
             mDrivebase.setHeadingTarget(lockAngleRecorder);

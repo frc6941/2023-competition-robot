@@ -51,12 +51,12 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     private LoggedTunableNumber headingKd = new LoggedTunableNumber("Heading KD",
             Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_KD);
     private LoggedTunableNumber headingKIzone = new LoggedTunableNumber("Heading KIZONE", 
-            4.0);
+            1.00);
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKp.get(),
             headingKi.get(),
             headingKd.get(),
-            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED);
     private boolean isLockHeading;
     private double headingTarget = 0.0;
 
@@ -199,6 +199,14 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
 
     public boolean isHeadingOnTarget() {
         return this.headingController.atSetpoint();
+    }
+
+    public void setRestricted(boolean value) {
+        if(value) {
+            headingController.setConstraints(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED);
+        } else {
+            headingController.setConstraints(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
+        }
     }
 
     /**
@@ -513,6 +521,8 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
                 swerveLocalizer.getSmoothedVelocity());
         Logger.getInstance().recordOutput("Drivetrain/Acceleration",
                 swerveLocalizer.getMeasuredAcceleration());
+        Logger.getInstance().recordOutput("Drivetrain/Heading Target", getHeadingTarget());
+        Logger.getInstance().recordOutput("Drivetrain/Heading Actual", swerveLocalizer.getLatestPose().getRotation().getDegrees());
 
         if (Constants.AUTO_TUNING) {
             this.trajectoryFollower.sendData();

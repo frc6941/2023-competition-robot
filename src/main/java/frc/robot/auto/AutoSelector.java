@@ -90,7 +90,10 @@ public class AutoSelector {
 
     public AutoConfiguration getChoosedAutoConfiguration() {
         return new AutoConfiguration(
-            autoStartPosition.getSelected(), autoAction.getSelected(), autoBalance.getSelected());
+            autoStartPosition.getSelected(),
+            autoAction.getSelected(),
+            autoBalance.getSelected()
+        );
     }
 
     public Command buildAuto(AutoConfiguration config) {
@@ -146,9 +149,11 @@ public class AutoSelector {
     }
 
     public void update() {
-        AutoConfiguration currentConfiguration = getChoosedAutoConfiguration();
-        
+        SmartDashboard.putData("Auto Start Position", autoStartPosition);
+        SmartDashboard.putData("Auto Action", autoAction);
+        SmartDashboard.putData("Auto Balance", autoBalance);
 
+        AutoConfiguration currentConfiguration = getChoosedAutoConfiguration();
         if(!currentConfiguration.equals(autoConfiguration)) {
             if(currentConfiguration.startPosition == AUTO_START_POSITION.CENTER) {
                 currentConfiguration.action = AUTO_ACTION.SCORE_PRELOAD;
@@ -156,10 +161,6 @@ public class AutoSelector {
             this.autoConfiguration = currentConfiguration;
             this.builtAutoCommand = buildAuto(autoConfiguration);
         }
-
-        SmartDashboard.putData("Auto Start Position", autoStartPosition);
-        SmartDashboard.putData("Auto Action", autoAction);
-        SmartDashboard.putData("Auto Balance", autoBalance);
     }
 
     public Command getAutoCommand() {

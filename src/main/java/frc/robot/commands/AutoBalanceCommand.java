@@ -1,10 +1,7 @@
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
 import org.frcteam6328.utils.LoggedTunableNumber;
 
-import com.ctre.phoenix.WPI_CallbackHelper;
 import com.team254.lib.util.TimeDelayedBoolean;
 
 import edu.wpi.first.math.geometry.Rotation2d;
