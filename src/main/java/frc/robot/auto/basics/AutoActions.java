@@ -1,10 +1,12 @@
 package frc.robot.auto.basics;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -31,6 +33,7 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
+import frc.robot.utils.AllianceFlipUtil;
 import frc.robot.utils.PathPointUtil;
 
 public class AutoActions {
@@ -44,56 +47,49 @@ public class AutoActions {
     Supplier<SuperstructureState> scoreSuperstructureStateSupplierLower;
     Supplier<Pose2d> scoreDriveTargetSupplier;
 
-    private static final double xInnerMiddle = (FieldConstants.Grids.outerX + FieldConstants.Community.chargingStationInnerX) / 2.0;
-    private static final double xOuter = FieldConstants.Community.chargingStationOuterX + 1.5;
-    private static final double yLeftMiddle = FieldConstants.Community.leftY - 0.5;
-    private static final double yRightMiddle = FieldConstants.Community.rightY + 0.5;
+    private static final double chargingStationMiddleX = (FieldConstants.Community.chargingStationInnerX
+            + FieldConstants.Community.chargingStationOuterX) / 2.0;
+    private final HashMap<String, Command> commandMapping = new HashMap<String, Command>();
 
-    private static final double xChargingStation = (FieldConstants.Community.chargingStationInnerX + FieldConstants.Community.chargingStationOuterX) / 2.0;
-    private static final double yCharingStationMiddle = (FieldConstants.Community.chargingStationLeftY + FieldConstants.Community.chargingStationRightY) / 2.0;
-    private static final double yChargingStationLeft = yCharingStationMiddle + 0.1;
-    private static final double yChargingStationRight = yCharingStationMiddle - 0.1;
-
-    private static final Translation2d innerLeftTransit = new Translation2d(xInnerMiddle, yLeftMiddle);
-    private static final Translation2d innerRightTransit = new Translation2d(xInnerMiddle, yRightMiddle);
-    private static final Translation2d outerLeftTransit = new Translation2d(xOuter, yLeftMiddle);
-    private static final Translation2d outerRightTransit = new Translation2d(xOuter, yRightMiddle);
-    private static final Translation2d innerLeftChargingStationTransit = new Translation2d(xInnerMiddle, yChargingStationLeft);
-    private static final Translation2d innerRightChargingStationTransit = new Translation2d(xInnerMiddle, yChargingStationRight);
-    private static final Translation2d leftChargingStation = new Translation2d(xChargingStation, yChargingStationLeft);
-    private static final Translation2d rightChargingStation = new Translation2d(xChargingStation, yChargingStationRight);
-
-    public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector) {
+    public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure,
+            Intaker mIntaker, TargetSelector mTargetSelector) {
         this.mDrivebase = mDrivebase;
         this.mSuperstructure = mSuperstructure;
         this.mIntaker = mIntaker;
         this.mTargetSelector = mTargetSelector;
 
-        autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mTargetSelector, () -> false, () -> false, () -> true);
+        autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mTargetSelector,
+                () -> false, () -> false, () -> true);
         scoreSuperstructureStateSupplier = autoScore.getSuperstructureTargetSupplier();
         scoreSuperstructureStateSupplierLower = autoScore.getSuperstructureTargetSupplierLower();
         scoreDriveTargetSupplier = autoScore.getDrivetrainTargetSupplier();
+
+        initMapping();
     }
 
     public Command groundIntake() {
-        return new InstantCommand(mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone : mIntaker::runIntakeCube)
-        .andThen(new RequestSuperstructureStateAutoRetract(
-            mSuperstructure,
-            () -> mTargetSelector.getLoadSuperstructureState()
-        ))
-        .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
-        .andThen(commute());
+        return new InstantCommand(
+                mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
+                        : mIntaker::runIntakeCube)
+                                .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
+                                        () -> mTargetSelector.getLoadSuperstructureState()))
+                                .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
+                                .andThen(commute());
     }
 
     public Command prepScore() {
-        return new RequestSuperstructureStateAutoRetract(mSuperstructure, scoreSuperstructureStateSupplier);
+        return new RequestSuperstructureStateAutoRetract(mSuperstructure,
+                scoreSuperstructureStateSupplier);
     }
 
     public Command score() {
-        return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-        .andThen(new WaitCommand(0.5))
-        .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
-        .andThen(new WaitCommand(0.1));
+        return new RequestSuperstructureStateCommand(mSuperstructure,
+                scoreSuperstructureStateSupplierLower)
+                        .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
+                        .andThen(new WaitCommand(0.5))
+                        .andThen(new InstantCommand(
+                                () -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
+                        .andThen(new WaitCommand(0.1));
     }
 
     public Command delayExtenderAction(boolean value) {
@@ -101,84 +97,9 @@ public class AutoActions {
     }
 
     public Command commute() {
-        return new RequestSuperstructureStateAutoRetract(mSuperstructure, () -> SuperstructureStateBuilder.buildCommutingSuperstructureState(mTargetSelector.getCommutingDirection()));
-    }
-
-    private Pose2d getInnerTransitPose(boolean isLeft) {
-        Rotation2d face = Rotation2d.fromDegrees(180.0);
-
-        if(isLeft) {
-            return new Pose2d(innerLeftTransit, face);
-        } else {
-            return new Pose2d(innerRightTransit, face);
-        }
-    }
-
-    private Pose2d getOuterTransitPose(boolean isLeft) {
-        Rotation2d face = Rotation2d.fromDegrees(180.0);
-
-        if(isLeft) {
-            return new Pose2d(outerLeftTransit, face);
-        } else {
-            return new Pose2d(outerRightTransit, face);
-        }
-    }
-
-    public Command driveToInnerTransit(boolean isLeft) {
-        return new DriveToPoseCommand(mDrivebase, () -> getInnerTransitPose(isLeft));
-    }
-
-    public Command pathInnerToIntake(boolean isLeft, Translation2d endIntakeTarget) {
-        Pose2d innerTransit = getInnerTransitPose(isLeft);
-        Pose2d outerPose = getOuterTransitPose(isLeft);
-        Rotation2d intakeDirection = endIntakeTarget.minus(outerPose.getTranslation()).getAngle().plus(outerPose.getRotation());
-        Pose2d outerTransformed = new Pose2d(outerPose.getTranslation(), intakeDirection);
-        Pose2d intakeTransformed = new Pose2d(endIntakeTarget, intakeDirection);
-        
-        return new FollowTrajectory(
-            mDrivebase,
-            PathPointUtil.transfromPose2dToPathPoints(
-                List.of(
-                    innerTransit,
-                    outerTransformed,
-                    intakeTransformed
-                )
-            )
-        );
-    }
-
-    public Command pathIntakeToInner(boolean isLeft, Translation2d endIntakeTarget) {
-        Pose2d innerTransit = getInnerTransitPose(isLeft);
-        Pose2d outerPose = getOuterTransitPose(isLeft);
-        Rotation2d intakeDirection = endIntakeTarget.minus(outerPose.getTranslation()).getAngle().plus(outerPose.getRotation());
-        Pose2d outerTransformed = new Pose2d(outerPose.getTranslation(), intakeDirection);
-        Pose2d intakeTransformed = new Pose2d(endIntakeTarget, intakeDirection.unaryMinus());
-        
-        return new FollowTrajectory(
-            mDrivebase,
-            PathPointUtil.transfromPose2dToPathPoints(
-                List.of(
-                    intakeTransformed,
-                    outerTransformed,
-                    innerTransit
-                )
-            )
-        );
-    }
-
-    public Command pathInnerToChargingStation(boolean isLeft) {
-        Pose2d innerTransit = getInnerTransitPose(isLeft);
-        return new FollowTrajectory(mDrivebase, PathPointUtil.transfromPose2dToPathPoints(
-            List.of(
-                innerTransit,
-                new Pose2d(isLeft ? innerLeftChargingStationTransit : innerRightChargingStationTransit, innerTransit.getRotation()),
-                new Pose2d(isLeft ? leftChargingStation : rightChargingStation, innerTransit.getRotation())
-            )
-        ));
-    }
-
-    public Command driveToScoreTarget() {
-        return new DriveToPoseCommand(mDrivebase, scoreDriveTargetSupplier);
+        return new RequestSuperstructureStateAutoRetract(mSuperstructure,
+                () -> SuperstructureStateBuilder.buildCommutingSuperstructureState(
+                        mTargetSelector.getCommutingDirection()));
     }
 
     public Command waitUntilRetractSafe() {
@@ -186,7 +107,8 @@ public class AutoActions {
     }
 
     public Command waitUntilDirectionFit(Pose2d targetPose) {
-        return new WaitUntilCommand(() -> Util.epsilonEquals(targetPose.getRotation().getDegrees(), mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees(), 30.0));
+        return new WaitUntilCommand(() -> Util.epsilonEquals(targetPose.getRotation().getDegrees(),
+                mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees(), 30.0));
     }
 
     public Command waitUntilHomed() {
@@ -198,15 +120,17 @@ public class AutoActions {
     }
 
     public Command configGroundIntake() {
-        return Commands.runOnce(() -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
+        return Commands.runOnce(
+                () -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
     }
 
     public Command overrideAndGrabFarEnd() {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
-        .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
-        .andThen(new RequestExtenderCommand(mSuperstructure, 1.07, 0.02))
-        .andThen(Commands.waitSeconds(0.2).deadlineWith(Commands.waitUntil(mIntaker::hasGamePiece)))
-        .andThen(Commands.runOnce(() -> mSuperstructure.overrideProtection(false)));
+                .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
+                .andThen(new RequestExtenderCommand(mSuperstructure, 1.07, 0.02))
+                .andThen(Commands.waitSeconds(0.2)
+                        .deadlineWith(Commands.waitUntil(mIntaker::hasGamePiece)))
+                .andThen(Commands.runOnce(() -> mSuperstructure.overrideProtection(false)));
     }
 
     public Command returnToSafe() {
@@ -214,50 +138,49 @@ public class AutoActions {
     }
 
     public Command scorePreload(ScoringTarget target) {
-        if(target == null) {
+        if (target == null) {
             return Commands.none();
         } else {
-            return Commands.sequence(
-                configGroundIntake(),
-                configTargetSelector(target),
-                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
-                waitUntilHomed(),
-                overrideAndGrabFarEnd(),
-                prepScore(),
-                score(),
-                commute()
-            );
+            return Commands.sequence(configGroundIntake(), configTargetSelector(target),
+                    Commands.runOnce(mIntaker::runIntakeCone, mIntaker), waitUntilHomed(),
+                    overrideAndGrabFarEnd(), prepScore(), score());
         }
     }
 
-    public Command intakeAndScore(boolean isLeft, ScoringTarget target, Translation2d intakePosition) {
-        if(target == null) {
-            return Commands.none();
-        } else {
-            return Commands.sequence(
-                configGroundIntake(),
-                driveToInnerTransit(isLeft),
-                configTargetSelector(target),
-                pathInnerToIntake(isLeft, intakePosition)
-                .deadlineWith(
-                    groundIntake()
-                ),
-                pathIntakeToInner(isLeft, intakePosition)
-                .alongWith(
-                    prepScore()
-                ),
-                driveToScoreTarget(),
-                score(),
-                driveToInnerTransit(isLeft)
-            );
-        }
+    public Command balance(Pose2d startingPosition) {
+        boolean enterFront = startingPosition
+                .getX() < (FieldConstants.Community.chargingStationInnerX
+                        + FieldConstants.Community.chargingStationOuterX) / 2.0;
+        Pose2d position0 = new Pose2d(
+                enterFront ? FieldConstants.Community.chargingStationInnerX
+                        : FieldConstants.Community.chargingStationOuterX,
+                MathUtil.clamp(startingPosition.getY(),
+                        FieldConstants.Community.chargingStationRightY + 0.8,
+                        FieldConstants.Community.chargingStationLeftY - 0.8),
+                enterFront ? Rotation2d.fromDegrees(0.0) : Rotation2d.fromDegrees(180.0));
+        Pose2d position1 = new Pose2d((FieldConstants.Community.chargingStationOuterX
+                + FieldConstants.Community.chargingStationInnerX) / 2.0 + (enterFront ? 0.7 : -0.7),
+                position0.getY(), position0.getRotation());
+
+        return new FollowTrajectory(mDrivebase,
+                PathPointUtil.transfromPose2dToPathPoints(
+                        List.of(startingPosition, position0, position1))).alongWith(commute())
+                                .andThen(new AutoBalanceCommand(mDrivebase));
     }
 
-    public Command balance(boolean isLeft, double direction) {
-        return Commands.sequence(
-            driveToInnerTransit(isLeft).alongWith(commute()),
-            pathInnerToChargingStation(isLeft),
-            new AutoBalanceCommand(mDrivebase, () -> direction)
-        );
+    public void initMapping() {
+        commandMapping.put("ground intake", groundIntake());
+        commandMapping.put("prep score", prepScore());
+        commandMapping.put("score", score());
+        commandMapping.put("commute", commute());
+    }
+
+    public HashMap<String, Command> getCommandMapping(ScoringTarget... objectives) {
+        HashMap<String, Command> baseMapping = (HashMap<String, Command>) commandMapping.clone();
+        baseMapping.put("set target 1", configTargetSelector(objectives[0]));
+        baseMapping.put("set target 2", configTargetSelector(objectives[1]));
+        baseMapping.put("set target 3", configTargetSelector(objectives[2]));
+
+        return commandMapping;
     }
 }

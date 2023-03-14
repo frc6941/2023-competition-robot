@@ -2,24 +2,22 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 6.6,
-        "y": 0.9
+        "x": 1.8,
+        "y": 5.05
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.599999999999987,
-        "y": 0.9000000000000001
+        "x": 2.656977731017074,
+        "y": 4.822049591492547
       },
-      "holonomicAngle": 0,
+      "holonomicAngle": -180.0,
       "isReversal": false,
-      "velOverride": null,
+      "velOverride": 1.0,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "检测cube",
-          "调整高度至从地面拾取cube的高度",
-          "intaker take cube（轮子内转）"
+          "set target 2"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "none",
@@ -28,18 +26,43 @@
     },
     {
       "anchorPoint": {
-        "x": 4.2,
-        "y": 0.9
+        "x": 3.5,
+        "y": 4.6
       },
       "prevControl": {
-        "x": 4.232696089932084,
-        "y": 0.9
+        "x": 3.219717322640875,
+        "y": 4.6
       },
       "nextControl": {
-        "x": 4.232696089932084,
-        "y": 0.9
+        "x": 5.229276138753401,
+        "y": 4.6
       },
-      "holonomicAngle": 0,
+      "holonomicAngle": -180.0,
+      "isReversal": false,
+      "velOverride": 1.0,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 6.902554089468368,
+        "y": 4.6
+      },
+      "prevControl": {
+        "x": 5.523259201728605,
+        "y": 4.6
+      },
+      "nextControl": {
+        "x": 5.523259201728605,
+        "y": 4.6
+      },
+      "holonomicAngle": 180.0,
       "isReversal": true,
       "velOverride": null,
       "isLocked": false,
@@ -53,18 +76,18 @@
     },
     {
       "anchorPoint": {
-        "x": 1.9,
-        "y": 1.07
+        "x": 3.5212896966078295,
+        "y": 4.587501971212473
       },
       "prevControl": {
-        "x": 2.140281823860878,
-        "y": 1.07
+        "x": 4.531777605829878,
+        "y": 4.587501971212473
       },
       "nextControl": {
-        "x": 1.333359523822826,
-        "y": 1.07
+        "x": 2.779903113743187,
+        "y": 4.587501971212473
       },
-      "holonomicAngle": 0,
+      "holonomicAngle": 180.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -78,46 +101,23 @@
     },
     {
       "anchorPoint": {
-        "x": 5.350275612831927,
-        "y": 1.3601950010917574
+        "x": 1.8,
+        "y": 4.4
       },
       "prevControl": {
-        "x": 5.350275612831927,
-        "y": 0.253829659131974
-      },
-      "nextControl": {
-        "x": 5.350275612831927,
-        "y": 1.9134334149135332
-      },
-      "holonomicAngle": 0,
-      "isReversal": false,
-      "velOverride": null,
-      "isLocked": false,
-      "isStopPoint": false,
-      "stopEvent": {
-        "names": [],
-        "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 6.6,
-        "y": 2.1491339473907023
-      },
-      "prevControl": {
-        "x": 6.0830294261645586,
-        "y": 2.1491339473907023
+        "x": 2.343545919319327,
+        "y": 4.492522634334368
       },
       "nextControl": null,
-      "holonomicAngle": 0,
+      "holonomicAngle": 180.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [],
+        "names": [
+          "score"
+        ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
@@ -126,23 +126,15 @@
   ],
   "markers": [
     {
-      "position": 1.0,
+      "position": 0.05,
       "names": [
-        "调整intaker 角度&长度至middle row对应",
-        "rotate 180 degree while moving"
+        "ground intake"
       ]
     },
     {
-      "position": 2.0,
+      "position": 1.9454545454544951,
       "names": [
-        "伸长intaker",
-        "Release Cube (反转)"
-      ]
-    },
-    {
-      "position": 3.0,
-      "names": [
-        "clockwise rotate 90 degree"
+        "prep score"
       ]
     }
   ]
