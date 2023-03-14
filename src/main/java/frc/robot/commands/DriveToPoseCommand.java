@@ -51,7 +51,6 @@ public class DriveToPoseCommand extends CommandBase {
         Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle().plus(
             AllianceFlipUtil.shouldFlip() ? Rotation2d.fromDegrees(180.0) : new Rotation2d()
         ));
-        System.out.println(currentPose.getTranslation());
 
         mDrivebase.setLockHeading(true);
         mDrivebase.setHeadingTarget(transformedPose.getRotation().getDegrees());

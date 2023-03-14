@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.checkerframework.checker.units.qual.min;
+
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -124,6 +127,10 @@ public class AutoActions {
                 () -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
     }
 
+    public Command stopIntake() {
+        return Commands.runOnce(mIntaker::stopIntake);
+    }
+
     public Command overrideAndGrabFarEnd() {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
                 .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
@@ -141,9 +148,16 @@ public class AutoActions {
         if (target == null) {
             return Commands.none();
         } else {
-            return Commands.sequence(configGroundIntake(), configTargetSelector(target),
-                    Commands.runOnce(mIntaker::runIntakeCone, mIntaker), waitUntilHomed(),
-                    overrideAndGrabFarEnd(), prepScore(), score());
+            return Commands.sequence(
+                configGroundIntake(),
+                configTargetSelector(target),
+                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
+                waitUntilHomed(),
+                overrideAndGrabFarEnd(),
+                prepScore(),
+                score(),
+                stopIntake()
+            );
         }
     }
 

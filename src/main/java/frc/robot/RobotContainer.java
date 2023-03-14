@@ -15,6 +15,7 @@ import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
 import frc.robot.commands.DriveToPoseCommand;
+import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
@@ -63,9 +64,6 @@ public class RobotContainer {
                 mSuperstructure::getExtensionPercentage,
                 false));
         mControlBoard.getResetGyro().onTrue(new ResetGyroCommand(mDrivebase, new Rotation2d()));
-        mControlBoard.getDriverController().getController().a().whileTrue(
-            new DriveToPoseCommand(mDrivebase, new Pose2d(new Translation2d(5.0, 0.0), new Rotation2d()))
-        );
 
         // mSuperstructure.setDefaultCommand(
         //     new AutoCommuteCommand(mSuperstructure, mSelector)
@@ -146,14 +144,21 @@ public class RobotContainer {
         //             .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
         //             .finallyDo((interrupted) -> mTracker.setInManual(false)));
 
-        // // mControlBoard.getDriverController().getController().povUp().whileTrue(
-        // //     Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
-        // //     .andThen(
-        // //         new RequestExtenderCommand(mSuperstructure, 1.07, 0.05).repeatedly()
-        // //     )
-        // // ).onFalse(
-        // //     Commands.runOnce(() -> mSuperstructure.overrideProtection(false))
-        // // );
+        // mControlBoard.getDriverController().getController().povUp().whileTrue(
+        //     Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
+        //     .andThen(
+        //         new RequestExtenderCommand(mSuperstructure, 1.07, 0.05).repeatedly()
+        //     )
+        // ).onFalse(
+        //     Commands.runOnce(() -> mSuperstructure.overrideProtection(false))
+        // );
+
+        mControlBoard.getDriverController().getController().a().whileTrue(
+            new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(180.0))
+        );
+        mControlBoard.getDriverController().getController().x().whileTrue(
+            new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(0.0))
+        );
     }
 
     public UpdateManager getUpdateManager() {
