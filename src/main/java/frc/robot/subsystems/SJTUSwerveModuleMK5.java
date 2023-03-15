@@ -30,17 +30,17 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
     public static double DRIVE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_GEAR_RATIO;
     public static double ANGLE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.ANGLE_GEAR_RATIO;
 
-    public static double DRIVE_KP = 0.01;
-    public static double DRIVE_KI = 0.0005;
+    public static double DRIVE_KP = 0.10;
+    public static double DRIVE_KI = 0.001;
     public static double DRIVE_KD = 0.0;
-    public static double DRIVE_KF = 1023 * 1.0 / (10266.1205);
+    public static double DRIVE_KF = 1023.0 / 54717.0 * (3.8 / 1.5);
 
-    public static double ANGLE_KP = 1.8;
+    public static double ANGLE_KP = 1.5;
     public static double ANGLE_KI = 0.001;
     public static double ANGLE_KD = 60;
     public static double ANGLE_KF = 1023 * 0.8 / (4096.0 / 4.0);
-    public static double ANGLE_CRUISE_V = 1300;
-    public static double ANGLE_ACC = ANGLE_CRUISE_V / 0.4;
+    public static double ANGLE_CRUISE_V = 2000;
+    public static double ANGLE_ACC = ANGLE_CRUISE_V / 0.25;
 
     public int moduleNumber;
     public double angleOffset;
@@ -91,8 +91,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
     public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop, boolean overrideMotion) {
         SwerveModuleState optimizedState = CTREModuleState.optimize(
                 desiredState,
-                Rotation2d.fromDegrees(
-                        this.getEncoderUnbound().getDegrees()));
+                Rotation2d.fromDegrees(this.getEncoderUnbound().getDegrees()));
         if (isOpenLoop) {
             mDriveMotor.set(ControlMode.PercentOutput, optimizedState.speedMetersPerSecond);
         } else {
@@ -120,7 +119,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         }
 
 
-        SmartDashboard.putNumber(String.format("Swerve Mod %s Actual Angle", moduleNumber), getState().angle.getDegrees());
+        SmartDashboard.putNumber(String.format("Swerve Mod %s Actual Angle", moduleNumber), getEncoderUnbound().getDegrees());
         SmartDashboard.putNumber(String.format("Swerve Mod %s Actual Speed", moduleNumber), getState().speedMetersPerSecond);
         SmartDashboard.putNumber(String.format("Swerve Mod %s Desired Angle", moduleNumber), optimizedState.angle.getDegrees());
         SmartDashboard.putNumber(String.format("Swerve Mod %s Desired Speed", moduleNumber), optimizedState.speedMetersPerSecond);
@@ -133,9 +132,9 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mAngleMotor.setInverted(invertAngleOutput);
         mAngleMotor.setSensorPhase(invertAngleSensorPhase);
         mAngleMotor.setNeutralMode(NeutralMode.Brake);
-        mAngleMotor.configNeutralDeadband(0.01);
+        mAngleMotor.configNeutralDeadband(0.005);
 
-        SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 15, 40, 0.02);
+        SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 30, 30, 0.02);
         mAngleMotor.configSupplyCurrentLimit(curr_lim);
 
         mAngleMotor.config_kP(0, ANGLE_KP);
@@ -144,7 +143,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mAngleMotor.config_kF(0, ANGLE_KF);
         mAngleMotor.configMotionCruiseVelocity(ANGLE_CRUISE_V);
         mAngleMotor.configMotionAcceleration(ANGLE_ACC);
-        mAngleMotor.config_IntegralZone(0, 200.0);
+        mAngleMotor.config_IntegralZone(0, 100.0);
         mAngleMotor.configVoltageCompSaturation(12);
         mAngleMotor.enableVoltageCompensation(true);
     }
@@ -156,9 +155,9 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
         mDriveMotor.setInverted(true);
         mDriveMotor.setNeutralMode(NeutralMode.Coast);
         mDriveMotor.setSelectedSensorPosition(0);
-        mDriveMotor.configNeutralDeadband(0.01);
+        mDriveMotor.configNeutralDeadband(0.005);
 
-        SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 15, 40, 0.02);
+        SupplyCurrentLimitConfiguration curr_lim = new SupplyCurrentLimitConfiguration(true, 30, 30, 0.02);
         mDriveMotor.configSupplyCurrentLimit(curr_lim);
 
         mDriveMotor.config_kP(0, DRIVE_KP);

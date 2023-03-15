@@ -65,6 +65,7 @@ public class SuperstructureStateBuilder {
         public static LoggedTunableNumber shelfLengthNear = new LoggedTunableNumber("Loading/Shelf/Near/Length");
 
         public static LoggedTunableNumber groundAngleFar = new LoggedTunableNumber("Loading/Ground/Far/Angle");
+        public static LoggedTunableNumber groundAngleFarCone = new LoggedTunableNumber("Loading/Ground/Far/Angle Cone");
         public static LoggedTunableNumber groundAngleFarLow = new LoggedTunableNumber("Loading/Ground/Far/Angle Low");
         public static LoggedTunableNumber groundAngleNear = new LoggedTunableNumber("Loading/Ground/Near/Angle");
         public static LoggedTunableNumber groundLengthFar = new LoggedTunableNumber("Loading/Ground/Far/Length");
@@ -160,7 +161,7 @@ public class SuperstructureStateBuilder {
         return temp;
     }
 
-    public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction) {
+    public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction, GamePiece gamePiece) {
         switch (target.getLoadingLocation()) {
             case DOUBLE_SUBSTATION:
                 if (direction == Direction.NEAR) {
@@ -178,8 +179,14 @@ public class SuperstructureStateBuilder {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
                             Loading.groundLengthNear.get());
                 } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
+                    if(gamePiece == GamePiece.CUBE) {
+                        return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
                             Loading.groundLengthFar.get());
+                    } else {
+                        return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarCone.get()),
+                            Loading.groundLengthFar.get());
+                    }
+                    
                 }
             case GROUND_TIPPED:
                 return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarLow.get()),
@@ -266,7 +273,8 @@ public class SuperstructureStateBuilder {
         Loading.groundLengthNear.initDefault(1.38);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(220.0);
+        Loading.groundAngleFar.initDefault(218.0);
+        Loading.groundAngleFarCone.initDefault(220.0);
         Loading.groundLengthFar.initDefault(1.36);
         Loading.groundAngleFarLow.initDefault(225.0);
         Loading.groundLengthFarLow.initDefault(1.37);

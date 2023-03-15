@@ -44,7 +44,7 @@ public class RobotStateEstimator implements Updatable {
                     3.223358, 4.093358
             },
             new double[] {
-                    0.05, 0.07, 0.10, 0.12, 0.5, 1.0, 2.0, 2.5, 5.0, 10.0
+                    0.5, 1.0, 1.5, 1.5, 1.5, 2.0, 5.0, 10.0, 20.0, 40.0
             },
             1);
 
@@ -87,7 +87,7 @@ public class RobotStateEstimator implements Updatable {
                 if (ePose.isPresent()) {
                     seeAprilTag = true;
                     if (Math.abs(ePose.get().pose.estimatedPose.toPose2d().getRotation().getDegrees())  > 1e-4  && ePose.get().distance < 3.5
-                        && DriverStation.isTeleopEnabled()) {
+                        && !DriverStation.isAutonomousEnabled()) {
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " hasTarget", true);
                         EstimatedPoseWithDistance eposeWithDistance = ePose.get();
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",

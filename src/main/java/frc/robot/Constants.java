@@ -92,10 +92,10 @@ public final class Constants {
     // Swerve Drivetrain Constants
     public static final class SUBSYSTEM_DRIVETRAIN {
         public static final double DRIVE_MAX_LINEAR_VELOCITY = 4.0;
-        public static final double DRIVE_MAX_ANGULAR_VELOCITY = 200.0;
+        public static final double DRIVE_MAX_ANGULAR_VELOCITY = 300.0;
 
         public static final double MODULE_MAX_VELOCITY = 4.0;
-        public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.125);
+        public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.05);
 
         public static final double DRIVE_GEAR_RATIO = 7.0;
         public static final double ANGLE_GEAR_RATIO = (56.0 / 6.0) * (60.0 / 10.0);
@@ -120,11 +120,11 @@ public final class Constants {
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
 
-        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(2.5, 1.5);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(2.0, 2.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
                 300.0, 600.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED = new TrapezoidProfile.Constraints(
-            300.0, 140.0);
+            300.0, 120.0);
     }
 
     // Arm Constants
@@ -137,7 +137,8 @@ public final class Constants {
         public static final double KP = 0.3;
         public static final double KI = 0.002;
         public static final double KD = 0.15;
-        public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
+        public static final double KF 
+        = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
         public static final double CRUISE_V = 24000.0;
         public static final double CRUIVE_ACC = 12000.0;
@@ -157,8 +158,8 @@ public final class Constants {
         public static final double KD = 0.15;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 200;
-        public static final double CRUISE_V = 30000.0;
-        public static final double CRUIVE_ACC = 60000.0;
+        public static final double CRUISE_V = 40000.0;
+        public static final double CRUIVE_ACC = 100000.0;
     }
 
     // Intake Constants
@@ -214,12 +215,12 @@ public final class Constants {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants(
                 "IP_VM1",
-                new Pose3d(0.0, 0.12, 0.576, 
+                new Pose3d(-0.05, 0.12, 0.576, 
                 new Rotation3d(0.0, 0.0, -Math.PI))
             ),
             new CameraConstants(
                 "IP_VM2",
-                new Pose3d(0.0, -0.12, 0.550,
+                new Pose3d(0.05, -0.12, 0.550,
                 new Rotation3d(0.0, 0.0, 0.0))
             )
         };

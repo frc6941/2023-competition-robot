@@ -114,12 +114,12 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     public SuperstructureState getLoadSuperstructureState() {
-        return SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection);
+        return SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection, targetGamePiece);
     }
 
     public SuperstructureState getLoadSuperstructureStateMinExtenderLength() {
         return new SuperstructureState(
-            SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection).armAngle,
+            SuperstructureStateBuilder.buildLoadingSupertructureState(loadingTarget, loadingDirection, targetGamePiece).armAngle,
             Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min
         );
     }

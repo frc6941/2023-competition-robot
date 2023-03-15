@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -11,14 +10,16 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
-import frc.robot.subsystems.StatusTracker;
 import frc.robot.utils.AllianceFlipUtil;
 
 public class DriveToPoseCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
     // Pose Assist Controller
-    private ProfiledPIDController driveController = new ProfiledPIDController(2.5, 0.005, 0, Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
+    private ProfiledPIDController driveController = new ProfiledPIDController(
+        3.0, 0.01, 0,
+        Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT
+    );
 
     private Supplier<Pose2d> targetPose;
 
@@ -36,9 +37,12 @@ public class DriveToPoseCommand extends CommandBase {
     @Override
     public void initialize() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
+        Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
         Translation2d deltaTranslation = targetPose.get().getTranslation().minus(currentPose.getTranslation());
+        double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
         driveController.reset(
-            deltaTranslation.getNorm()
+            deltaTranslation.getNorm(),
+            dot / deltaTranslation.getNorm()
         );
         mDrivebase.resetHeadingController();
         mDrivebase.setLockHeading(false);
@@ -51,17 +55,11 @@ public class DriveToPoseCommand extends CommandBase {
 
         Translation2d deltaTranslation = currentPose.getTranslation().minus(transformedPose.getTranslation());
         double driveGain = driveController.calculate(deltaTranslation.getNorm(), 0.0);
-        Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle().plus(
-            AllianceFlipUtil.shouldFlip() ? Rotation2d.fromDegrees(180.0) : new Rotation2d()
-        ));
+        Translation2d velocity = new Translation2d(driveGain, deltaTranslation.getAngle());
 
         mDrivebase.setLockHeading(true);
         mDrivebase.setHeadingTarget(transformedPose.getRotation().getDegrees());
-        if(deltaTranslation.getNorm() < 0.03) {
-            mDrivebase.stopMovement();
-        } else {
-            mDrivebase.drive(velocity, 0.0, true, false, true);
-        }
+        mDrivebase.drive(velocity, 0.0, true, false, false);
     }
 
     @Override

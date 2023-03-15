@@ -52,7 +52,7 @@ public class AutoBalanceCommand extends CommandBase {
         double roll = mDrivebase.getRoll();
         double pitch = mDrivebase.getPitch();
         double rollV = mDrivebase.getRollVelocity();
-        double pitchV = mDrivebase.getPtichVelocity();
+        double pitchV = mDrivebase.getPitchVelocity();
 
         double angle = drivebaseDirection.getCos() * pitch + drivebaseDirection.getSin() * roll;
         double angularVelocity = drivebaseDirection.getCos() * pitchV + drivebaseDirection.getSin() * rollV;

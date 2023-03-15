@@ -26,6 +26,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -38,9 +39,6 @@ import frc.robot.utils.AllianceFlipUtil;
  * basic implementation of {@link SwerveDrivetrainBase}.
  */
 public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrivetrainBase {
-    // General Constants
-    public static final double kLooperDt = Constants.LOOPER_DT;
-
     // Drivetrain Definitions
     public static final double MAX_SPEED = Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY;
 
@@ -201,12 +199,8 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         return this.headingController.atSetpoint();
     }
 
-    public void setRestricted(boolean value) {
-        if(value) {
-            headingController.setConstraints(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED);
-        } else {
-            headingController.setConstraints(Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT);
-        }
+    public void setHeadingControllerConstraints(TrapezoidProfile.Constraints constraint) {
+        this.headingController.setConstraints(constraint);
     }
 
     /**
@@ -288,7 +282,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         return yawVelocity.getAverage();
     }
 
-    public synchronized double getPtichVelocity() {
+    public synchronized double getPitchVelocity() {
         return pitchVelocity.getAverage();
     }
 

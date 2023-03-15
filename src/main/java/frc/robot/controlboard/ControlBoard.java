@@ -117,16 +117,6 @@ public class ControlBoard {
         return driver.getController().x();
     }
 
-    private double armDelta = 0.0;
-
-    public double getArmDelta() {
-        return armDelta;
-    }
-
-    public void clearArmDelta() {
-        armDelta = 0.0;
-    }
-
     public Trigger getArmIncrease() {
         return driver.getController().y();
     }
@@ -134,15 +124,6 @@ public class ControlBoard {
     public Trigger getArmDecrease() {
         return driver.getController().a();
     }
-
-    public void increaseArm() {
-        armDelta = Util.clamp(armDelta + Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA, -20.0, 20.0);
-    }
-
-    public void decreaseArm() {
-        armDelta = Util.clamp(armDelta - Constants.SUBSYSTEM_SUPERSTRUCTURE.MANUAL_DELTA.ANGLE_CHANGE_DELTA, -20.0, 20.0);
-    }
-
     
     /**
      * OPERATOR METHODS

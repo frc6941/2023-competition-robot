@@ -84,10 +84,9 @@ public class AutoActions {
         return new RequestSuperstructureStateCommand(mSuperstructure,
                 scoreSuperstructureStateSupplierLower)
                         .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-                        .andThen(new WaitCommand(0.4))
-                        .andThen(new InstantCommand(
-                                () -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)))
-                        .andThen(new WaitCommand(0.2));
+                        .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
+                        .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
+                        .andThen(new WaitCommand(0.3));
     }
 
     public Command delayExtenderAction(boolean value) {

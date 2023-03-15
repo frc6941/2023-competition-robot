@@ -8,14 +8,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
 import frc.robot.commands.DriveToPoseCommand;
-import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
@@ -62,7 +60,9 @@ public class RobotContainer {
                 mControlBoard::getSwerveRotation,
                 () -> mTracker.isInScore() || mTracker.isInLoad(),
                 mSuperstructure::getExtensionPercentage,
-                false));
+                false
+            )
+        );
         mControlBoard.getResetGyro().onTrue(new ResetGyroCommand(mDrivebase, new Rotation2d()));
 
         mSuperstructure.setDefaultCommand(
@@ -70,13 +70,7 @@ public class RobotContainer {
                 .alongWith(new InstantCommand(mTracker::clear)).repeatedly()
         );
 
-        mControlBoard.getArmIncrease().whileTrue(
-            new InstantCommand(mControlBoard::increaseArm).repeatedly());
-        mControlBoard.getArmDecrease().whileTrue(
-            new InstantCommand(mControlBoard::decreaseArm).repeatedly());
-
-        AutoLoad autoLoad = new AutoLoad(mDrivebase, mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation,
-                mControlBoard::getArmDelta);
+        AutoLoad autoLoad = new AutoLoad(mDrivebase, mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation);
         mControlBoard.getLoad().onTrue(
             autoLoad.getArmCommand().alongWith(new InstantCommand(mTracker::setLoad))
             .until(mControlBoard::getCancellation)
@@ -95,14 +89,16 @@ public class RobotContainer {
             Commands.either(
                 autoLoad.getDriveCommand(),
                 autoScore.getDriveCommand(),
-                mTracker::isInLoad));
+                mTracker::isInLoad
+            )
+        );
 
         mControlBoard.getSpit().whileTrue(
-            Commands.runOnce(mIntaker::runOuttakeCone).repeatedly())
+            Commands.run(() -> mIntaker.runOuttake(mSelector::getTargetGamePiece)))
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
 
         mControlBoard.getIntake().whileTrue(
-            Commands.runOnce(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)).repeatedly())
+            Commands.run(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)))
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
 
         // Bind Operator

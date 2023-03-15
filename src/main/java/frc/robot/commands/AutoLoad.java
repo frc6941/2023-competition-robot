@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -20,7 +19,6 @@ public class AutoLoad {
     Intaker mIntaker;
     TargetSelector mTargetSelector;
     BooleanSupplier confirmation;
-    DoubleSupplier armDelta;
 
     private Command driveCommand;
     private Command armCommand;
@@ -41,12 +39,11 @@ public class AutoLoad {
     public static Map<Object, Command> loadArmCommandMap;
     public static Map<Object, Command> loadDriveCommandMap;
 
-    public AutoLoad(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation, DoubleSupplier armDelta) {
+    public AutoLoad(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker, TargetSelector mTargetSelector, BooleanSupplier confirmation) {
         this.mSuperstructure = mSuperstructure;
         this.mIntaker = mIntaker;
         this.mTargetSelector = mTargetSelector;
         this.confirmation = confirmation;
-        this.armDelta = armDelta;
 
         loadDriveCommandMap = Map.of(
             LOADING_LOCATION.DOUBLE_SUBSTATION, new DriveToDoubleSubstationCommand(mDrivebase, mTargetSelector),

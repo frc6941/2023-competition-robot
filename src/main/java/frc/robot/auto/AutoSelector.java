@@ -131,13 +131,17 @@ public class AutoSelector {
         }
 
         HashMap<String, Command> commandMap = autoBuilder.getCommandMapping(new ScoringTarget[] { objective1, objective2, objective3 });
-        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 2.0, 2.0);
+        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 3.5, 2.2);
 
         resetStage = Commands.runOnce( () -> SJTUSwerveMK5Drivebase.getInstance().resetPose(AllianceFlipUtil.apply(trajectory.getInitialHolonomicPose())));
         preloadStage = Commands.sequence(
             autoBuilder.scorePreload(objective1)
         );
-        actionStage = new FollowTrajectoryWithEvents(SJTUSwerveMK5Drivebase.getInstance(), trajectory, commandMap);
+        actionStage = Commands.sequence(
+          autoBuilder.configTargetSelector(objective2),
+          new FollowTrajectoryWithEvents(SJTUSwerveMK5Drivebase.getInstance(), trajectory, commandMap),
+          autoBuilder.stopIntake()
+        );
         balanceStage = config.ifBalance == AUTO_BALANCE.YES ? autoBuilder.balance(trajectory.getEndState().poseMeters) : autoBuilder.commute();
 
         return Commands.sequence(
