@@ -13,6 +13,7 @@ import org.frcteam6941.vision.EstimatedPoseProvider;
 import org.frcteam6941.vision.EstimatedPoseProvider.EstimatedPoseWithDistance;
 import org.frcteam6941.vision.PhotonCameraEstimatedPoseProvider;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.PhotonCamera;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -58,6 +59,8 @@ public class RobotStateEstimator implements Updatable {
     }
 
     private RobotStateEstimator() {
+        PhotonCamera.setVersionCheckEnabled(false); // Self-handle connection issues
+
         for (CameraConstants camera : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
             PhotonCameraEstimatedPoseProvider provider = new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT);
             providers.add(provider);
