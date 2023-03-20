@@ -15,8 +15,10 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation.MatchType;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
+import frc.robot.controlboard.ControlBoard;
 import frc.robot.states.GamePiece;
 import frc.robot.utils.Lights;
 import io.javalin.Javalin;
@@ -215,6 +217,7 @@ public class StatusTracker implements Updatable {
     @Override
     public synchronized void update(double time, double dt) {
         updateIndicator();
+        ControlBoard.getInstance().updateRumble(time);
         led.setPattern(mPeriodicIO.desiredPattern);
     }
 

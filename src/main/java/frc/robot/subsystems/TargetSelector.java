@@ -4,6 +4,9 @@ import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -21,6 +24,7 @@ import frc.robot.states.ScoringTarget;
 import frc.robot.states.ScoringTarget.SCORING_GRID;
 import frc.robot.states.ScoringTarget.SCORING_ROW;
 import frc.robot.states.ScoringTarget.SCORING_SIDE;
+import frc.robot.utils.AllianceFlipUtil;
 import frc.robot.states.SuperstructureState;
 import frc.robot.states.SuperstructureStateBuilder;
 
@@ -279,6 +283,13 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             mPeriodicIO.cursor = regulateCurrent(mPeriodicIO.cursor);
             mPeriodicIO.statusHasChanged = false;
         }
+    }
+
+    public boolean needTurnToScore(Pose2d currentPose) {
+        Rotation2d currentRotation = AllianceFlipUtil.apply(currentPose).getRotation();
+        Rotation2d targetRotation = scoringDirection == Direction.NEAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0);
+
+        return !(currentRotation.getCos() * targetRotation.getCos() > 0.5);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
+
 import org.frcteam6941.looper.UpdateManager;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -9,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
@@ -16,6 +20,7 @@ import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
+import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.states.LoadingTarget;
@@ -144,6 +149,19 @@ public class RobotContainer {
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
         
+        new Trigger(() -> mSelector.needTurnToScore(mDrivebase.getLocalizer().getLatestPose())).onTrue(
+            new RumbleCommand(mControlBoard.getDriverController(), 0.5, 0.2).withInterruptBehavior(InterruptionBehavior.kCancelSelf)
+        ).onFalse(
+            new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0).withInterruptBehavior(InterruptionBehavior.kCancelSelf)
+        );
+
+        new Trigger(() -> {
+            return mIntaker.hasGamePiece() && mTracker.isInLoad();
+        }).onTrue(
+            new RumbleCommand(mControlBoard.getDriverController(), 1.0, 0.0).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+        ).onFalse(
+            new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
+        );
     }
 
     public UpdateManager getUpdateManager() {
