@@ -2,6 +2,7 @@ package org.frcteam6941.looper;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ public final class UpdateManager {
 
 		void stop();
 
-		void disabled(double time, double dt);
+		void simulate(double time, double dt);
 	}
 
 	private double lastTimestamp = 0.0;
@@ -34,7 +35,7 @@ public final class UpdateManager {
 		public void run() {
 			synchronized (taskRunningLock_) {
 				final double timestamp = Timer.getFPGATimestamp();
-				final double dt = timestamp - lastTimestamp;
+				final double dt = timestamp - lastTimestamp > 10e-5 ? timestamp - lastTimestamp : Constants.LOOPER_DT;
 				lastTimestamp = timestamp;
 				updatables.forEach(s -> {
 					s.read(timestamp, dt);
@@ -47,17 +48,17 @@ public final class UpdateManager {
 		}
 	};
 
-	private Runnable disableRunnable = new Runnable() {
+	private Runnable simulationRunnable = new Runnable() {
 		@Override
 		public void run() {
 			synchronized (taskRunningLock_) {
 				final double timestamp = Timer.getFPGATimestamp();
-				final double dt = timestamp - lastTimestamp;
+				final double dt = timestamp - lastTimestamp > 10e-5 ? timestamp - lastTimestamp : Constants.LOOPER_DT;
 				lastTimestamp = timestamp;
 				updatables.forEach(s -> {
-					s.disabled(timestamp, dt);
-					s.read(timestamp, dt);
+					s.simulate(timestamp, dt);
 					s.update(timestamp, dt);
+					s.write(timestamp, dt);
 					s.telemetry();
 				});
 
@@ -66,7 +67,7 @@ public final class UpdateManager {
 	};
 
 	private final Notifier updaterEnableThread = new Notifier(enableRunnable);
-	private final Notifier updaterDisableThread = new Notifier(disableRunnable);
+	private final Notifier updaterSimulationThread = new Notifier(simulationRunnable);
 
 	public UpdateManager(Updatable... updatables) {
 		this(Arrays.asList(updatables));
@@ -77,20 +78,34 @@ public final class UpdateManager {
 	}
 
 	public void startEnableLoop(double period) {
-		updatables.forEach(s -> s.start());
 		updaterEnableThread.startPeriodic(period);
+	}
+
+	public void runEnableSingle() {
+		enableRunnable.run();
 	}
 
 	public void stopEnableLoop() {
 		updaterEnableThread.stop();
+	}
+
+	public void startSimulateLoop(double period) {
+		updaterSimulationThread.startPeriodic(period);
+	}
+
+	public void runSimulateSingle() {
+		simulationRunnable.run();
+	}
+
+	public void stopSimulateLoop() {
+		updaterSimulationThread.stop();
+	}
+
+	public void invokeStart() {
+		updatables.forEach(s -> s.start());
+	}
+
+	public void invokeStop() {
 		updatables.forEach(s -> s.stop());
-	}
-
-	public void startDisableLoop(double period) {
-		updaterDisableThread.startPeriodic(period);
-	}
-
-	public void stopDisableLoop() {
-		updaterDisableThread.stop();
 	}
 }
