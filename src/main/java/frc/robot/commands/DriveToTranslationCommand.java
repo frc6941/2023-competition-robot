@@ -49,7 +49,7 @@ public class DriveToTranslationCommand extends CommandBase {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
         double xOut = poseAssistXController.calculate(currentPose.getX(), targetTranslation.get().getX());
         double yOut = poseAssistYController.calculate(currentPose.getY(), targetTranslation.get().getY());
-        mDrivebase.drive(new Translation2d(xOut, yOut), 0.0, true, false);
+        mDrivebase.drive(new Translation2d(xOut, yOut), 0.0, true, false, false);
     }
 
     @Override

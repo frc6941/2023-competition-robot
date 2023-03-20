@@ -6,9 +6,9 @@ import org.frcteam6941.pathplanning.astar.obstacles.Obstacle;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -23,11 +23,10 @@ public class DriveAlongPath extends CommandBase {
     private Supplier<Obstacle[]> obstacles;
 
     private Timer pathTrackingTimer = new Timer();
+    private boolean needReset = true;
 
-    private ProfiledPIDController poseAssistXController = new ProfiledPIDController(1.5, 0.001, 0.0,
-            new Constraints(3.5, 3.0));
-    private ProfiledPIDController poseAssistYController = new ProfiledPIDController(1.5, 0.001, 0.0,
-            new Constraints(3.5, 3.0));
+    private ProfiledPIDController driveController = new ProfiledPIDController(1.5, 0.001, 0,
+            Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT);
 
     private Runnable r = new Runnable() {
         @Override
@@ -35,14 +34,27 @@ public class DriveAlongPath extends CommandBase {
             mPathProvider.getPath().ifPresent(path -> {
                 pathTrackingTimer.start();
                 Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
-                Pose2d trackingPose = new Pose2d(path.getPathPointByDistance(pathTrackingTimer.get() * 2.5),
+                Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
+                Pose2d trackingPose = new Pose2d(path.getPathPointByDistance(pathTrackingTimer.get() * 2.0),
                         targetPose.get().getRotation());
-                double xOut = poseAssistXController.calculate(currentPose.getX(), trackingPose.getX());
-                double yOut = poseAssistYController.calculate(currentPose.getY(), trackingPose.getY());
+                Translation2d deltaTranslation = trackingPose.getTranslation().minus(currentPose.getTranslation());
+                double driveK = driveController.calculate(deltaTranslation.getNorm(), 0.0);
+                Translation2d velocity = new Translation2d(driveK, deltaTranslation.getAngle().plus(new Rotation2d(Math.PI)));
+
+                if(needReset) {
+                    double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
+                    driveController.reset(
+                        deltaTranslation.getNorm(),
+                        dot / deltaTranslation.getNorm()
+                    );
+                    mDrivebase.resetHeadingController();
+                    mDrivebase.setLockHeading(false);
+                    needReset = false;
+                }
 
                 mDrivebase.setLockHeading(true);
                 mDrivebase.setHeadingTarget(trackingPose.getRotation().getDegrees());
-                mDrivebase.drive(new Translation2d(xOut, yOut), 0.0, true, false);
+                mDrivebase.drive(velocity, 0.0, true, false, false);
             });
         }
     };
@@ -56,8 +68,7 @@ public class DriveAlongPath extends CommandBase {
         this.targetPose = targetPose;
         this.obstacles = obstacles;
 
-        poseAssistXController.setIntegratorRange(-0.2, 0.2);
-        poseAssistYController.setIntegratorRange(-0.2, 0.2);
+        driveController.setIntegratorRange(-0.2, 0.2);
         addRequirements(mDrivebase);
     }
 
@@ -67,20 +78,13 @@ public class DriveAlongPath extends CommandBase {
         pathTrackingTimer.stop();
         mPathProvider.clear();
 
-        Pose2d currentPosition = mDrivebase.getLocalizer().getLatestPose();
-        Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
-        poseAssistXController.reset(currentPosition.getX(), currentVelocity.getX());
-        poseAssistYController.reset(currentPosition.getY(), currentVelocity.getY());
-        mDrivebase.resetHeadingController();
-        mDrivebase.setLockHeading(false);
-
         mPathProvider.buildPath(
                 mDrivebase.getLocalizer().getLatestPose().getTranslation(),
                 targetPose.get().getTranslation(),
-                obstacles.get()
-        );
-        
-        n.startPeriodic(Constants.LOOPER_DT);  
+                obstacles.get());
+        needReset = true;
+
+        n.startPeriodic(Constants.LOOPER_DT);
     }
 
     @Override
@@ -95,6 +99,7 @@ public class DriveAlongPath extends CommandBase {
         pathTrackingTimer.reset();
         pathTrackingTimer.stop();
         mPathProvider.clear();
+        needReset = true;
     }
 
     @Override

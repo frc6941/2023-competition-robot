@@ -81,12 +81,20 @@ public final class UpdateManager {
 		updaterEnableThread.startPeriodic(period);
 	}
 
+	public void runEnableSingle() {
+		enableRunnable.run();
+	}
+
 	public void stopEnableLoop() {
 		updaterEnableThread.stop();
 	}
 
 	public void startSimulateLoop(double period) {
 		updaterSimulationThread.startPeriodic(period);
+	}
+
+	public void runSimulateSingle() {
+		simulationRunnable.run();
 	}
 
 	public void stopSimulateLoop() {

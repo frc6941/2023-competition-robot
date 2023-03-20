@@ -1,8 +1,9 @@
 package frc.robot.controlboard;
 
-import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class CustomButtonBoard extends GenericHID {
+public class CustomButtonBoard extends CommandGenericHID {
     public CustomButtonBoard(int port) {
         super(port);
     }
@@ -16,7 +17,7 @@ public class CustomButtonBoard extends GenericHID {
         }
     }
 
-    public boolean getRawButton(BUTTON button) {
-        return getRawButton(button.id);
+    public Trigger button(BUTTON button) {
+        return this.button(button.id);
     }
 }

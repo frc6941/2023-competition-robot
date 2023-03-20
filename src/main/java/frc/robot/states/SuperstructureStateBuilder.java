@@ -65,9 +65,15 @@ public class SuperstructureStateBuilder {
         public static LoggedTunableNumber shelfLengthNear = new LoggedTunableNumber("Loading/Shelf/Near/Length");
 
         public static LoggedTunableNumber groundAngleFar = new LoggedTunableNumber("Loading/Ground/Far/Angle");
+        public static LoggedTunableNumber groundAngleFarCone = new LoggedTunableNumber("Loading/Ground/Far/Angle Cone");
+        public static LoggedTunableNumber groundAngleFarLow = new LoggedTunableNumber("Loading/Ground/Far/Angle Low");
         public static LoggedTunableNumber groundAngleNear = new LoggedTunableNumber("Loading/Ground/Near/Angle");
         public static LoggedTunableNumber groundLengthFar = new LoggedTunableNumber("Loading/Ground/Far/Length");
+        public static LoggedTunableNumber groundLengthFarLow = new LoggedTunableNumber("Loading/Ground/Far/Length Low");
         public static LoggedTunableNumber groundLengthNear = new LoggedTunableNumber("Loading/Ground/Near/Length");
+
+        public static LoggedTunableNumber singleAngle = new LoggedTunableNumber("Loading/Single Substation/Angle");
+        public static LoggedTunableNumber singleLength = new LoggedTunableNumber("Loading/Single Substation/Length");
     }
 
     private static class Commuting {
@@ -155,9 +161,9 @@ public class SuperstructureStateBuilder {
         return temp;
     }
 
-    public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction) {
+    public static SuperstructureState buildLoadingSupertructureState(LoadingTarget target, Direction direction, GamePiece gamePiece) {
         switch (target.getLoadingLocation()) {
-            case DOUBLE_SUBSTATION_OUTER:
+            case DOUBLE_SUBSTATION:
                 if (direction == Direction.NEAR) {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleNear.get()),
                             Loading.shelfLengthNear.get());
@@ -165,25 +171,34 @@ public class SuperstructureStateBuilder {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleFar.get()),
                             Loading.shelfLengthFar.get());
                 }
-            case DOUBLE_SUBSTATION_INNER:
-                if (direction == Direction.NEAR) {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleNear.get()),
-                            Loading.shelfLengthNear.get());
-                } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.shelfAngleFar.get()),
-                            Loading.shelfLengthFar.get());
-                }
+            case SINGLE_SUBSTATION:
+                return new SuperstructureState(Rotation2d.fromDegrees(Loading.singleAngle.get()),
+                        Loading.singleLength.get());
             case GROUND:
                 if (direction == Direction.NEAR) {
                     return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleNear.get()),
                             Loading.groundLengthNear.get());
                 } else {
-                    return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
+                    if(gamePiece == GamePiece.CUBE) {
+                        return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFar.get()),
                             Loading.groundLengthFar.get());
+                    } else {
+                        return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarCone.get()),
+                            Loading.groundLengthFar.get());
+                    }
+                    
                 }
+            case GROUND_TIPPED:
+                return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarLow.get()),
+                    Loading.groundLengthFarLow.get());
             default:
                 return null;
         }
+    }
+
+    public static SuperstructureState buildFarLowLoadSuperstructureState() {
+        return new SuperstructureState(Rotation2d.fromDegrees(Loading.groundAngleFarLow.get()),
+        Loading.groundLengthFarLow.get());
     }
 
     public static SuperstructureState buildCommutingSuperstructureState(Direction direction) {
@@ -205,13 +220,13 @@ public class SuperstructureStateBuilder {
                 Constants.SUBSYSTEM_SUPERSTRUCTURE.CONSTRAINTS.EXTENDER_RANGE.min);
     }
 
-    static {
+    public static void initTunables() {
         /* Scoring */
         // High Row - Near Side
         Scoring.highRowConeAngleNear.initDefault(20);
-        Scoring.highRowConeLengthNear.initDefault(1.25);
+        Scoring.highRowConeLengthNear.initDefault(1.35);
         Scoring.highRowCubeAngleNear.initDefault(5);
-        Scoring.highRowCubeLengthNear.initDefault(1.10);
+        Scoring.highRowCubeLengthNear.initDefault(1.20);
 
         // Mid Row - Near Side
         Scoring.midRowConeAngleNear.initDefault(12.5);
@@ -246,25 +261,32 @@ public class SuperstructureStateBuilder {
 
         /* Loading */
         // Loading - Double Substation - Near Side
-        Loading.shelfAngleNear.initDefault(3.0);
+        Loading.shelfAngleNear.initDefault(1.0);
         Loading.shelfLengthNear.initDefault(1.20);
 
         // Loading - Double Substation - Far Side
-        Loading.shelfAngleFar.initDefault(177.0);
+        Loading.shelfAngleFar.initDefault(181.0);
         Loading.shelfLengthFar.initDefault(1.20);
 
         // Loading - Ground - Near Side
         Loading.groundAngleNear.initDefault(-40.0);
-        Loading.groundLengthNear.initDefault(1.35);
+        Loading.groundLengthNear.initDefault(1.38);
 
         // Loading - Ground - Far Side
-        Loading.groundAngleFar.initDefault(220.0);
-        Loading.groundLengthFar.initDefault(1.35);
+        Loading.groundAngleFar.initDefault(218.0);
+        Loading.groundAngleFarCone.initDefault(220.0);
+        Loading.groundLengthFar.initDefault(1.36);
+        Loading.groundAngleFarLow.initDefault(225.0);
+        Loading.groundLengthFarLow.initDefault(1.37);
+
+        // Loading - Single Substation
+        Loading.singleAngle.initDefault(225.0);
+        Loading.singleLength.initDefault(0.89);
 
         /* Commuting */
         Commuting.commuteAngleNear.initDefault(-90);
         Commuting.commuteLengthNear.initDefault(0.89);
-        Commuting.commuteAngleFar.initDefault(235.0);
+        Commuting.commuteAngleFar.initDefault(231.0);
         Commuting.commuteLengthFar.initDefault(0.89);
     }
 }

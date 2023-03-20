@@ -2,7 +2,9 @@ package frc.robot.states;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.interpolation.Interpolatable;
 
 /*
  * Representing the state of superstructure.
@@ -11,7 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * The tip of the "triangle" form by the supporting rod and the drive train is the "head" of the drivetrain.
  * 
  */
-public class SuperstructureState {
+public class SuperstructureState implements Interpolatable<SuperstructureState> {
     // The angle of the large base arm - viewed from the right, CCW positive.
     public Rotation2d armAngle = new Rotation2d();
     // The length of the extender installed on the base arm.
@@ -59,5 +61,18 @@ public class SuperstructureState {
     @Override
     public String toString() {
         return String.format("Superstructure State: Arm: %.2f deg; Extender: %.2f m", armAngle.getDegrees(), extenderLength);
+    }
+
+    @Override
+    public SuperstructureState interpolate(SuperstructureState endValue, double t) {
+        if(endValue instanceof SuperstructureState) {
+            return null;
+        } else {
+            SuperstructureState state = (SuperstructureState) endValue;
+            return new SuperstructureState(
+                this.armAngle.interpolate(state.armAngle, t),
+                MathUtil.interpolate(this.extenderLength, state.extenderLength, t)
+            );
+        }
     }
 }
