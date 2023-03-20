@@ -273,14 +273,14 @@ public final class FieldConstants {
 
     static {
         for (int id : aprilTags.keySet()) {
-            // TODO: Change this to fit real field
-            if(id == 3) {
+            // // TODO: Change this to fit real field
+            // if(id == 3) {
                 
-            } else {
-                TAGS.add(new AprilTag(id, aprilTags.get(id)));
-            }   
+            // } else {
+            //     TAGS.add(new AprilTag(id, aprilTags.get(id)));
+            // }   
         
-                // TAGS.add(new AprilTag(id, aprilTags.get(id)));
+            TAGS.add(new AprilTag(id, aprilTags.get(id)));
         }
 
         LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);

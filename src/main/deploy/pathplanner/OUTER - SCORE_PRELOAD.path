@@ -17,6 +17,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
+          "set target 1",
+          "score preload",
           "set target 2"
         ],
         "executionBehavior": "sequential",
@@ -40,7 +42,9 @@
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [],
+        "names": [
+          "commute"
+        ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0

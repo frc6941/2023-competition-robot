@@ -31,7 +31,7 @@ public class SJTUSwerveModuleMK5 implements SwerveModuleBase {
     public static double ANGLE_GEAR_RATIO = Constants.SUBSYSTEM_DRIVETRAIN.ANGLE_GEAR_RATIO;
 
     public static double DRIVE_KP = 0.10;
-    public static double DRIVE_KI = 0.001;
+    public static double DRIVE_KI = 0.0005;
     public static double DRIVE_KD = 0.0;
     public static double DRIVE_KF = 1023.0 / 54717.0 * (3.8 / 1.5);
 

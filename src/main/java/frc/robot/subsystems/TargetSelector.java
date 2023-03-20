@@ -4,6 +4,7 @@ import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -25,9 +26,12 @@ import frc.robot.states.SuperstructureStateBuilder;
 
 public class TargetSelector extends SubsystemBase implements Updatable {
     public static class TargetSelectorPeriodicIO {
-        public long[] cursor = new long[] { 2, 6 };
-        public long[] target = new long[] { 2, 6 };
-        public long loadingTarget = -1;
+        public long[] cursor = new long[] { 1, 5 };
+        public long[] target = new long[] { 1, 5 };
+        public boolean commuteNear = false;
+        public boolean statusHasChanged = false;
+
+        public long loadingTarget = 0;
     }
     
     public TargetSelectorPeriodicIO mPeriodicIO = new TargetSelectorPeriodicIO();
@@ -37,14 +41,15 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     private IntegerArrayPublisher targetTopic = targetSelectorTable.getIntegerArrayTopic("target").publish();
     private IntegerPublisher loadingTopic = targetSelectorTable.getIntegerTopic("load").publish();
     private StringPublisher targetStringTopic = targetSelectorTable.getStringTopic("targetString").publish();
+    private BooleanPublisher commuteNear = targetSelectorTable.getBooleanTopic("commuteNear").publish();
 
     private GamePiece targetGamePiece = GamePiece.CONE;
     private ScoringTarget scoringTarget = new ScoringTarget(SCORING_ROW.HIGH, SCORING_GRID.INNER, SCORING_SIDE.OUTER);
     private LoadingTarget loadingTarget = new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION);
 
-    private Direction scoringDirection = Direction.NEAR;
-    private Direction commutingDirection = Direction.NEAR;
-    private Direction loadingDirection = Direction.NEAR;
+    private Direction scoringDirection = Direction.FAR;
+    private Direction commutingDirection = Direction.FAR;
+    private Direction loadingDirection = Direction.FAR;
 
     private static TargetSelector instance;
 
@@ -91,6 +96,11 @@ public class TargetSelector extends SubsystemBase implements Updatable {
 
     public void setScoringDirection(Direction scoringDirection) {
         this.scoringDirection = scoringDirection;
+    }
+
+    public void toggleCanCommuteNear() {
+        this.mPeriodicIO.commuteNear = !this.mPeriodicIO.commuteNear;
+        mPeriodicIO.statusHasChanged = true;
     }
 
     public Direction getCommutingDirection() {
@@ -155,7 +165,10 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     public void moveCursor(int rowDelta, int columnDelta) {
-        mPeriodicIO.cursor = clampTargetSelect(new long[] { mPeriodicIO.cursor[0] + rowDelta, mPeriodicIO.cursor[1] + columnDelta});
+        long[] afterMove = clampTargetSelect(new long[] { mPeriodicIO.cursor[0] + rowDelta, mPeriodicIO.cursor[1] + columnDelta});
+        if(afterMove != null) {
+            mPeriodicIO.cursor = afterMove;
+        }
     }
 
     public void applyCursorToTarget() {
@@ -174,7 +187,38 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     private long[] clampTargetSelect(long[] ids) {
-        return new long[] { (long) Util.clamp(ids[0], 0, 2), (long) Util.clamp(ids[1], 0, 8) };
+        long[] unrestrictedTarget =  new long[] { (long) Util.clamp(ids[0], 0, 2), (long) Util.clamp(ids[1], 0, 8) };
+        boolean isCube = unrestrictedTarget[1] == 1 || unrestrictedTarget[1] == 4 || unrestrictedTarget[1] == 7;
+        boolean isHigh = unrestrictedTarget[0] == 2;
+        boolean notFlip = loadingTarget.getLoadingLocation() != LOADING_LOCATION.SINGLE_SUBSTATION
+        && loadingTarget.getLoadingLocation() != LOADING_LOCATION.GROUND_TIPPED;
+        if(!mPeriodicIO.commuteNear && !isCube && isHigh && notFlip) {
+            // High cone that require commte near, not move cursor
+            return null;
+        }
+        return unrestrictedTarget;
+    }
+
+    private long[] regulateCurrent(long[] unrestrictedTarget) {
+        boolean isCube = unrestrictedTarget[1] == 1 || unrestrictedTarget[1] == 4 || unrestrictedTarget[1] == 7;
+        boolean isHigh = unrestrictedTarget[0] == 2;
+        boolean notFlip = loadingTarget.getLoadingLocation() != LOADING_LOCATION.SINGLE_SUBSTATION
+        && loadingTarget.getLoadingLocation() != LOADING_LOCATION.GROUND_TIPPED;
+
+        System.out.println(notFlip);
+        if(!mPeriodicIO.commuteNear && !isCube && isHigh && notFlip) {
+            // High cone that require commte near, regulate
+            return new long[] { 1, unrestrictedTarget[1] };
+        }
+        return unrestrictedTarget;
+    }
+
+    private long clampLoadingTarget(double value) {
+        return (long) Util.clamp(value, 0, 3);
+    }
+
+    public void moveLoadingTarget(int delta) {
+        mPeriodicIO.loadingTarget = clampLoadingTarget(mPeriodicIO.loadingTarget + delta);
     }
 
     @Override
@@ -184,7 +228,10 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     
     @Override
     public synchronized void update(double time, double dt){
-        if(this.scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE || this.scoringTarget.getScoringRow() == SCORING_ROW.LOW) {
+        if(
+            this.scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE
+            || this.scoringTarget.getScoringRow() == SCORING_ROW.LOW
+        ) {
             this.targetGamePiece = GamePiece.CUBE;
         } else {
             this.targetGamePiece = GamePiece.CONE;
@@ -197,14 +244,17 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         } else {
             switch(targetGamePiece) {
                 case CONE:
-                    if(loadingTarget.getLoadingLocation() == LOADING_LOCATION.SINGLE_SUBSTATION || loadingTarget.getLoadingLocation() == LOADING_LOCATION.GROUND_TIPPED) {
+                    if(
+                        loadingTarget.getLoadingLocation() == LOADING_LOCATION.SINGLE_SUBSTATION
+                        || loadingTarget.getLoadingLocation() == LOADING_LOCATION.GROUND_TIPPED
+                    ) {
                         scoringDirection = Direction.NEAR;
                         commutingDirection = Direction.FAR;
                         loadingDirection = Direction.FAR;
-                    } else if(scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+                    } else if(mPeriodicIO.commuteNear && scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
                         scoringDirection = Direction.NEAR;
-                        commutingDirection = Direction.FAR;
-                        loadingDirection = Direction.FAR;
+                        commutingDirection = Direction.NEAR;
+                        loadingDirection = Direction.NEAR;
                     } else {
                         scoringDirection = Direction.FAR;
                         commutingDirection = Direction.FAR;
@@ -218,21 +268,15 @@ public class TargetSelector extends SubsystemBase implements Updatable {
                     break;
             }
         }
-
-        switch(loadingTarget.getLoadingLocation()) {
-            case DOUBLE_SUBSTATION:
-                mPeriodicIO.loadingTarget = 0;
-                break;
-            case SINGLE_SUBSTATION:
-                mPeriodicIO.loadingTarget = 1;
-                break;
-            case GROUND:
-                mPeriodicIO.loadingTarget = 2;
-                break;
-            default:
-                mPeriodicIO.loadingTarget = -1;
-                break;
-        }
+        
+        LoadingTarget temp = new LoadingTarget((int) mPeriodicIO.loadingTarget);
+        if(temp.getLoadingLocation() != loadingTarget.getLoadingLocation() || mPeriodicIO.statusHasChanged) {
+            loadingTarget = temp;
+            mPeriodicIO.target = regulateCurrent(mPeriodicIO.target);
+            mPeriodicIO.cursor = regulateCurrent(mPeriodicIO.cursor);
+            System.out.println("Has Changed");
+            mPeriodicIO.statusHasChanged = false;
+        }   
     }
     
     @Override
@@ -246,6 +290,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         targetTopic.set(mPeriodicIO.target);
         targetStringTopic.set(scoringTarget.toString());
         loadingTopic.set((long) mPeriodicIO.loadingTarget);
+        commuteNear.set(mPeriodicIO.commuteNear);
     }
     
     @Override

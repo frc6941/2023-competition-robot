@@ -92,7 +92,16 @@
             </div>
           </div>
 
-          <div class="column center">
+          <div class="column center is-1">
+            <p v-if="commuteNear" class="title is-1">
+              近
+            </p>
+            <p v-else class="title is-1">
+              远
+            </p>
+          </div>
+
+          <div class="column center is-1">
             <p class="icon is-extralarge">
               <img v-if="loadTarget[0]" class="selected" src="icons/lightning-bolt-single.svg">
               <img v-else class="unselected" src="icons/lightning-bolt-single.svg">
@@ -105,13 +114,18 @@
               <img v-if="loadTarget[2]" class="selected" src="icons/chevron-double-down.svg">
               <img v-else class="unselected" src="icons/chevron-double-down.svg">
             </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[3]" class="selected" src="icons/orbit-variant.svg">
+              <img v-else class="unselected" src="icons/orbit-variant.svg">
+            </p>
+            <br>
           </div>
 
         </div>        
       </div>
     </section>
 
-    <!-- <section id="robot-info" class="hero container" >
+    <section id="robot-info" class="hero container" >
       <div class="columns is-vcentered">
         <div class="column">
           <article class="panel is-info">
@@ -142,23 +156,8 @@
             </div>
           </article>
         </div>
-        <div class="column">
-          <article class="panel is-info">
-            <p class="panel-heading">
-              自动选择
-            </p>
-            <div>
-              <a class="panel-block is-active" v-for="info in alert.infos">
-                <span class="panel-icon">
-                  <i><img src="icons/information-outline.svg"></i>
-                </span>
-                测试
-              </a>
-            </div>
-          </article>
-        </div>
       </div>
-    </section> -->
+    </section>
   </div>
   
 
@@ -175,6 +174,10 @@
       box-shadow: none;
     }
 
+    .restricted {
+      opacity: 0.2;
+    }
+
     .active {
       background-color: rgb(10, 116, 8);
       box-shadow: none;
@@ -183,6 +186,7 @@
     .cursor{
       animation:pulsate-fwd 0.5s infinite;
 	    -webkit-animation:pulsate-fwd 0.5s infinite;
+      background-color: crimson;
     }
 
     .unselected {
@@ -195,7 +199,8 @@
 
     .separation {
       background-color: rgb(255, 255, 255);
-      aspect-ratio: 1;
+      width: 2%;
+      height: auto;
       box-shadow: none;
     }
 
@@ -208,8 +213,8 @@
     }
 
     .is-extralarge {
-      width: 7em;
-      height: 7em;
+      width: 5em;
+      height: 5em;
     }
 
   </style>

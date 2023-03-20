@@ -23,11 +23,12 @@ public class DriveTeleopCommand extends CommandBase {
     Supplier<Double> rotationSupplier;
     Supplier<Boolean> reducdModeActivate;
     Supplier<Double> extesionPercentageSupplier;
+    Supplier<Boolean> speedLimitActivate;
     boolean isOpenLoop;
 
     private ChassisSpeeds previousVelocity;
 
-    private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.0);
+    private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.5);
     private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 15.0);
     private static final LoggedTunableNumber maxExtensionLinearAcceleration = new LoggedTunableNumber("Max Extension Linear Acceleration", 2.5);
     private static final LoggedTunableNumber minExtensionThetaAcceleration = new LoggedTunableNumber("Min Extension Theta Acceleration", 300.0);
@@ -39,6 +40,7 @@ public class DriveTeleopCommand extends CommandBase {
             Supplier<Translation2d> translationSupplier,
             Supplier<Double> rotationSupplier,
             Supplier<Boolean> reducdModeActivate,
+            Supplier<Boolean> speedLimitActivate,
             Supplier<Double> extensionPercentageSupplier,
             boolean isOpenLoop) {
         this.mDrivebase = mDrivebase;
@@ -46,6 +48,7 @@ public class DriveTeleopCommand extends CommandBase {
         this.translationSupplier = translationSupplier;
         this.rotationSupplier = rotationSupplier;
         this.reducdModeActivate = reducdModeActivate;
+        this.speedLimitActivate = speedLimitActivate;
         this.extesionPercentageSupplier = extensionPercentageSupplier;
         this.isOpenLoop = isOpenLoop;
         addRequirements(mDrivebase);
@@ -67,15 +70,14 @@ public class DriveTeleopCommand extends CommandBase {
         double rotationalVelocity = MathUtil.applyDeadband(rotation, 0.07);
 
         if(reducdModeActivate.get()) {
-            linearMagnitude *= 0.5;
-            rotationalVelocity *= 0.3;
+            rotationalVelocity *= 0.2;
         }
         
         Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection).transformBy(
             new Transform2d(new Translation2d(linearMagnitude, 0.0), new Rotation2d())
         ).getTranslation();
         rotationalVelocity = Units.degreesToRadians(rotationalVelocity * Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_ANGULAR_VELOCITY);
-        double linearValue = MathUtil.interpolate(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY, maxExtensionVelocity.get(), extesionPercentageSupplier.get());
+        double linearValue = MathUtil.interpolate(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY, speedLimitActivate.get() ? maxExtensionVelocity.get() : Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY, extesionPercentageSupplier.get());
         ChassisSpeeds desiredVelocity = new ChassisSpeeds(
             linearVelocity.getX() * linearValue,
             linearVelocity.getY() * linearValue,

@@ -22,6 +22,7 @@ import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
 import frc.robot.states.ScoringTarget;
 import frc.robot.states.SuperstructureState;
+import frc.robot.states.ScoringTarget.SCORING_ROW;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
@@ -39,16 +40,20 @@ public class AutoScore {
     Supplier<SuperstructureState> superstructureTargetLoweredSupplier;
     BooleanSupplier alignedScore;
 
-    private static final Translation3d higherDeltaCone = new Translation3d(-0.15, 0.0, 0.32);
-    private static final Translation3d higherDeltaCube = new Translation3d(0.10, 0.0, 0.45);
-    private static final double minDriveX = FieldConstants.Grids.outerX + 0.4;
+    private static final Translation3d higherDeltaCone = new Translation3d(-0.14, 0.0, 0.25);
+    private static final Translation3d midDeltaCone = new Translation3d(-0.14, 0.0, 0.32);
+
+    private static final Translation3d higherDeltaCube = new Translation3d(0.05, 0.0, 0.7);
+    private static final Translation3d midDeltaCube = new Translation3d(0.15, 0.0, 0.4);
+    private static final Translation3d lowerDeltaCube = new Translation3d(-0.40, 0.0, 0.25);
+    private static final double minDriveX = FieldConstants.Grids.outerX + 0.6;
     private static final double minDriveY = 0.5;
     private static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
 
     private static final double minExtension = 0.60;
     private static final double lowMaxExtension = 0.60;
     private static final double midMaxExtension = 1.20;
-    private static final double highMaxExtension = 1.50;
+    private static final double highMaxExtension = 1.60;
 
     private Command driveCommand;
     private Command armCommand;
@@ -68,7 +73,7 @@ public class AutoScore {
         new ConditionalCommand(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier),
 
-            new RequestExtenderCommand(mSuperstructure, 0.885, 0.05)
+            new RequestExtenderCommand(mSuperstructure, 0.89, 0.05)
             .andThen(new RequestArmCommand(mSuperstructure, () -> superstructureTargetSupplier.get().armAngle.getDegrees(), 5.0)),
 
             () -> {
@@ -109,7 +114,7 @@ public class AutoScore {
             mTargetSelector.getScoringTarget(),
             mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
-            0.25
+            0.32
         );
     }
 
@@ -192,9 +197,19 @@ public class AutoScore {
         Translation3d targetEndEffectorPosition;
         Translation3d delta;
         if(targetGamepiece == GamePiece.CUBE) {
-            delta = higherDeltaCube;
+            if (target.getScoringRow() == SCORING_ROW.HIGH){
+                delta = higherDeltaCube;
+            } else if(target.getScoringRow() == SCORING_ROW.LOW) {
+                delta = lowerDeltaCube;
+            } else {
+                delta = midDeltaCube;
+            }
         } else {
-            delta = higherDeltaCone;
+            if(target.getScoringRow() == SCORING_ROW.HIGH) {
+                delta = higherDeltaCone;
+            } else {
+                delta = midDeltaCone;
+            }
         }
 
         switch(target.getScoringRow()){

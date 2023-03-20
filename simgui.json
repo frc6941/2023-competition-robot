@@ -101,9 +101,6 @@
             "open": true
           }
         },
-        "Intaker": {
-          "open": true
-        },
         "RealOutputs": {
           "Coordinator": {
             "open": true

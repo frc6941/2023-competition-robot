@@ -261,11 +261,11 @@ public class SuperstructureStateBuilder {
 
         /* Loading */
         // Loading - Double Substation - Near Side
-        Loading.shelfAngleNear.initDefault(3.0);
+        Loading.shelfAngleNear.initDefault(1.0);
         Loading.shelfLengthNear.initDefault(1.20);
 
         // Loading - Double Substation - Far Side
-        Loading.shelfAngleFar.initDefault(177.0);
+        Loading.shelfAngleFar.initDefault(181.0);
         Loading.shelfLengthFar.initDefault(1.20);
 
         // Loading - Ground - Near Side
@@ -286,7 +286,7 @@ public class SuperstructureStateBuilder {
         /* Commuting */
         Commuting.commuteAngleNear.initDefault(-90);
         Commuting.commuteLengthNear.initDefault(0.89);
-        Commuting.commuteAngleFar.initDefault(235.0);
-        Commuting.commuteLengthFar.initDefault(0.95);
+        Commuting.commuteAngleFar.initDefault(231.0);
+        Commuting.commuteLengthFar.initDefault(0.89);
     }
 }

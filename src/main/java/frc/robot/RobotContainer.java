@@ -5,6 +5,7 @@ import org.frcteam6941.looper.UpdateManager;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -59,6 +60,7 @@ public class RobotContainer {
                 mControlBoard::getSwerveTranslation,
                 mControlBoard::getSwerveRotation,
                 () -> mTracker.isInScore() || mTracker.isInLoad(),
+                () -> mTracker.isInLoad(),
                 mSuperstructure::getExtensionPercentage,
                 false
             )
@@ -88,7 +90,7 @@ public class RobotContainer {
         mControlBoard.getAutoPath().whileTrue(
             Commands.either(
                 autoLoad.getDriveCommand(),
-                autoScore.getDriveCommand(),
+                autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
                 mTracker::isInLoad
             )
         );
@@ -112,19 +114,16 @@ public class RobotContainer {
             new InstantCommand(() -> mSelector.moveCursor(0, -1)));
         mControlBoard.getApplyCursor().onTrue(
             new InstantCommand(() -> mSelector.applyCursorToTarget()));
-        mControlBoard.getLoadingStation().onTrue(
-            new InstantCommand(
-                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.DOUBLE_SUBSTATION))));
-        mControlBoard.getGroundLoading().onTrue(
-            new InstantCommand(
-                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND))));
-        mControlBoard.getSingleSubstation().onTrue(
-            new InstantCommand(
-                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.SINGLE_SUBSTATION))));
-        mControlBoard.getGroundTipped().onTrue(
-            new InstantCommand(
-                () -> mSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND_TIPPED))
-            )
+        mControlBoard.getLoadingTargetIncrease().onTrue(
+            new InstantCommand(() -> mSelector.moveLoadingTarget(1))
+        );
+        mControlBoard.getLoadingTargetDecrease().onTrue(
+            new InstantCommand(() -> mSelector.moveLoadingTarget(-1))
+        );
+        mControlBoard.getCanCommuteNear().onTrue(
+            new InstantCommand(mSelector::toggleCanCommuteNear)
+        ).onFalse(
+            Commands.none()
         );
         
 
@@ -139,10 +138,7 @@ public class RobotContainer {
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
-
-        mControlBoard.getDriverController().getController().povDown().whileTrue(
-            new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(90.0))
-        );
+        
     }
 
     public UpdateManager getUpdateManager() {

@@ -17,6 +17,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
+          "set target 1",
+          "score preload",
           "set target 2"
         ],
         "executionBehavior": "sequential",
@@ -99,9 +101,15 @@
   ],
   "markers": [
     {
-      "position": 0.05,
+      "position": 0.02,
       "names": [
         "ground intake"
+      ]
+    },
+    {
+      "position": 2.145454545454616,
+      "names": [
+        "commute"
       ]
     }
   ]

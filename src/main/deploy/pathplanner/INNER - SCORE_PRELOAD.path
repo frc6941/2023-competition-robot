@@ -17,6 +17,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
+          "set target 1",
+          "score preload",
           "set target 2"
         ],
         "executionBehavior": "sequential",
@@ -47,5 +49,13 @@
       }
     }
   ],
-  "markers": []
+  "markers": [
+    {
+      "position": 0.05,
+      "names": [
+        "event",
+        "commute"
+      ]
+    }
+  ]
 }

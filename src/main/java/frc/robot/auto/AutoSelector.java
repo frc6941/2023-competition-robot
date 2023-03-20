@@ -7,12 +7,16 @@ import com.google.common.collect.Table;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.auto.BaseAutoBuilder;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.auto.basics.AutoActions;
@@ -27,6 +31,7 @@ import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
 import frc.robot.utils.AllianceFlipUtil;
+import frc.robot.utils.PPAutoBuilder;
 
 public class AutoSelector {
     public enum AUTO_START_POSITION {
@@ -53,7 +58,7 @@ public class AutoSelector {
     private AutoConfiguration autoConfiguration;
     private boolean autoWarning = false;
 
-    private final AutoActions autoBuilder;
+    private final AutoActions autoActions;
     private Command builtAutoCommand = Commands.none();
 
     private AutoSelector() {
@@ -74,9 +79,8 @@ public class AutoSelector {
             autoBalance.getSelected()
         );
 
-        autoBuilder = new AutoActions(SJTUSwerveMK5Drivebase.getInstance(), ArmAndExtender.getInstance(),
+        autoActions = new AutoActions(SJTUSwerveMK5Drivebase.getInstance(), ArmAndExtender.getInstance(),
                 Intaker.getInstance(), TargetSelector.getInstance());
-
     }
 
     public static AutoSelector getInstance() {
@@ -97,8 +101,6 @@ public class AutoSelector {
     }
 
     public Command buildAuto(AutoConfiguration config) {
-        Command resetStage;
-        Command preloadStage;
         Command actionStage;
         Command balanceStage;
 
@@ -129,24 +131,16 @@ public class AutoSelector {
                 objective3 = null;
                 break;
         }
-
-        HashMap<String, Command> commandMap = autoBuilder.getCommandMapping(new ScoringTarget[] { objective1, objective2, objective3 });
+        
+        HashMap<String, Command> commandMap = autoActions.getCommandMapping(new ScoringTarget[] { objective1, objective2, objective3 });
         PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 3.5, 2.2);
+        PPAutoBuilder builder = new PPAutoBuilder(SJTUSwerveMK5Drivebase.getInstance(), commandMap);
 
-        resetStage = Commands.runOnce( () -> SJTUSwerveMK5Drivebase.getInstance().resetPose(AllianceFlipUtil.apply(trajectory.getInitialHolonomicPose())));
-        preloadStage = Commands.sequence(
-            autoBuilder.scorePreload(objective1)
-        );
-        actionStage = Commands.sequence(
-          autoBuilder.configTargetSelector(objective2),
-          new FollowTrajectoryWithEvents(SJTUSwerveMK5Drivebase.getInstance(), trajectory, commandMap),
-          autoBuilder.stopIntake()
-        );
-        balanceStage = config.ifBalance == AUTO_BALANCE.YES ? autoBuilder.balance(trajectory.getEndState().poseMeters) : autoBuilder.commute();
+
+        actionStage = builder.fullAuto(trajectory);
+        balanceStage = config.ifBalance == AUTO_BALANCE.YES ? autoActions.balance(trajectory.getEndState().poseMeters) : autoActions.commute();
 
         return Commands.sequence(
-            resetStage,
-            preloadStage,
             actionStage,
             balanceStage
         );

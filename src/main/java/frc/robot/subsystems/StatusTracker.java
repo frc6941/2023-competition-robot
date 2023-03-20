@@ -43,6 +43,7 @@ public class StatusTracker implements Updatable {
         public boolean hasGamePiece = false;
         public boolean isCube = false;
         public boolean inManual = false;
+        public boolean speedLimitActivate = false;
     }
 
     public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
@@ -95,9 +96,14 @@ public class StatusTracker implements Updatable {
         return mPeriodicIO.isInScore;
     }
 
+    public boolean isSpeedRedctionActivate() {
+        return mPeriodicIO.speedLimitActivate;
+    }
+
     public boolean isInManual() {
         return mPeriodicIO.inManual;
     }
+
 
     public void setInManual(boolean value) {
         mPeriodicIO.inManual = value;
@@ -113,9 +119,14 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.isInScore = true;
     }
 
+    public void enableSpeedLimit() {
+        mPeriodicIO.speedLimitActivate = true;
+    }
+
     public void clear() {
         mPeriodicIO.isInload = false;
         mPeriodicIO.isInScore = false;
+        mPeriodicIO.speedLimitActivate = false;
     }
 
     public void updateIndicator() {

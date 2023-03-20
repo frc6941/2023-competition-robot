@@ -17,7 +17,7 @@ public class DriveToPoseCommand extends CommandBase {
 
     // Pose Assist Controller
     private ProfiledPIDController driveController = new ProfiledPIDController(
-        3.0, 0.01, 0,
+        4.0, 0.001, 0,
         Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT
     );
 

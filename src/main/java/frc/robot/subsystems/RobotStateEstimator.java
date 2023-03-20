@@ -34,7 +34,7 @@ public class RobotStateEstimator implements Updatable {
                     3.223358, 4.093358
             },
             new double[] {
-                    0.005, 0.01, 0.015, 0.02, 0.5, 0.7, 0.15, 0.25, 0.35, 0.50
+                    0.003, 0.007, 0.01, 0.015, 0.04, 0.1, 0.22, 0.25, 0.35, 0.50
             },
             1);
     
@@ -93,8 +93,10 @@ public class RobotStateEstimator implements Updatable {
                         Logger.getInstance().recordOutput("Vision/" + poseProvider.getName() + " Estimate",
                                 eposeWithDistance.pose.estimatedPose.toPose2d());
                                 
-                        double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
-                        double thetaStdDev = thetaStdDevModel.predict(eposeWithDistance.distance);
+                        // double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
+                        // double thetaStdDev = thetaStdDevModel.predict(eposeWithDistance.distance);
+                        double xyStdDev = 0.01 * Math.pow(eposeWithDistance.distance, 2);
+                        double thetaStdDev = 0.01 * Math.pow(eposeWithDistance.distance, 2);
                         localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
                                 eposeWithDistance.pose.estimatedPose.toPose2d(),
                                 new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(thetaStdDev)));

@@ -33,7 +33,7 @@ import frc.robot.motion.SuperstructureConstraint;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final boolean TUNING = true;
+    public static final boolean TUNING = false;
     public static final boolean AUTO_TUNING = false;
 
     // FMS Related Information
@@ -44,7 +44,7 @@ public final class Constants {
     }
 
     // Looper Configurations
-    public static final double LOOPER_DT = 1.0 / 70.0; // The robot is running at 70Hz
+    public static final double LOOPER_DT = 1.0 / 60.0; // The robot is running at 70Hz
 
     // CAN ID Configurations
     public static final class CANID {
@@ -91,10 +91,10 @@ public final class Constants {
 
     // Swerve Drivetrain Constants
     public static final class SUBSYSTEM_DRIVETRAIN {
-        public static final double DRIVE_MAX_LINEAR_VELOCITY = 4.0;
+        public static final double DRIVE_MAX_LINEAR_VELOCITY = 4.5;
         public static final double DRIVE_MAX_ANGULAR_VELOCITY = 300.0;
 
-        public static final double MODULE_MAX_VELOCITY = 4.0;
+        public static final double MODULE_MAX_VELOCITY = 4.5;
         public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.05);
 
         public static final double DRIVE_GEAR_RATIO = 7.0;
@@ -120,11 +120,11 @@ public final class Constants {
         public static final SimpleMotorFeedforward DRIVETRAIN_FEEDFORWARD = new SimpleMotorFeedforward(0.60757, 7.6216,
                 0.71241);
 
-        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(2.0, 2.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(1.5, 3.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
                 300.0, 600.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED = new TrapezoidProfile.Constraints(
-            300.0, 120.0);
+            300.0, 150.0);
     }
 
     // Arm Constants
@@ -153,26 +153,26 @@ public final class Constants {
         public static final double WHEEL_CIRCUMFERENCE = 24 * 0.005;
         public static final double HOME_LENGTH = 0.870;
 
-        public static final double KP = 0.25;
+        public static final double KP = 0.15;
         public static final double KI = 0.0003;
-        public static final double KD = 0.15;
+        public static final double KD = 0.2;
         public static final double KF = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 200;
-        public static final double CRUISE_V = 40000.0;
-        public static final double CRUIVE_ACC = 100000.0;
+        public static final double CRUISE_V = 60000.0;
+        public static final double CRUIVE_ACC = 120000.0;
     }
 
     // Intake Constants
     public static final class SUBSYSTEM_INTAKE {
         public static final double INTAKING_PERCENTAGE_CONE = 1.00;
         public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
-        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.40;
+        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.55;
         public static final double OUTTAKING_FAST_PERCENTAGE = -0.70;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
-        public static final double HOLD_PERCENTAGE_CONE = 0.70;
+        public static final double HOLD_PERCENTAGE_CONE = 0.75;
         public static final double HOLD_DELAY = 0.2;
         public static final double GEAR_RATIO = 10.0;
-        public static final double STOP_THRESHOLD = 2.0;
+        public static final double STOP_THRESHOLD = 1.5;
     }
 
     // Superstructure Constants
@@ -194,9 +194,9 @@ public final class Constants {
         // Constraints
         public static class CONSTRAINTS {
             public static Range ARM_RANGE = new Range(-98.0, 239.0);
-            public static Range EXTENDER_RANGE = new Range(0.89, 1.36);
+            public static Range EXTENDER_RANGE = new Range(0.90, 1.365);
             public static Range HEIGHT_RANGE = new Range(0.01, 1.90);
-            public static Range DANGEROUS_POSITIVE = new Range(231, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
+            public static Range DANGEROUS_POSITIVE = new Range(230, Double.POSITIVE_INFINITY); // TODO: Need reconfirmation
             public static Range DANGEROUS_NEGATIVE = new Range(Double.NEGATIVE_INFINITY, -70.0);
             public static SuperstructureConstraint SUPERSTRUCTURE_LIMIT = new SuperstructureConstraint(
                 HEIGHT_RANGE, ARM_RANGE, EXTENDER_RANGE, DANGEROUS_POSITIVE, DANGEROUS_NEGATIVE

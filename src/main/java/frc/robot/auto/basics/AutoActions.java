@@ -45,8 +45,6 @@ public class AutoActions {
     Supplier<SuperstructureState> scoreSuperstructureStateSupplierLower;
     Supplier<Pose2d> scoreDriveTargetSupplier;
 
-    private static final double chargingStationMiddleX = (FieldConstants.Community.chargingStationInnerX
-            + FieldConstants.Community.chargingStationOuterX) / 2.0;
     private final HashMap<String, Command> commandMapping = new HashMap<String, Command>();
 
     public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure,
@@ -69,10 +67,10 @@ public class AutoActions {
         return new InstantCommand(
                 mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
                         : mIntaker::runIntakeCube)
-                                .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                                        () -> mTargetSelector.getLoadSuperstructureState()))
-                                .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
-                                .andThen(commute().alongWith(stopIntake()));
+                    .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
+                            () -> mTargetSelector.getLoadSuperstructureState()))
+                    .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
+                    .andThen(commute().alongWith(stopIntake()));
     }
 
     public Command prepScore() {
@@ -82,11 +80,11 @@ public class AutoActions {
 
     public Command score() {
         return new RequestSuperstructureStateCommand(mSuperstructure,
-                scoreSuperstructureStateSupplierLower)
-                        .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-                        .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
-                        .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
-                        .andThen(new WaitCommand(0.3));
+            scoreSuperstructureStateSupplierLower)
+            .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
+            .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
+            .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
+            .andThen(new WaitCommand(0.3));
     }
 
     public Command delayExtenderAction(boolean value) {
@@ -104,7 +102,7 @@ public class AutoActions {
     }
 
     public Command waitUntilRetractSafe() {
-        return new WaitUntilNoCollision(mDrivebase.getLocalizer()::getLatestPose);
+        return new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose());
     }
 
     public Command waitUntilDirectionFit(Pose2d targetPose) {
@@ -117,7 +115,9 @@ public class AutoActions {
     }
 
     public Command configTargetSelector(ScoringTarget scoringTarget) {
-        return Commands.runOnce(() -> mTargetSelector.setScoringTarget(scoringTarget));
+        return Commands.runOnce(() -> {
+            mTargetSelector.setScoringTarget(scoringTarget);
+        });
     }
 
     public Command configGroundIntake() {
@@ -132,7 +132,7 @@ public class AutoActions {
     public Command overrideAndGrabFarEnd() {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(true))
                 .andThen(Commands.runOnce(mIntaker::runIntakeCone, mIntaker))
-                .andThen(new RequestExtenderCommand(mSuperstructure, 1.07, 0.02))
+                .andThen(new RequestExtenderCommand(mSuperstructure, 1.03, 0.02))
                 .andThen(Commands.waitSeconds(0.2)
                         .deadlineWith(Commands.waitUntil(mIntaker::hasGamePiece)))
                 .andThen(Commands.runOnce(() -> mSuperstructure.overrideProtection(false)));
@@ -192,7 +192,8 @@ public class AutoActions {
         baseMapping.put("set target 1", configTargetSelector(objectives[0]));
         baseMapping.put("set target 2", configTargetSelector(objectives[1]));
         baseMapping.put("set target 3", configTargetSelector(objectives[2]));
+        baseMapping.put("score preload", scorePreload(objectives[0]));
 
-        return commandMapping;
+        return baseMapping;
     }
 }

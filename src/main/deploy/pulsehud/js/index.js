@@ -10,6 +10,7 @@ const dsConnectedTopic = "/MatchInfo/dsConnected"
 const cursorTopic = "/TargetSelector/cursor"
 const targetTopic = "/TargetSelector/target"
 const loadingTargetTopic = "/TargetSelector/load"
+const canCommuteNearTopic = "/TargetSelector/commuteNear"
 
 const alertsPrefix = "SmartDashboard"
 const errorSuffix = "errors"
@@ -26,7 +27,7 @@ for(let i = 0; i < alerts.length; i++) {
 
 const targetCollection = [
     matchTimeTopic, matchTypeTopic, matchNameTopic, matchNumberTopic, matchStageTopic, dsConnectedTopic,
-    cursorTopic, targetTopic, loadingTargetTopic
+    cursorTopic, targetTopic, loadingTargetTopic, canCommuteNearTopic
 ].concat(alertTopics)
 
 
@@ -64,7 +65,8 @@ let app = createApp({
 
             target: [2, 1],
             cursor: [2, 2],
-            loadTarget: [false, false, false],
+            commuteNear: false,
+            loadTarget: [false, false, false, false],
 
             bannerClass: bannerClassPrefix + "is-disconnected",
             alerts: {}
@@ -96,12 +98,14 @@ let app = createApp({
             } else if (topic == targetTopic) {
                 this.target = value
             } else if (topic == loadingTargetTopic) {
-                this.loadTarget = [false, false, false]
+                this.loadTarget = [false, false, false, false]
                 if(value != -1) {
                     this.loadTarget[value] = true
                 } 
+            } else if (topic == canCommuteNearTopic) {
+                this.commuteNear = value;
             } else {
-                // this.handleAlerts(topic, value)
+                this.handleAlerts(topic, value)
             }
         },
         isActive(row, column) {
@@ -123,6 +127,10 @@ let app = createApp({
         isSeparation(column) {
             return column == 2 || column == 5 
         },
+        isRestricted(row, column, commuteNear) {
+            var notFlip = !this.loadTarget[1] && !this.loadTarget[3];
+            return row == 2 && !this.isCube(row, column) && notFlip && !commuteNear;
+        },
         nodes(row) {
             let result = []
             for (let i = 0; i < 9; i++) {
@@ -130,7 +138,11 @@ let app = createApp({
                 if (this.isCube(row, i)) {
                     temp = "box cube"
                 } else {
-                    temp = "box cone"
+                    if(this.isRestricted(row, i, this.commuteNear)) {
+                        temp = "box cone restricted"
+                    } else {
+                        temp = "box cone"
+                    }
                 }
                 if (this.isActive(row, i)) {
                     temp += " active"
@@ -147,17 +159,17 @@ let app = createApp({
             return result
         },
         handleAlerts(topic, value) {
-            // var seperated = topic.split("/").slice(1,4)
+            var seperated = topic.split("/").slice(1,4)
             
-            // if(seperated[0] != alertsPrefix || !alerts.includes(seperated[1])) {
-            //     return
-            // }
-            // try {
-            //     this.alerts[seperated[1]][seperated[2]]
-            // } catch {
-            //     this.alerts[seperated[1]] = {}
-            // }
-            // this.alerts[seperated[1]][seperated[2]] = value;
+            if(seperated[0] != alertsPrefix || !alerts.includes(seperated[1])) {
+                return
+            }
+            try {
+                this.alerts[seperated[1]][seperated[2]]
+            } catch {
+                this.alerts[seperated[1]] = {}
+            }
+            this.alerts[seperated[1]][seperated[2]] = value;
         }
     },
     computed: {
