@@ -57,7 +57,7 @@ public final class FieldConstants {
         public static final double chargingStationInnerX =
                 chargingStationOuterX - chargingStationLength;
         public static final double chargingStationLeftY = midY - tapeWidth;
-        public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth;
+        public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth - 1.0;
         public static final Translation2d[] chargingStationCorners = new Translation2d[] {
                 new Translation2d(chargingStationInnerX, chargingStationRightY),
                 new Translation2d(chargingStationInnerX, chargingStationLeftY),
@@ -66,10 +66,10 @@ public final class FieldConstants {
         };
 
         public static Translation2d[] chargeStationCornersBumpered = new Translation2d[] {
-                new Translation2d(chargingStationInnerX, chargingStationRightY), new Translation2d(chargingStationInnerX - 0.5, chargingStationRightY), new Translation2d(chargingStationInnerX, chargingStationRightY - 0.5),
-                new Translation2d(chargingStationInnerX, chargingStationLeftY), new Translation2d(chargingStationInnerX - 0.5, chargingStationLeftY), new Translation2d(chargingStationInnerX, chargingStationLeftY + 0.5),
-                new Translation2d(chargingStationOuterX, chargingStationRightY), new Translation2d(chargingStationOuterX + 0.5, chargingStationRightY), new Translation2d(chargingStationOuterX, chargingStationRightY - 0.5),
-                new Translation2d(chargingStationOuterX, chargingStationLeftY), new Translation2d(chargingStationOuterX + 0.5, chargingStationLeftY), new Translation2d(chargingStationOuterX, chargingStationLeftY + 0.5)
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationRightY), new Translation2d(chargingStationInnerX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationLeftY), new Translation2d(chargingStationInnerX, chargingStationLeftY + 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationRightY), new Translation2d(chargingStationOuterX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationLeftY), new Translation2d(chargingStationOuterX, chargingStationLeftY + 0.5)
             };
 
         // Cable bump
@@ -273,12 +273,14 @@ public final class FieldConstants {
 
     static {
         for (int id : aprilTags.keySet()) {
-            // TODO: Change this to fit real field
-            if(id == 4) {
-                TAGS.add(new AprilTag(4, new Pose3d(StagingLocations.translations[1].getX(), StagingLocations.translations[1].getY(), Units.inchesToMeters(27.38), new Rotation3d(0.0, 0.0, Math.PI))));
-            } else {
-                TAGS.add(new AprilTag(id, aprilTags.get(id)));
-            }            
+            // // TODO: Change this to fit real field
+            // if(id == 3) {
+                
+            // } else {
+            //     TAGS.add(new AprilTag(id, aprilTags.get(id)));
+            // }   
+        
+            TAGS.add(new AprilTag(id, aprilTags.get(id)));
         }
 
         LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);

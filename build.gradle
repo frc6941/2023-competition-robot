@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2023.4.1"
+    id "edu.wpi.first.GradleRIO" version "2023.4.2"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -66,6 +66,8 @@ dependencies {
     implementation wpi.java.vendor.java()
     // https://mvnrepository.com/artifact/gov.nist.math/jama
     implementation 'gov.nist.math:jama:1.0.3'
+    implementation 'io.javalin:javalin:5.4.0'
+    implementation 'com.google.guava:guava:31.1-jre'
 
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)

@@ -42,7 +42,7 @@ public class AStarPathProvider implements PathProvider {
                     startingPoint, endingPoint,
                     obstacles,
                     0.10, 0.10,
-                    2.5, 1.0));
+                    3.0, 1.0));
                 }
             });
             return true;

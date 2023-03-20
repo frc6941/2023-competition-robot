@@ -4,19 +4,19 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
 import org.frcteam6941.looper.UpdateManager;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import com.pathplanner.lib.server.PathPlannerServer;
-
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.AutoSelector;
-import frc.robot.auto.modes.AutoModeBase;
+import frc.robot.states.SuperstructureStateBuilder;
+import frc.robot.subsystems.ArmAndExtender;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -28,9 +28,14 @@ import frc.robot.auto.modes.AutoModeBase;
  * project.
  */
 public class Robot extends LoggedRobot {
-    private final AutoSelector mAutoSelector = AutoSelector.getInstance();
     private final RobotContainer mContainer = new RobotContainer();
     private final UpdateManager updateManager = mContainer.getUpdateManager();
+    private final AutoSelector mAutoSelector = AutoSelector.getInstance();
+
+    public Robot() {
+        super(Constants.LOOPER_DT);
+        DriverStation.silenceJoystickConnectionWarning(true);
+    }
 
     /**
      * This function is run when the robot is first started up and should be used
@@ -45,21 +50,23 @@ public class Robot extends LoggedRobot {
         if (isReal()) {
             logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
             logger.addDataReceiver(new NT4Publisher());
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
         } else {
             logger.addDataReceiver(new NT4Publisher());
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
+            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         }
 
         logger.start();
-        // CameraServer.startAutomaticCapture();
-        if (Constants.AUTO_TUNING) {
-            PathPlannerServer.startServer(6941);
-        }
+
+        SuperstructureStateBuilder.initTunables();
     }
 
     @Override
     public void robotPeriodic() {
+        if(isReal()) {
+            updateManager.runEnableSingle();
+        } else {
+            updateManager.runSimulateSingle();
+        }
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
@@ -72,7 +79,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void disabledPeriodic() {
-        mAutoSelector.updateModeCreator();
+        mAutoSelector.update();
+        ArmAndExtender.getInstance().disabledUpdate();
     }
 
     /**
@@ -83,19 +91,8 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().enable();
 
-        if (isReal()) {
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
-        } else {
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
-        }
         updateManager.invokeStart();
-
-        Optional<AutoModeBase> autoMode = mAutoSelector.getAutoMode();
-        autoMode.ifPresent(autoModeBase -> {
-            if (autoModeBase.getAutoCommand() != null) {
-                autoModeBase.getAutoCommand().schedule();
-            }
-        });
+        mAutoSelector.getAutoCommand().schedule();
     }
 
     /** This function is called periodically during autonomous. */
@@ -108,11 +105,6 @@ public class Robot extends LoggedRobot {
     public void teleopInit() {
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().enable();
-        if (isReal()) {
-            updateManager.startEnableLoop(Constants.LOOPER_DT);
-        } else {
-            updateManager.startSimulateLoop(Constants.LOOPER_DT);
-        }
         updateManager.invokeStart();
     }
 

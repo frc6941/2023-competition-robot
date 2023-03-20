@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import org.frcteam6941.looper.UpdateManager.Updatable;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
@@ -13,6 +15,7 @@ import com.team254.lib.util.Util;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.states.GamePiece;
 
 public class Intaker extends SubsystemBase implements Updatable{
     @AutoLog
@@ -21,6 +24,7 @@ public class Intaker extends SubsystemBase implements Updatable{
         public double intakerMotorVoltage = 0.0;
         public boolean hasGamePiece = false;
         public double intakeMotorCurrent = 0.0;
+        public double intakerMotorVelocity = 0.0;
     
         // OUTPUT
         public double intakerMotorDemand = 0.0;
@@ -43,16 +47,16 @@ public class Intaker extends SubsystemBase implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.restoreFactoryDefaults();
+        intakerMotor.setCANTimeout(10);
         intakerMotor.setIdleMode(IdleMode.kBrake);
         intakerMotor.setSmartCurrentLimit(15, 5);
     }
 
-    public void setIntakerPower(double power) {
+    private void setIntakerPower(double power) {
         mPeriodicIO.intakerMotorDemand = Util.clamp(power, -1.0, 1.0);
     }
 
-    public void setHoldPower(double power) {
+    private void setHoldPower(double power) {
         mPeriodicIO.intakeMotorHoldDemand = Util.clamp(power, -1.0, 1.0);;
     }
 
@@ -60,15 +64,55 @@ public class Intaker extends SubsystemBase implements Updatable{
         return mPeriodicIO.intakerMotorVoltage;
     }
 
+    public void runIntakeCube() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CUBE);
+        setHoldPower(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CUBE);
+    }
+
+    public void runIntakeCone() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.INTAKING_PERCENTAGE_CONE);
+        setHoldPower(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CONE);
+    }
+
+    public void runIntake(Supplier<GamePiece> gamePiece) {
+        if(gamePiece.get() == GamePiece.CONE) {
+            runIntakeCone();
+        } else {
+            runIntakeCube();
+        }
+    }
+
+    public void runOuttake(Supplier<GamePiece> gamePiece) {
+        if(gamePiece.get() == GamePiece.CONE) {
+            runOuttakeCone();
+        } else {
+            runOuttakeCube();
+        }
+    }
+
+    public void runOuttakeCone() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_FAST_PERCENTAGE);
+    }
+
+    public void runOuttakeCube() {
+        setIntakerPower(Constants.SUBSYSTEM_INTAKE.OUTTAKING_SLOW_PERCENTAGE);
+    }
+
+    public void stopIntake() {
+        setIntakerPower(0.0);
+    }
+
     public boolean hasGamePiece() {
-        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY);
+        return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY)
+        && Math.abs(mPeriodicIO.intakerMotorVelocity) < Constants.SUBSYSTEM_INTAKE.STOP_THRESHOLD;
     }
 
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
-        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
+        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0;
         mPeriodicIO.intakeMotorCurrent = intakerMotor.getOutputCurrent();
+        mPeriodicIO.intakerMotorVelocity = intakerMotor.getEncoder().getVelocity() / Constants.SUBSYSTEM_INTAKE.GEAR_RATIO;
     }
     
     @Override

@@ -57,10 +57,15 @@
       "/LiveWindow/Ungrouped/Talon SRX [3]": "Motor Controller",
       "/LiveWindow/Ungrouped/Talon SRX [5]": "Motor Controller",
       "/LiveWindow/Ungrouped/Talon SRX [7]": "Motor Controller",
+      "/SmartDashboard/Auto Action": "String Chooser",
+      "/SmartDashboard/Auto Balance": "String Chooser",
+      "/SmartDashboard/Auto Start Position": "String Chooser",
       "/SmartDashboard/Game Piece": "String Chooser",
       "/SmartDashboard/Loading Location": "String Chooser",
       "/SmartDashboard/Mechanism": "Mechanism2d",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
       "/SmartDashboard/Simulated Game Piece": "String Chooser",
+      "/SmartDashboard/Subsystem Superstructure": "Subsystem",
       "/SmartDashboard/Target Grid": "String Chooser",
       "/SmartDashboard/Target Row": "String Chooser",
       "/SmartDashboard/Target Side": "String Chooser"
@@ -71,32 +76,17 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Game Piece": {
+      "/SmartDashboard/Auto Action": {
         "window": {
           "visible": true
         }
       },
-      "/SmartDashboard/Loading Location": {
+      "/SmartDashboard/Auto Balance": {
         "window": {
           "visible": true
         }
       },
-      "/SmartDashboard/Simulated Game Piece": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Grid": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Row": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Target Side": {
+      "/SmartDashboard/Auto Start Position": {
         "window": {
           "visible": true
         }
@@ -117,8 +107,7 @@
           },
           "Drivetrain": {
             "open": true
-          },
-          "open": true
+          }
         },
         "open": true
       },
@@ -172,6 +161,9 @@
           },
           "open": true
         },
+        "open": true
+      },
+      "TargetSelector": {
         "open": true
       }
     }

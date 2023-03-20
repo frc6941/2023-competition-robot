@@ -7,10 +7,17 @@
 
 package frc.robot.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPlannerTrajectory.PathPlannerState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.FieldConstants;
@@ -93,7 +100,52 @@ public class AllianceFlipUtil {
         }
     }
 
-    private static boolean shouldFlip() {
+    public static PathPlannerState apply(PathPlannerState state) {
+        if (shouldFlip()) {
+            // Create a new state so that we don't overwrite the original
+            PathPlannerState transformedState = new PathPlannerState();
+
+            Translation2d transformedTranslation = new Translation2d(FieldConstants.fieldLength - state.poseMeters.getX(), state.poseMeters.getY());
+            Rotation2d transformedHeading = apply(state.poseMeters.getRotation());
+            Rotation2d transformedHolonomicRotation = apply(state.holonomicRotation);
+
+            transformedState.timeSeconds = state.timeSeconds;
+            transformedState.velocityMetersPerSecond = state.velocityMetersPerSecond;
+            transformedState.accelerationMetersPerSecondSq = state.accelerationMetersPerSecondSq;
+            transformedState.poseMeters = new Pose2d(transformedTranslation, transformedHeading);
+            transformedState.angularVelocityRadPerSec = -state.angularVelocityRadPerSec;
+            transformedState.holonomicRotation = transformedHolonomicRotation;
+            transformedState.holonomicAngularVelocityRadPerSec = -state.holonomicAngularVelocityRadPerSec;
+            transformedState.curvatureRadPerMeter = -state.curvatureRadPerMeter;
+
+            return transformedState;
+        } else {
+            return state;
+        }
+    }
+
+    public static PathPlannerTrajectory apply(PathPlannerTrajectory trajectory) {
+        if (shouldFlip()) {
+            List<State> transformedStates = new ArrayList<>();
+
+            for (State s : trajectory.getStates()) {
+                PathPlannerState state = (PathPlannerState) s;
+
+                transformedStates.add(apply(state));
+            }
+
+            return new PathPlannerTrajectory(
+                    transformedStates,
+                    trajectory.getMarkers(),
+                    trajectory.getStartStopEvent(),
+                    trajectory.getEndStopEvent(),
+                    trajectory.fromGUI);
+        } else {
+            return trajectory;
+        }
+    }
+
+    public static boolean shouldFlip() {
         return DriverStation.getAlliance() == Alliance.Red;
     }
 }

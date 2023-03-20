@@ -2,8 +2,6 @@ package frc.robot.commands;
 
 import java.util.function.Supplier;
 
-import com.team254.lib.util.Util;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
@@ -11,17 +9,19 @@ import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 public class DriveSnapRotationCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
     Supplier<Rotation2d> snapRotationTarget;
-    double epsilon = 2.0;
+    double epsilon = 0.5;
 
     public DriveSnapRotationCommand(SJTUSwerveMK5Drivebase mDrivebase, Supplier<Rotation2d> snapRotationTarget, double epsilon) {
         this.mDrivebase = mDrivebase;
         this.snapRotationTarget = snapRotationTarget;
         this.epsilon = epsilon;
+        addRequirements(mDrivebase);
     }
 
     public DriveSnapRotationCommand(SJTUSwerveMK5Drivebase mDrivebase, Supplier<Rotation2d> snapRotationTarget) {
         this.mDrivebase = mDrivebase;
         this.snapRotationTarget = snapRotationTarget;
+        addRequirements(mDrivebase);
     }
 
     @Override
@@ -43,7 +43,6 @@ public class DriveSnapRotationCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return Util.epsilonEquals(snapRotationTarget.get().getDegrees(),
-                mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees(), epsilon);
+        return false;
     }
 }

@@ -21,7 +21,8 @@ public class ScoringTarget {
     // In the direction of driver.
     public static enum SCORING_SIDE {
         OUTER(-1),
-        INNER(1);
+        INNER(1),
+        MIDDLE(0);
 
         public int delta;
         SCORING_SIDE(int delta) {
@@ -38,6 +39,57 @@ public class ScoringTarget {
         this.scoringRow = scoringRow;
         this.scoringSide = scoringSide;
         this.scoringGrid = scoringGrid;
+    }
+    
+    /*
+     * [ Row, Column ]
+     */
+    public ScoringTarget(int[] ids) {
+        int reference;
+        if(ids[1] >= 0 && ids[1] <= 2) {
+            this.scoringGrid = SCORING_GRID.OUTER;
+            reference = 1;
+        } else if(ids[1] >= 3 && ids[1] <= 5) {
+            this.scoringGrid = SCORING_GRID.COOPERTITION;
+            reference = 4;
+        } else if(ids[1] >= 6 && ids[1] <= 8) {
+            this.scoringGrid = SCORING_GRID.INNER;
+            reference = 7;
+        } else {
+            System.out.println("Warning: Invalid Node Choice.");
+            reference = -6941;
+        }
+
+        int delta = ids[1] - reference;
+        switch(delta) {
+            case 1:
+                this.scoringSide = SCORING_SIDE.INNER;
+                break;
+            case -1:
+                this.scoringSide = SCORING_SIDE.OUTER;
+                break;
+            case 0:
+                this.scoringSide = SCORING_SIDE.MIDDLE;
+                break;
+            default:
+                System.out.println("Warning: Invalid Node Choice.");
+                break;
+        }
+
+        switch(ids[0]) {
+            case 0:
+                this.scoringRow = SCORING_ROW.LOW;
+                break;
+            case 1:
+                this.scoringRow = SCORING_ROW.MID;
+                break;
+            case 2:
+                this.scoringRow = SCORING_ROW.HIGH;
+                break;
+            default:
+                System.out.println("Warning: Invalid Node Choice.");
+                break;
+        }
     }
 
     public SCORING_ROW getScoringRow() {
@@ -64,14 +116,13 @@ public class ScoringTarget {
         this.scoringGrid = scoringGrid;
     }
 
-    public int getPosition(GamePiece targetGamePiece) {
-        if(targetGamePiece == GamePiece.CUBE) {
-            return scoringGrid.num;
-        } else if (targetGamePiece == GamePiece.CONE) {
-            return scoringGrid.num + scoringSide.delta;
-        } else {
-            System.out.println("Scoring Target: Invalid Game Piece.");
-            return -1;
-        }
+    public int getPosition() {
+        return scoringGrid.num + scoringSide.delta;
+    }
+
+    @Override
+    public String toString() {
+        String pattern = "Scoring Target (%s): %s, %s, %s";
+        return String.format(pattern, getPosition(), scoringRow.toString(), scoringGrid.toString(), scoringSide.toString());
     }
 }

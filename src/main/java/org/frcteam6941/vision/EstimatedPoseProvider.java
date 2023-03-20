@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 public interface EstimatedPoseProvider {
     String getName();
     Optional<EstimatedPoseWithDistance> getEstimatedPose(Pose2d referencePose);
+    boolean isConnected();
 
     public class EstimatedPoseWithDistance {
         public EstimatedRobotPose pose;
