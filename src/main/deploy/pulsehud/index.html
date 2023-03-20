@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PulseHUD</title>
+  <link rel="stylesheet" href="css/bulma.min.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/vue.global.js"></script>
+  <script type="module" src="js/index.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <section id="match-info-display" :class="bannerClass">
+      <div class="hero-body level">
+        <div class="level-item">
+          <div>
+            <p class="subtitle is-5 is-spaced">
+              [{{ matchName }}] {{ matchType }} - {{ matchNumber }}
+            </p>
+            <p class="title is-2">
+              {{ matchStage }}
+            </p>
+          </div>
+        </div>
+    
+        <div class="level-item" style="width: 700px;">
+          <p class="title" style="font-size:7rem">
+            {{ matchTime }}
+          </p>
+        </div>
+    
+        <div class="level-item">
+          <nav class="columns">
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                    <img v-if="isConnected" src="icons/robot-excited.svg" style="filter: invert(100%);">
+                    <img v-else src="icons/robot-dead.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
+                </p>
+                <p class="subtitle">机器</p>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                  <img v-if="dsConnected" src="icons/controller.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/controller-off.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
+                </p>
+                <p class="subtitle">DS</p>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <div>
+                <p class="icon is-large">
+                  <img v-if="isCheckPassed" src="icons/check-all.svg" style="filter: invert(100%);">
+                  <img v-else src="icons/exclamation-thick.svg" style="filter: invert(100%); animation: blink-1 7s infinite">
+                </p>
+                <p class="subtitle">预检</p>
+              </div>
+            </div>
+          </nav>
+            
+            
+        </div>
+      </div>
+    </section>
+    
+    
+    <section id="target-chooser" class="hero">
+      <div class="hero-body">
+        <div class="columns is-vcentered is-mutliline">
+          <div class="column center is-10">
+            <div id="hybrid-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in hybridNodes">
+                <div :class="node"></div>
+              </div>
+            </div>
+        
+            <div id="mid-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in midNodes">
+                <div :class="node"></div>
+              </div>
+            </div>
+        
+            <div id="high-nodes" class="columns is-variable is-1">
+              <div class="column" v-for="node in highNodes">
+                <div :class="node"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="column center is-1">
+            <p v-if="commuteNear" class="title is-1">
+              近
+            </p>
+            <p v-else class="title is-1">
+              远
+            </p>
+          </div>
+
+          <div class="column center is-1">
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[0]" class="selected" src="icons/lightning-bolt-single.svg">
+              <img v-else class="unselected" src="icons/lightning-bolt-single.svg">
+            </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[1]" class="selected" src="icons/slope-downhill.svg">
+              <img v-else class="unselected" src="icons/slope-downhill.svg">
+            </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[2]" class="selected" src="icons/chevron-double-down.svg">
+              <img v-else class="unselected" src="icons/chevron-double-down.svg">
+            </p><br>
+            <p class="icon is-extralarge">
+              <img v-if="loadTarget[3]" class="selected" src="icons/orbit-variant.svg">
+              <img v-else class="unselected" src="icons/orbit-variant.svg">
+            </p>
+            <br>
+          </div>
+
+        </div>        
+      </div>
+    </section>
+
+    <section id="robot-info" class="hero container" >
+      <div class="columns is-vcentered">
+        <div class="column">
+          <article class="panel is-info">
+            <p class="panel-heading">
+              预检项
+            </p>
+            <div v-for="alert in nonEmptyAlertGroups">
+              <a class="panel-block is-active" v-for="error in alert.errors">
+                <span class="panel-icon">
+                  <i><img src="icons/alert-circle-outline.svg"></i>
+                </span>
+                {{error}}
+              </a>
+
+              <a class="panel-block is-active" v-for="warning in alert.warnings">
+                <span class="panel-icon">
+                  <i><img src="icons/hazard-lights.svg"></i>
+                </span>
+                {{warning}}
+              </a>
+              
+              <a class="panel-block is-active" v-for="info in alert.infos">
+                <span class="panel-icon">
+                  <i><img src="icons/information-outline.svg"></i>
+                </span>
+                {{info}}
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+
+  <style>
+    .cone {
+      background-color: #ffb600;
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+    .cube {
+      background-color: rgb(116, 8, 116);
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+    .restricted {
+      opacity: 0.2;
+    }
+
+    .active {
+      background-color: rgb(10, 116, 8);
+      box-shadow: none;
+    }
+
+    .cursor{
+      animation:pulsate-fwd 0.5s infinite;
+	    -webkit-animation:pulsate-fwd 0.5s infinite;
+      background-color: crimson;
+    }
+
+    .unselected {
+      filter: invert(75%);
+    }
+
+    .selected {
+      filter: invert(25%);
+    }
+
+    .separation {
+      background-color: rgb(255, 255, 255);
+      width: 2%;
+      height: auto;
+      box-shadow: none;
+    }
+
+    .is-disconnected{
+      background-color: grey;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .is-extralarge {
+      width: 5em;
+      height: 5em;
+    }
+
+  </style>
+</body>
+
+</html>

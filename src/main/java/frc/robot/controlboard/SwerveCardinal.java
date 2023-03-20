@@ -5,8 +5,8 @@ public class SwerveCardinal {
         NONE(0),
 
         FORWARDS(0),
-        LEFT(270),
-        RIGHT(90),
+        LEFT(90),
+        RIGHT(270),
         BACKWARDS(180);
 
         public final double degrees;

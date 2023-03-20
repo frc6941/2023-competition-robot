@@ -9,11 +9,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 
-public class HolonomicTrajectoryFollower extends PathPlannerTrajectoryFollower<HolonomicDriveSignal>
-        implements Sendable {
+public class HolonomicTrajectoryFollower extends PathPlannerTrajectoryFollowerBase<HolonomicDriveSignal> {
     private final PIDController xController;
     private final PIDController yController;
     private final ProfiledPIDController thetaController;
@@ -112,7 +109,7 @@ public class HolonomicTrajectoryFollower extends PathPlannerTrajectoryFollower<H
     }
 
     public boolean isPathFollowing() {
-        return this.getCurrentTrajectory().isPresent();
+        return !finished;
     }
 
     public void sendData() {
@@ -127,36 +124,5 @@ public class HolonomicTrajectoryFollower extends PathPlannerTrajectoryFollower<H
         this.xController.reset();
         this.yController.reset();
         this.finished = false;
-    }
-
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addBooleanProperty("Finished",
-                this::isFinished,
-                null);
-        builder.addBooleanProperty("Is PathFollowing",
-                this::isPathFollowing,
-                null);
-        builder.addDoubleArrayProperty("Current Position",
-                () -> this.lastState != null
-                        ? new double[] { lastState.poseMeters.getX(),
-                                lastState.poseMeters.getY(),
-                                lastState.poseMeters.getRotation().getDegrees() }
-                        : new double[] { -6941.0, -6941.0, -6941.0 },
-                null);
-        builder.addDoubleArrayProperty("Starting Position",
-                () -> getCurrentTrajectory()
-                        .map(plannerTrajectory -> new double[] { plannerTrajectory.getInitialPose().getX(),
-                                plannerTrajectory.getInitialPose().getY(),
-                                plannerTrajectory.getInitialPose().getRotation().getDegrees() })
-                        .orElse(new double[] { -6941.0, -6941.0, -6941.0 }),
-                null);
-        builder.addDoubleArrayProperty("Ending Position",
-                () -> getCurrentTrajectory()
-                        .map(plannerTrajectory -> new double[] { plannerTrajectory.getEndState().poseMeters.getX(),
-                                plannerTrajectory.getEndState().poseMeters.getY(),
-                                plannerTrajectory.getEndState().poseMeters.getRotation().getDegrees() })
-                        .orElse(new double[] { -6941.0, -6941.0, -6941.0 }),
-                null);
     }
 }

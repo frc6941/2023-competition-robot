@@ -4,7 +4,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
-public class Pigeon {
+public class Pigeon implements Gyro {
     // Actual pigeon object
     private final PigeonIMU mGyro;
 
@@ -14,11 +14,14 @@ public class Pigeon {
     private Rotation2d rollAdjustmentAngle = new Rotation2d();
     private Rotation2d pitchAdjustmentAngle = new Rotation2d();
 
+    GyroPeriodicIOAutoLogged mPeriodicIO = new GyroPeriodicIOAutoLogged();
+
     public Pigeon(int port) {        
         mGyro = new PigeonIMU(port);
         mGyro.configFactoryDefault();
     }
 
+    @Override
     public Rotation2d getYaw() {
         Rotation2d angle = getUnadjustedYaw().minus(yawAdjustmentAngle);
         if (inverted) {
@@ -27,10 +30,12 @@ public class Pigeon {
         return angle;
     }
 
+    @Override
     public Rotation2d getRoll() {
         return getUnadjustedRoll().minus(rollAdjustmentAngle);
     }
 
+    @Override
     public Rotation2d getPitch() {
         return getUnadjustedPitch().minus(pitchAdjustmentAngle);
     }
@@ -40,6 +45,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setYaw(double angleDeg) {
         yawAdjustmentAngle = getUnadjustedYaw().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
@@ -49,6 +55,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setRoll(double angleDeg) {
         rollAdjustmentAngle = getUnadjustedRoll().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
@@ -58,6 +65,7 @@ public class Pigeon {
      *
      * @param angleDeg New yaw in degrees
      */
+    @Override
     public void setPitch(double angleDeg) {
         pitchAdjustmentAngle = getUnadjustedRoll().rotateBy(Rotation2d.fromDegrees(angleDeg).unaryMinus());
     }
@@ -82,5 +90,23 @@ public class Pigeon {
         double[] xyz_dps = new double[] {0.0, 0.0, 0.0};
         mGyro.getRawGyro(xyz_dps);
         return xyz_dps[2];
+    }
+    @Override
+    public double[] getRaw() {
+        double[] xyz_dps = new double[] {0.0, 0.0, 0.0};
+        mGyro.getRawGyro(xyz_dps);
+        return xyz_dps;
+    }
+
+    @Override
+    public void updateIO() {
+        mPeriodicIO.yaw = getYaw().getDegrees();
+        mPeriodicIO.pitch = getPitch().getDegrees();
+        mPeriodicIO.roll = getRoll().getDegrees();
+    }
+
+    @Override
+    public GyroPeriodicIOAutoLogged getIO() {
+        return mPeriodicIO;
     }
 }

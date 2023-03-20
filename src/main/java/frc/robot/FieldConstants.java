@@ -7,12 +7,16 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import java.util.Map;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are
@@ -32,7 +36,8 @@ public final class FieldConstants {
         // Region dimensions
         public static final double innerX = 0.0;
         public static final double midX = Units.inchesToMeters(132.375); // Tape to the left of charging station
-        public static final double outerX = Units.inchesToMeters(193.25); // Tape to the right of charging station
+        public static final double outerX = Units.inchesToMeters(193.25); // Tape to the right of charging
+                                                                          // station
         public static final double leftY = Units.feetToMeters(18.0);
         public static final double midY = leftY - Units.inchesToMeters(59.39) + tapeWidth;
         public static final double rightY = 0.0;
@@ -49,15 +54,23 @@ public final class FieldConstants {
         public static final double chargingStationLength = Units.inchesToMeters(76.125);
         public static final double chargingStationWidth = Units.inchesToMeters(97.25);
         public static final double chargingStationOuterX = outerX - tapeWidth;
-        public static final double chargingStationInnerX = chargingStationOuterX - chargingStationLength;
+        public static final double chargingStationInnerX =
+                chargingStationOuterX - chargingStationLength;
         public static final double chargingStationLeftY = midY - tapeWidth;
-        public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth;
+        public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth - 1.0;
         public static final Translation2d[] chargingStationCorners = new Translation2d[] {
                 new Translation2d(chargingStationInnerX, chargingStationRightY),
                 new Translation2d(chargingStationInnerX, chargingStationLeftY),
                 new Translation2d(chargingStationOuterX, chargingStationRightY),
                 new Translation2d(chargingStationOuterX, chargingStationLeftY)
         };
+
+        public static Translation2d[] chargeStationCornersBumpered = new Translation2d[] {
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationRightY), new Translation2d(chargingStationInnerX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationInnerX - 0.5, chargingStationLeftY), new Translation2d(chargingStationInnerX, chargingStationLeftY + 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationRightY), new Translation2d(chargingStationOuterX, chargingStationRightY - 0.5),
+                new Translation2d(chargingStationOuterX + 0.5, chargingStationLeftY), new Translation2d(chargingStationOuterX, chargingStationLeftY + 0.5)
+            };
 
         // Cable bump
         public static final double cableBumpInnerX = innerX + Grids.outerX + Units.inchesToMeters(95.25);
@@ -74,7 +87,8 @@ public final class FieldConstants {
     public static final class Grids {
         // X layout
         public static final double outerX = Units.inchesToMeters(54.25);
-        public static final double lowX = outerX - (Units.inchesToMeters(14.25) / 2.0); // Centered when under cube
+        public static final double lowX = outerX - (Units.inchesToMeters(14.25) / 2.0); // Centered when under
+                                                                                        // cube
                                                                                         // nodes
         public static final double midX = outerX - Units.inchesToMeters(22.75);
         public static final double highX = outerX - Units.inchesToMeters(39.75);
@@ -106,14 +120,16 @@ public final class FieldConstants {
                 mid3dTranslations[i] = new Translation3d(midX, nodeFirstY + nodeSeparationY * i,
                         isCube ? midCubeZ : midConeZ);
                 high3dTranslations[i] = new Translation3d(
-                        highX, nodeFirstY + nodeSeparationY * i, isCube ? highCubeZ : highConeZ);
+                        highX, nodeFirstY + nodeSeparationY * i,
+                        isCube ? highCubeZ : highConeZ);
                 highTranslations[i] = new Translation2d(highX, nodeFirstY + nodeSeparationY * i);
             }
         }
 
         // Complex low layout (shifted to account for cube vs cone rows and wide edge
         // nodes)
-        public static final double complexLowXCones = outerX - Units.inchesToMeters(16.0) / 2.0; // Centered X under
+        public static final double complexLowXCones = outerX - Units.inchesToMeters(16.0) / 2.0; // Centered X
+                                                                                                 // under
                                                                                                  // cone nodes
         public static final double complexLowXCubes = lowX; // Centered X under cube nodes
         public static final double complexLowOuterYOffset = nodeFirstY - Units.inchesToMeters(3.0)
@@ -129,7 +145,8 @@ public final class FieldConstants {
                 new Translation2d(complexLowXCones, nodeFirstY + nodeSeparationY * 6),
                 new Translation2d(complexLowXCubes, nodeFirstY + nodeSeparationY * 7),
                 new Translation2d(
-                        complexLowXCones, nodeFirstY + nodeSeparationY * 8 + complexLowOuterYOffset),
+                        complexLowXCones,
+                        nodeFirstY + nodeSeparationY * 8 + complexLowOuterYOffset),
         };
     }
 
@@ -141,11 +158,14 @@ public final class FieldConstants {
         public static final double midX = fieldLength - Units.inchesToMeters(132.25);
         public static final double outerX = fieldLength - Units.inchesToMeters(264.25);
         public static final double leftY = FieldConstants.fieldWidth;
+        public static final double leftQuaterY = leftY - Units.inchesToMeters(25.25);
         public static final double midY = leftY - Units.inchesToMeters(50.5);
+        public static final double rightQuaterY = leftY - Units.inchesToMeters(50.5 + 25.25);
         public static final double rightY = leftY - width;
         public static final Translation2d[] regionCorners = new Translation2d[] {
                 new Translation2d(
-                        midX, rightY), // Start at lower left next to border with opponent community
+                        midX, rightY), // Start at lower left next to border with opponent
+                                       // community
                 new Translation2d(midX, midY),
                 new Translation2d(outerX, midY),
                 new Translation2d(outerX, leftY),
@@ -157,20 +177,29 @@ public final class FieldConstants {
         public static final double doubleSubstationLength = Units.inchesToMeters(14.0);
         public static final double doubleSubstationX = innerX - doubleSubstationLength;
         public static final double doubleSubstationShelfZ = Units.inchesToMeters(37.375);
+        public static final double doubleSubstationCenterY = Units.inchesToMeters(265.74);
 
         // Single substation dimensions
         public static final double singleSubstationWidth = Units.inchesToMeters(22.75);
         public static final double singleSubstationLeftX = FieldConstants.fieldLength - doubleSubstationLength
                 - Units.inchesToMeters(88.77);
-        public static final double singleSubstationCenterX = singleSubstationLeftX + (singleSubstationWidth / 2.0);
+        public static final double singleSubstationCenterX = singleSubstationLeftX
+                + (singleSubstationWidth / 2.0);
         public static final double singleSubstationRightX = singleSubstationLeftX + singleSubstationWidth;
-        public static final Translation2d singleSubstationTranslation = new Translation2d(singleSubstationCenterX,
+        public static final Translation2d singleSubstationTranslation = new Translation2d(
+                singleSubstationCenterX,
                 leftY);
 
         public static final double singleSubstationHeight = Units.inchesToMeters(18.0);
         public static final double singleSubstationLowZ = Units.inchesToMeters(27.125);
-        public static final double singleSubstationCenterZ = singleSubstationLowZ + (singleSubstationHeight / 2.0);
+        public static final double singleSubstationCenterZ = singleSubstationLowZ
+                + (singleSubstationHeight / 2.0);
         public static final double singleSubstationHighZ = singleSubstationLowZ + singleSubstationHeight;
+
+        public static final Translation2d outerLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX,
+                LoadingZone.leftQuaterY);
+        public static final Translation2d innterLoadingOutput = new Translation2d(LoadingZone.doubleSubstationX,
+                LoadingZone.rightQuaterY);
     }
 
     // Locations of staged game pieces
@@ -238,4 +267,37 @@ public final class FieldConstants {
                     Units.inchesToMeters(42.19),
                     Units.inchesToMeters(18.22),
                     new Rotation3d()));
+
+    public static final ArrayList<AprilTag> TAGS = new ArrayList<>();
+    public static final AprilTagFieldLayout LAYOUT;
+
+    static {
+        for (int id : aprilTags.keySet()) {
+            // // TODO: Change this to fit real field
+            // if(id == 3) {
+                
+            // } else {
+            //     TAGS.add(new AprilTag(id, aprilTags.get(id)));
+            // }   
+        
+            TAGS.add(new AprilTag(id, aprilTags.get(id)));
+        }
+
+        LAYOUT = new AprilTagFieldLayout(TAGS, fieldLength, fieldWidth);
+    }
+
+    public static final ArrayList<AprilTag> TEST_TAGS = new ArrayList<>();
+    public static final AprilTagFieldLayout TEST_LAYOUT;
+
+    static {
+        TEST_TAGS.add(
+                new AprilTag(6,
+                        new Pose3d(1.00, 1.0, 0.525,
+                                new Rotation3d(0.0, 0.0, 0.0))));
+        TEST_TAGS.add(
+                new AprilTag(4,
+                        new Pose3d(5.85, 1.00, 0.700,
+                                new Rotation3d(0.0, 0.0, Math.PI))));
+        TEST_LAYOUT = new AprilTagFieldLayout(TEST_TAGS, 6.0, 2.0);
+    }
 }
