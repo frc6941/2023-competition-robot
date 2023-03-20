@@ -105,20 +105,25 @@ public class RobotContainer {
 
         // Bind Operator
         mControlBoard.getTargetMoveForward().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(-1, 0)));
+            new InstantCommand(() -> mSelector.moveCursor(-1, 0)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveBackward().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(1, 0)));
+            new InstantCommand(() -> mSelector.moveCursor(1, 0)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveLeft().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(0, 1)));
+            new InstantCommand(() -> mSelector.moveCursor(0, 1)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveRight().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(0, -1)));
+            new InstantCommand(() -> mSelector.moveCursor(0, -1)).ignoringDisable(true)
+        );
         mControlBoard.getApplyCursor().onTrue(
-            new InstantCommand(() -> mSelector.applyCursorToTarget()));
+            new InstantCommand(() -> mSelector.applyCursorToTarget()).ignoringDisable(true)
+        );
         mControlBoard.getLoadingTargetIncrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(1))
+            new InstantCommand(() -> mSelector.moveLoadingTarget(1)).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetDecrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(-1))
+            new InstantCommand(() -> mSelector.moveLoadingTarget(-1)).ignoringDisable(true)
         );
         mControlBoard.getCanCommuteNear().onTrue(
             new InstantCommand(mSelector::toggleCanCommuteNear)

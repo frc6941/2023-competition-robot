@@ -64,6 +64,13 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         cursorTopic.setDefault(new long[] { 0, 0 });
         targetTopic.setDefault(new long[] { 0, 0 });
         loadingTopic.setDefault(-1);
+
+        loadingTarget = new LoadingTarget((int) mPeriodicIO.loadingTarget);
+
+        int[] transformed = new int[] { 0, 0 };
+        transformed[0] = (int) mPeriodicIO.target[0];
+        transformed[1] = (int) mPeriodicIO.target[1];
+        scoringTarget = new ScoringTarget(transformed);
     }
 
     public GamePiece getTargetGamePiece() {
@@ -221,13 +228,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         mPeriodicIO.loadingTarget = clampLoadingTarget(mPeriodicIO.loadingTarget + delta);
     }
 
-    @Override
-    public synchronized void read(double time, double dt){
-        
-    }
-    
-    @Override
-    public synchronized void update(double time, double dt){
+    public void updateDirection() {
         if(
             this.scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE
             || this.scoringTarget.getScoringRow() == SCORING_ROW.LOW
@@ -268,15 +269,27 @@ public class TargetSelector extends SubsystemBase implements Updatable {
                     break;
             }
         }
-        
+    }
+
+    public void updateSelect() {
         LoadingTarget temp = new LoadingTarget((int) mPeriodicIO.loadingTarget);
         if(temp.getLoadingLocation() != loadingTarget.getLoadingLocation() || mPeriodicIO.statusHasChanged) {
             loadingTarget = temp;
             mPeriodicIO.target = regulateCurrent(mPeriodicIO.target);
             mPeriodicIO.cursor = regulateCurrent(mPeriodicIO.cursor);
-            System.out.println("Has Changed");
             mPeriodicIO.statusHasChanged = false;
-        }   
+        }
+    }
+
+    @Override
+    public synchronized void read(double time, double dt){
+        
+    }
+    
+    @Override
+    public synchronized void update(double time, double dt){
+        updateDirection();
+        updateSelect();
     }
     
     @Override
