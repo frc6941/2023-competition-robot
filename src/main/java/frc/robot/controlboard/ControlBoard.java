@@ -1,11 +1,8 @@
 package frc.robot.controlboard;
 
-import com.team254.lib.util.Util;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.controlboard.CustomButtonBoard.BUTTON;
 import frc.robot.controlboard.CustomXboxController.Axis;
 import frc.robot.controlboard.CustomXboxController.Side;
 

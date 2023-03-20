@@ -2,26 +2,14 @@ package frc.robot.auto;
 
 import java.util.HashMap;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.auto.BaseAutoBuilder;
-import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.FieldConstants;
 import frc.robot.auto.basics.AutoActions;
-import frc.robot.auto.basics.FollowTrajectory;
-import frc.robot.auto.basics.FollowTrajectoryWithEvents;
 import frc.robot.states.ScoringTarget;
 import frc.robot.states.ScoringTarget.SCORING_GRID;
 import frc.robot.states.ScoringTarget.SCORING_ROW;
@@ -30,7 +18,6 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
-import frc.robot.utils.AllianceFlipUtil;
 import frc.robot.utils.PPAutoBuilder;
 
 public class AutoSelector {
