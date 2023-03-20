@@ -70,10 +70,10 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         loadingTopic.setDefault(-1);
 
         loadingTarget = new LoadingTarget((int) mPeriodicIO.loadingTarget);
-
         int[] transformed = new int[] { 0, 0 };
         transformed[0] = (int) mPeriodicIO.target[0];
-        transformed[1] = (int) mPeriodicIO.target[1];
+        transformed[1] = AllianceFlipUtil.shouldFlip() ? 8 - (int) mPeriodicIO.target[1]: (int) mPeriodicIO.target[1];
+
         scoringTarget = new ScoringTarget(transformed);
     }
 
@@ -187,7 +187,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         
         int[] transformed = new int[] { 0, 0 };
         transformed[0] = (int) mPeriodicIO.target[0];
-        transformed[1] = (int) mPeriodicIO.target[1];
+        transformed[1] = AllianceFlipUtil.shouldFlip() ? 8 - (int) mPeriodicIO.target[1]: (int) mPeriodicIO.target[1];
         scoringTarget = new ScoringTarget(transformed);
 
         if(transformed[0] == 0 || transformed[1] == 1 || transformed[1] == 4 || transformed[1] == 7) {

@@ -37,7 +37,8 @@ public class DriveToPoseCommand extends CommandBase {
     public void initialize() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
         Pose2d currentVelocity = mDrivebase.getLocalizer().getMeasuredVelocity();
-        Translation2d deltaTranslation = targetPose.get().getTranslation().minus(currentPose.getTranslation());
+        Pose2d transformedPose = AllianceFlipUtil.apply(targetPose.get());
+        Translation2d deltaTranslation = transformedPose.getTranslation().minus(currentPose.getTranslation());
         double dot = currentVelocity.getX() * deltaTranslation.getX() + currentVelocity.getY() * deltaTranslation.getY();
         driveController.reset(
             deltaTranslation.getNorm(),
