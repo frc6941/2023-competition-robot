@@ -109,7 +109,11 @@ public class RobotContainer {
             Commands.run(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)))
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
         mControlBoard.getDriverController().getController().povUp().whileTrue(
-            new AutoBalanceCommand(mDrivebase)
+            new AutoBalanceCommand(mDrivebase, true)
+        );
+
+        mControlBoard.getDriverController().getController().povDown().whileTrue(
+            new AutoBalanceCommand(mDrivebase, false)
         );
         
 

@@ -99,6 +99,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
 
     public void setLoadingTarget(LoadingTarget loadingTarget) {
         this.loadingTarget = loadingTarget;
+        mPeriodicIO.loadingTarget = loadingTarget.getLoadingLocation().id;
     }
 
     public Direction getScoringDirection() {

@@ -123,6 +123,7 @@ public class AutoSelector {
         PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 3.5, 2.2);
         PPAutoBuilder builder = new PPAutoBuilder(SJTUSwerveMK5Drivebase.getInstance(), commandMap);
 
+        
         actionStage = builder.fullAuto(trajectory);
         balanceStage = config.ifBalance == AUTO_BALANCE.YES ? autoActions.balance(trajectory.getEndState().poseMeters) : autoActions.commute();
 

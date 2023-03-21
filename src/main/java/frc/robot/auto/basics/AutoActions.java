@@ -18,10 +18,13 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.FieldConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
+import frc.robot.commands.DriveToPoseCommand;
+import frc.robot.commands.RequestArmCommand;
 import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
 import frc.robot.commands.WaitUntilNoCollision;
+import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
 import frc.robot.states.LoadingTarget;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
@@ -116,7 +119,9 @@ public class AutoActions {
 
     public Command configTargetSelector(ScoringTarget scoringTarget) {
         return Commands.runOnce(() -> {
-            mTargetSelector.setScoringTarget(scoringTarget);
+            if(scoringTarget != null) {
+                mTargetSelector.setScoringTarget(scoringTarget);
+            }
         });
     }
 
@@ -181,21 +186,19 @@ public class AutoActions {
         boolean enterFront = startingPosition
                 .getX() < (FieldConstants.Community.chargingStationInnerX
                         + FieldConstants.Community.chargingStationOuterX) / 2.0;
-        Pose2d position0 = new Pose2d(
-                enterFront ? FieldConstants.Community.chargingStationInnerX
-                        : FieldConstants.Community.chargingStationOuterX,
-                MathUtil.clamp(startingPosition.getY(),
-                        FieldConstants.Community.chargingStationRightY + 0.8,
-                        FieldConstants.Community.chargingStationLeftY - 0.8),
-                enterFront ? Rotation2d.fromDegrees(0.0) : Rotation2d.fromDegrees(180.0));
-        Pose2d position1 = new Pose2d((FieldConstants.Community.chargingStationOuterX
-                + FieldConstants.Community.chargingStationInnerX) / 2.0 + (enterFront ? 0.7 : -0.7),
-                position0.getY(), position0.getRotation());
+        Pose2d position = new Pose2d(
+            enterFront ? FieldConstants.Community.chargingStationInnerX - 0.3
+                    : FieldConstants.Community.chargingStationOuterX + 0.3,
+            MathUtil.clamp(startingPosition.getY(),
+                    FieldConstants.Community.chargingStationRightY + 0.1,
+                    FieldConstants.Community.chargingStationLeftY - 0.1),
+            enterFront ? Rotation2d.fromDegrees(180.0) : Rotation2d.fromDegrees(0.0));
 
-        return new FollowTrajectory(mDrivebase,
-                PathPointUtil.transfromPose2dToPathPoints(
-                        List.of(startingPosition, position0, position1))).alongWith(commute())
-                                .andThen(new AutoBalanceCommand(mDrivebase));
+        return new DriveToPoseCommand(mDrivebase, () -> position)
+        .andThen(
+            new AutoBalanceCommand(mDrivebase, enterFront)
+        )
+        .alongWith(commute());
     }
 
     public void initMapping() {
