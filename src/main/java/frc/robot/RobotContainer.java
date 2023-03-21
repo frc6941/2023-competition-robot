@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
@@ -107,6 +108,10 @@ public class RobotContainer {
         mControlBoard.getIntake().whileTrue(
             Commands.run(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)))
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
+        mControlBoard.getDriverController().getController().povUp().whileTrue(
+            new AutoBalanceCommand(mDrivebase)
+        );
+        
 
         // Bind Operator
         mControlBoard.getTargetMoveForward().onTrue(
@@ -149,19 +154,19 @@ public class RobotContainer {
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
         
-        new Trigger(() -> mSelector.needTurnToScore(mDrivebase.getLocalizer().getLatestPose())).onTrue(
-            new RumbleCommand(mControlBoard.getDriverController(), 0.5, 0.2).withInterruptBehavior(InterruptionBehavior.kCancelSelf)
-        ).onFalse(
-            new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0).withInterruptBehavior(InterruptionBehavior.kCancelSelf)
-        );
+        // new Trigger(() -> mSelector.needTurnToScore(mDrivebase.getLocalizer().getLatestPose())).onTrue(
+        //     new RumbleCommand(mControlBoard.getDriverController(), 0.5, 0.2)
+        // ).onFalse(
+        //     new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
+        // );
 
-        new Trigger(() -> {
-            return mIntaker.hasGamePiece() && mTracker.isInLoad();
-        }).onTrue(
-            new RumbleCommand(mControlBoard.getDriverController(), 1.0, 0.0).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-        ).onFalse(
-            new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
-        );
+        // new Trigger(() -> {
+        //     return mIntaker.hasGamePiece() && mTracker.isInLoad();
+        // }).onTrue(
+        //     new RumbleCommand(mControlBoard.getDriverController(), 1.0, 0.0)
+        // ).onFalse(
+        //     new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
+        // );
     }
 
     public UpdateManager getUpdateManager() {

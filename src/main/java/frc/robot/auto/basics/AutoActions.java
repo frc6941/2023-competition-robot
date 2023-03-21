@@ -87,8 +87,8 @@ public class AutoActions {
             .andThen(new WaitCommand(0.3));
     }
 
-    public Command delayExtenderAction(boolean value) {
-        return Commands.runOnce(() -> mSuperstructure.setDelayExtenderAction(value));
+    public Command delayZeroing(boolean value) {
+        return Commands.runOnce(() -> mSuperstructure.setDelayZeroing(value));
     }
 
     public Command commute() {
@@ -159,6 +159,24 @@ public class AutoActions {
         }
     }
 
+    public Command scorePreloadFromFront(ScoringTarget target) {
+        if (target == null) {
+            return Commands.none();
+        } else {
+            return Commands.sequence(
+                configGroundIntake(),
+                configTargetSelector(target),
+                delayZeroing(true),
+                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
+                delayZeroing(false),
+                waitUntilHomed(),
+                prepScore(),
+                score(),
+                stopIntake()
+            );
+        }
+    }
+
     public Command balance(Pose2d startingPosition) {
         boolean enterFront = startingPosition
                 .getX() < (FieldConstants.Community.chargingStationInnerX
@@ -181,7 +199,7 @@ public class AutoActions {
     }
 
     public void initMapping() {
-        commandMapping.put("ground intake", groundIntake());
+        commandMapping.put("ground intake", configGroundIntake().andThen(groundIntake()));
         commandMapping.put("prep score", prepScore());
         commandMapping.put("score", score());
         commandMapping.put("commute", commute());

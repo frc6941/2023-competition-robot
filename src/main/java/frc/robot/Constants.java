@@ -169,7 +169,7 @@ public final class Constants {
         public static final double OUTTAKING_SLOW_PERCENTAGE = -0.55;
         public static final double OUTTAKING_FAST_PERCENTAGE = -0.70;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
-        public static final double HOLD_PERCENTAGE_CONE = 0.75;
+        public static final double HOLD_PERCENTAGE_CONE = 0.80;
         public static final double HOLD_DELAY = 0.2;
         public static final double GEAR_RATIO = 10.0;
         public static final double STOP_THRESHOLD = 1.5;
@@ -215,12 +215,12 @@ public final class Constants {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants(
                 "IP_VM1",
-                new Pose3d(-0.05, 0.12, 0.576, 
+                new Pose3d(-0.02, 0.115, 0.600, 
                 new Rotation3d(0.0, 0.0, -Math.PI))
             ),
             new CameraConstants(
                 "IP_VM2",
-                new Pose3d(0.05, -0.12, 0.550,
+                new Pose3d(0.09, -0.110, 0.605,
                 new Rotation3d(0.0, 0.0, 0.0))
             )
         };

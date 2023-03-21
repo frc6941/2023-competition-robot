@@ -114,7 +114,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
     private Double armOpenLoopPercentage = null;
     private Double extenderOpenLoopPercentage = null;
 
-    private boolean delayExtenderAction = false;
+    private boolean delayZeroing = false;
 
     private Alert homeAlert = new Alert("Superstructure", "Arm is not homed.", AlertType.INFO);
 
@@ -213,8 +213,8 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         setExtenderPercentage(0.0);
     }
 
-    public void setDelayExtenderAction(boolean value){
-        this.delayExtenderAction = value;
+    public void setDelayZeroing(boolean value){
+        this.delayZeroing = value;
     }
 
     public SuperstructureState getCurrentSuperstructureState() {
@@ -386,29 +386,33 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
 
     @Override
     public synchronized void write(double time, double dt) {
-        switch (armState) {
-            case HOMING:
-                armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
-                break;
-            case ANGLE:
-                armMotorLeader.set(ControlMode.MotionMagic,
-                        Conversions.degreesToFalcon(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.GEAR_RATIO),
-                        DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
-                break;
-            case PERCENTAGE:
-                armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
-                        mPeriodicIO.armFeedforward);
-                break;
-            default:
-                armMotorLeader.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
-                break;
+        if(!delayZeroing){
+            switch (armState) {
+                case HOMING:
+                    armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.armFeedforward);
+                    break;
+                case ANGLE:
+                    armMotorLeader.set(ControlMode.MotionMagic,
+                            Conversions.degreesToFalcon(mPeriodicIO.armDemand, Constants.SUBSYSTEM_ARM.GEAR_RATIO),
+                            DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.armFeedforward);
+                    break;
+                case PERCENTAGE:
+                    armMotorLeader.set(ControlMode.PercentOutput, mPeriodicIO.armDemand, DemandType.ArbitraryFeedForward,
+                            mPeriodicIO.armFeedforward);
+                    break;
+                default:
+                    armMotorLeader.set(ControlMode.PercentOutput, 0.0, DemandType.ArbitraryFeedForward, 0.0);
+                    break;
 
+            }
+        } else {
+            armMotorLeader.set(ControlMode.PercentOutput, 0.0);
         }
         armMotorFollower.set(ControlMode.Follower, Constants.CANID.ARM_MOTOR_LEADER);
 
-        if(!delayExtenderAction){
+        if(!delayZeroing){
             switch (extenderState) {
                 case HOMING:
                     if(extenderIsHomed) {

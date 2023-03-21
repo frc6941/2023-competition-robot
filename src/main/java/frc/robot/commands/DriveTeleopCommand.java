@@ -29,7 +29,7 @@ public class DriveTeleopCommand extends CommandBase {
     private ChassisSpeeds previousVelocity;
 
     private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.5);
-    private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 15.0);
+    private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 20.0);
     private static final LoggedTunableNumber maxExtensionLinearAcceleration = new LoggedTunableNumber("Max Extension Linear Acceleration", 2.5);
     private static final LoggedTunableNumber minExtensionThetaAcceleration = new LoggedTunableNumber("Min Extension Theta Acceleration", 300.0);
     private static final LoggedTunableNumber maxExtensionThetaAcceleration = new LoggedTunableNumber("Max Extension Theta Acceleration", 150.0);
