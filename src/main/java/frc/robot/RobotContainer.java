@@ -1,31 +1,19 @@
 package frc.robot;
 
-import java.util.function.BooleanSupplier;
-
 import org.frcteam6941.looper.UpdateManager;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
-import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
-import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
-import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
-import frc.robot.states.LoadingTarget;
-import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.RobotStateEstimator;

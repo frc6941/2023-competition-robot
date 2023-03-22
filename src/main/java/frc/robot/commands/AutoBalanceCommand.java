@@ -22,11 +22,11 @@ public class AutoBalanceCommand extends CommandBase {
     private static final LoggedTunableNumber autoOnPlatformDegreeThreshold = new LoggedTunableNumber(
             "On Platform Angle Degree Threshold", 8.0);
 
-    private static final LoggedTunableNumber autoBalancePositionDegreeThreshold = new LoggedTunableNumber(
-            "Auto Balance Angle Degree Threshold", 10.0);
+    // private static final LoggedTunableNumber autoBalancePositionDegreeThreshold = new LoggedTunableNumber(
+    //         "Auto Balance Angle Degree Threshold", 10.0);
 
-    private static final LoggedTunableNumber autoBalanceAngularVelocityThreshold = new LoggedTunableNumber(
-            "Auto Balance Angular Velocity DegSec Threshold", 1.0);
+    // private static final LoggedTunableNumber autoBalanceAngularVelocityThreshold = new LoggedTunableNumber(
+    //         "Auto Balance Angular Velocity DegSec Threshold", 1.0);
 
     private boolean enterFront;
     private TimeDelayedBoolean brake = new TimeDelayedBoolean();
@@ -65,9 +65,9 @@ public class AutoBalanceCommand extends CommandBase {
         double angle = drivebaseDirection.getCos() * pitch + drivebaseDirection.getSin() * roll;
         double angularVelocity = drivebaseDirection.getCos() * pitchV + drivebaseDirection.getSin() * rollV;
 
-        boolean stationTipping = (angle < 0.0 && angularVelocity > autoBalanceAngularVelocityThreshold.get())
-                || (angle > 0.0 && angularVelocity < autoBalanceAngularVelocityThreshold.get());
-        boolean stationLevel = Math.abs(angle) < autoBalancePositionDegreeThreshold.get();
+        // boolean stationTipping = (angle < 0.0 && angularVelocity > autoBalanceAngularVelocityThreshold.get())
+        //         || (angle > 0.0 && angularVelocity < autoBalanceAngularVelocityThreshold.get());
+        // boolean stationLevel = Math.abs(angle) < autoBalancePositionDegreeThreshold.get();
 
         if (Math.abs(angle) > autoOnPlatformDegreeThreshold.get() && !isOnPlatform) {
             isOnPlatform = true;
