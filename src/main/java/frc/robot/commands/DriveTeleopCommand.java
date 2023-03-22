@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import org.frcteam6328.utils.LoggedTunableNumber;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -29,6 +30,10 @@ public class DriveTeleopCommand extends CommandBase {
 
     private ChassisSpeeds previousVelocity;
     private double previousLinearMagnitude;
+
+    private LoggedTunableNumber turnAidControllerKp = new LoggedTunableNumber("Turn Aid Controller KP", 0.02);
+    private PIDController turnAidController = new PIDController(turnAidControllerKp.get(), 0.0, 0.0);
+    private Double lockAngleRecord = null;
 
     private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.5);
     private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 20.0);
@@ -56,6 +61,7 @@ public class DriveTeleopCommand extends CommandBase {
         this.extesionPercentageSupplier = extensionPercentageSupplier;
         this.isOpenLoop = isOpenLoop;
         addRequirements(mDrivebase);
+        turnAidController.enableContinuousInput(0, 360.0);
     }
 
     @Override
@@ -63,10 +69,16 @@ public class DriveTeleopCommand extends CommandBase {
         mDrivebase.unbrake();
         previousVelocity = new ChassisSpeeds();
         previousLinearMagnitude = 0.0;
+        lockAngleRecord = null;
     }
 
     @Override
     public void execute() {
+        if(turnAidControllerKp.hasChanged()) {
+            System.out.println("Turn Aid Controller KP Changed!");
+            turnAidController.setP(turnAidControllerKp.get());
+        }
+
         Translation2d translation = translationSupplier.get();
         Rotation2d linearDirection = new Rotation2d(translation.getX(), translation.getY());
         double rotation = rotationSupplier.get();
@@ -86,8 +98,19 @@ public class DriveTeleopCommand extends CommandBase {
         Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection).transformBy(
             new Transform2d(new Translation2d(linearMagnitude, 0.0), new Rotation2d())
         ).getTranslation();
-        rotationalVelocity = Units.degreesToRadians(rotationalVelocity * Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_ANGULAR_VELOCITY);
         double linearValue = MathUtil.interpolate(Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY, speedLimitActivate.get() ? maxExtensionVelocity.get() : Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_LINEAR_VELOCITY, extesionPercentageSupplier.get());
+
+        rotationalVelocity = Units.degreesToRadians(rotationalVelocity * Constants.SUBSYSTEM_DRIVETRAIN.DRIVE_MAX_ANGULAR_VELOCITY);
+        boolean shouldLockAngle = Math.abs(mDrivebase.getLocalizer().getSmoothedVelocity().getRotation().getDegrees()) < 10.0 && rotationalVelocity == 0.0;
+        if(shouldLockAngle) {
+            if(lockAngleRecord == null) {
+                lockAngleRecord = mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees();
+            }
+            rotationalVelocity = turnAidController.calculate(mDrivebase.getLocalizer().getLatestPose().getRotation().getDegrees(), lockAngleRecord);
+        } else {
+            lockAngleRecord = null;
+        }
+
         ChassisSpeeds desiredVelocity = new ChassisSpeeds(
             linearVelocity.getX() * linearValue,
             linearVelocity.getY() * linearValue,
