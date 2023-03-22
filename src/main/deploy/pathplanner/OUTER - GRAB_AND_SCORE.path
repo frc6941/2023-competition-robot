@@ -53,15 +53,40 @@
     },
     {
       "anchorPoint": {
-        "x": 7.1,
+        "x": 6.0,
+        "y": 0.9
+      },
+      "prevControl": {
+        "x": 5.593813334433406,
+        "y": 0.9
+      },
+      "nextControl": {
+        "x": 6.46570471161134,
+        "y": 0.9
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 7.0,
         "y": 0.9023037003419971
       },
       "prevControl": {
-        "x": 5.720705112260236,
+        "x": 5.620705112260237,
         "y": 0.9023037003419971
       },
       "nextControl": {
-        "x": 5.720705112260236,
+        "x": 5.620705112260237,
         "y": 0.9023037003419971
       },
       "holonomicAngle": 180.0,
@@ -117,9 +142,7 @@
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [
-          "score"
-        ],
+        "names": [],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
@@ -134,7 +157,7 @@
       ]
     },
     {
-      "position": 2.12,
+      "position": 3.1,
       "names": [
         "prep score"
       ]

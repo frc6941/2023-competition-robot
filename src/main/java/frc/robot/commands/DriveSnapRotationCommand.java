@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
+import frc.robot.utils.AllianceFlipUtil;
 
 public class DriveSnapRotationCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
@@ -15,13 +16,11 @@ public class DriveSnapRotationCommand extends CommandBase {
         this.mDrivebase = mDrivebase;
         this.snapRotationTarget = snapRotationTarget;
         this.epsilon = epsilon;
-        addRequirements(mDrivebase);
     }
 
     public DriveSnapRotationCommand(SJTUSwerveMK5Drivebase mDrivebase, Supplier<Rotation2d> snapRotationTarget) {
         this.mDrivebase = mDrivebase;
         this.snapRotationTarget = snapRotationTarget;
-        addRequirements(mDrivebase);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class DriveSnapRotationCommand extends CommandBase {
     @Override
     public void execute() {
         mDrivebase.setLockHeading(true);
-        mDrivebase.setHeadingTarget(snapRotationTarget.get().getDegrees());
+        mDrivebase.setHeadingTarget(AllianceFlipUtil.apply(snapRotationTarget.get()).getDegrees());
     }
 
     @Override

@@ -21,16 +21,18 @@ public class DriveTeleopCommand extends CommandBase {
     ArmAndExtender mSupersturcture;
     Supplier<Translation2d> translationSupplier;
     Supplier<Double> rotationSupplier;
-    Supplier<Boolean> reducdModeActivate;
+    Supplier<Boolean> reducdMode1Activate;
+    Supplier<Boolean> reducdMode2Activate;
     Supplier<Double> extesionPercentageSupplier;
     Supplier<Boolean> speedLimitActivate;
     boolean isOpenLoop;
 
     private ChassisSpeeds previousVelocity;
+    private double previousLinearMagnitude;
 
     private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.5);
     private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 20.0);
-    private static final LoggedTunableNumber maxExtensionLinearAcceleration = new LoggedTunableNumber("Max Extension Linear Acceleration", 2.5);
+    private static final LoggedTunableNumber maxExtensionLinearAcceleration = new LoggedTunableNumber("Max Extension Linear Acceleration", 2.0);
     private static final LoggedTunableNumber minExtensionThetaAcceleration = new LoggedTunableNumber("Min Extension Theta Acceleration", 300.0);
     private static final LoggedTunableNumber maxExtensionThetaAcceleration = new LoggedTunableNumber("Max Extension Theta Acceleration", 150.0);
 
@@ -39,7 +41,8 @@ public class DriveTeleopCommand extends CommandBase {
             ArmAndExtender mSuperstructure,
             Supplier<Translation2d> translationSupplier,
             Supplier<Double> rotationSupplier,
-            Supplier<Boolean> reducdModeActivate,
+            Supplier<Boolean> reducdMode1Activate,
+            Supplier<Boolean> reducdMode2Activate,
             Supplier<Boolean> speedLimitActivate,
             Supplier<Double> extensionPercentageSupplier,
             boolean isOpenLoop) {
@@ -47,7 +50,8 @@ public class DriveTeleopCommand extends CommandBase {
         this.mSupersturcture = mSuperstructure;
         this.translationSupplier = translationSupplier;
         this.rotationSupplier = rotationSupplier;
-        this.reducdModeActivate = reducdModeActivate;
+        this.reducdMode1Activate = reducdMode1Activate;
+        this.reducdMode2Activate = reducdMode2Activate;
         this.speedLimitActivate = speedLimitActivate;
         this.extesionPercentageSupplier = extensionPercentageSupplier;
         this.isOpenLoop = isOpenLoop;
@@ -58,6 +62,7 @@ public class DriveTeleopCommand extends CommandBase {
     public void initialize() {
         mDrivebase.unbrake();
         previousVelocity = new ChassisSpeeds();
+        previousLinearMagnitude = 0.0;
     }
 
     @Override
@@ -69,8 +74,13 @@ public class DriveTeleopCommand extends CommandBase {
         double linearMagnitude = MathUtil.applyDeadband(translation.getNorm(), 0.07);
         double rotationalVelocity = MathUtil.applyDeadband(rotation, 0.07);
 
-        if(reducdModeActivate.get()) {
+        if(reducdMode1Activate.get()) {
+            rotationalVelocity *= 0.35;
+        }
+
+        if(reducdMode2Activate.get()) {
             rotationalVelocity *= 0.2;
+            linearMagnitude *= 0.5;
         }
         
         Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection).transformBy(
@@ -87,24 +97,33 @@ public class DriveTeleopCommand extends CommandBase {
         double maxLinearAcceleration = MathUtil.interpolate(minExtensionLinearAcceleration.get(), maxExtensionLinearAcceleration.get(), extesionPercentageSupplier.get());
         double maxRotationalAccelearation = MathUtil.interpolate(minExtensionThetaAcceleration.get(), maxExtensionThetaAcceleration.get(), extesionPercentageSupplier.get());
 
-        desiredVelocity = new ChassisSpeeds(
-            MathUtil.clamp(
-                desiredVelocity.vxMetersPerSecond,
-                previousVelocity.vxMetersPerSecond - maxLinearAcceleration * Constants.LOOPER_DT,
-                previousVelocity.vxMetersPerSecond + maxLinearAcceleration * Constants.LOOPER_DT
-            ),
-            MathUtil.clamp(
-                desiredVelocity.vyMetersPerSecond,
-                previousVelocity.vyMetersPerSecond - maxLinearAcceleration * Constants.LOOPER_DT,
-                previousVelocity.vyMetersPerSecond + maxLinearAcceleration * Constants.LOOPER_DT
-            ),
-            MathUtil.clamp(
-                desiredVelocity.omegaRadiansPerSecond,
-                previousVelocity.omegaRadiansPerSecond - Units.degreesToRadians(maxRotationalAccelearation) * Constants.LOOPER_DT,
-                previousVelocity.omegaRadiansPerSecond + Units.degreesToRadians(maxRotationalAccelearation) * Constants.LOOPER_DT
-            )
-        );
+        boolean accLimit;
+        if(previousLinearMagnitude > linearMagnitude) {
+            accLimit = true;
+        } else {
+            accLimit = false;
+        }
+        previousLinearMagnitude = linearMagnitude;
 
+        if(accLimit){
+            desiredVelocity = new ChassisSpeeds(
+                MathUtil.clamp(
+                    desiredVelocity.vxMetersPerSecond,
+                    previousVelocity.vxMetersPerSecond - maxLinearAcceleration * Constants.LOOPER_DT,
+                    previousVelocity.vxMetersPerSecond + maxLinearAcceleration * Constants.LOOPER_DT
+                ),
+                MathUtil.clamp(
+                    desiredVelocity.vyMetersPerSecond,
+                    previousVelocity.vyMetersPerSecond - maxLinearAcceleration * Constants.LOOPER_DT,
+                    previousVelocity.vyMetersPerSecond + maxLinearAcceleration * Constants.LOOPER_DT
+                ),
+                MathUtil.clamp(
+                    desiredVelocity.omegaRadiansPerSecond,
+                    previousVelocity.omegaRadiansPerSecond - Units.degreesToRadians(maxRotationalAccelearation) * Constants.LOOPER_DT,
+                    previousVelocity.omegaRadiansPerSecond + Units.degreesToRadians(maxRotationalAccelearation) * Constants.LOOPER_DT
+                )
+            );
+        }
         previousVelocity = desiredVelocity;
 
         mDrivebase.setLockHeading(false);

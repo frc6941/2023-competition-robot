@@ -65,7 +65,8 @@ public class RobotContainer {
                 mSuperstructure,
                 mControlBoard::getSwerveTranslation,
                 mControlBoard::getSwerveRotation,
-                () -> mTracker.isInScore() || mTracker.isInLoad(),
+                () -> mTracker.isInLoad(),
+                () -> mTracker.isInScore(),
                 () -> mTracker.isInLoad(),
                 mSuperstructure::getExtensionPercentage,
                 false

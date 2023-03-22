@@ -4,7 +4,6 @@ import org.frcteam6941.looper.UpdateManager.Updatable;
 
 import com.team254.lib.util.Util;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.BooleanPublisher;

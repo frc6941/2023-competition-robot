@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
 import org.frcteam6328.utils.LoggedTunableNumber;
 
 import com.team254.lib.util.TimeDelayedBoolean;
@@ -16,11 +14,11 @@ public class AutoBalanceCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
     private static final LoggedTunableNumber autoBalanceAdjustmentTime = new LoggedTunableNumber(
-            "Auto Balance Back Adjustment Time", 0.10);
+            "Auto Balance Back Adjustment Time", 0.7);
     private static final LoggedTunableNumber autoBalanceClimbSpeed = new LoggedTunableNumber("Auto Balance Climb Speed",
-            0.4);
+            0.6);
     private static final LoggedTunableNumber autoBalanceDashSpeed = new LoggedTunableNumber("Auto Balance Dash Speed",
-            1.0);
+            1.7);
     private static final LoggedTunableNumber autoOnPlatformDegreeThreshold = new LoggedTunableNumber(
             "On Platform Angle Degree Threshold", 8.0);
 
@@ -34,6 +32,7 @@ public class AutoBalanceCommand extends CommandBase {
     private TimeDelayedBoolean brake = new TimeDelayedBoolean();
 
     private boolean isOnPlatform;
+    private TimeDelayedBoolean isOnPlatformDelayed = new TimeDelayedBoolean();
     private boolean isInitialPositive;
     private boolean hasOvershooted;
 
@@ -51,6 +50,7 @@ public class AutoBalanceCommand extends CommandBase {
         this.isInitialPositive = false;
         this.hasOvershooted = false;
         brake.update(false, 0.0);
+        isOnPlatformDelayed.update(false, 0.0);
 
         System.out.println("Start Auto Balance!");
     }
@@ -74,6 +74,22 @@ public class AutoBalanceCommand extends CommandBase {
             isInitialPositive = angle > 0.0;
         }
 
+        // if (isOnPlatformDelayed.update(Math.abs(angle) > autoOnPlatformDegreeThreshold.get(), 0.5) && !isOnPlatform) {
+        //     isOnPlatform = true;
+        //     isInitialPositive = angle > 0.0;
+        // }
+
+        // if(stationTipping && stationLevel && isOnPlatform) {
+        //     mDrivebase.brake();
+        // } else {
+        //     if(!isOnPlatform) {
+        //         mDrivebase.drive(new Translation2d(enterFront ? autoBalanceDashSpeed.get() : -autoBalanceDashSpeed.get(), 0.0), 0.0, true, false, true);
+        //     } else {
+        //         mDrivebase.drive(new Translation2d(enterFront ? autoBalanceClimbSpeed.get() : -autoBalanceClimbSpeed.get(), 0.0), 0.0, true, false, true);
+        //     }
+        // }
+
+
         if (isOnPlatform) {
             if ((isInitialPositive && angle < -autoOnPlatformDegreeThreshold.get())
                     || (!isInitialPositive && angle > autoOnPlatformDegreeThreshold.get())) {
@@ -85,12 +101,12 @@ public class AutoBalanceCommand extends CommandBase {
                     mDrivebase.brake();
                 } else {
                     mDrivebase.unbrake();
-                    mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (isInitialPositive ? - 1.0 : 1.0), 0.0), 0.0, true,
+                    mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (isInitialPositive ? 1.0 : -1.0), 0.0), 0.0, true,
                         false, true);
                 }
             } else {
                 mDrivebase.unbrake();
-                mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (angle > 0.0 ? 1.0 : -1.0), 0.0), 0.0, true,
+                mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (angle > 0.0 ? -1.0 : 1.0), 0.0), 0.0, true,
                         false, true);
             }
         } else {

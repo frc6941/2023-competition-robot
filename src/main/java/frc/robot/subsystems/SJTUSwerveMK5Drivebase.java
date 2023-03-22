@@ -6,7 +6,6 @@ import org.frcteam6328.utils.LoggedTunableNumber;
 import org.frcteam6941.control.HolonomicDriveSignal;
 import org.frcteam6941.control.HolonomicTrajectoryFollower;
 import org.frcteam6941.drivers.Gyro;
-import org.frcteam6941.drivers.Pigeon;
 import org.frcteam6941.drivers.Pigeon2Gyro;
 import org.frcteam6941.localization.Localizer;
 import org.frcteam6941.localization.SwerveLocalizer;

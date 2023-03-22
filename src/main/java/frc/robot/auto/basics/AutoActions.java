@@ -1,7 +1,6 @@
 package frc.robot.auto.basics;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Supplier;
 
 import com.team254.lib.util.Util;
@@ -19,12 +18,10 @@ import frc.robot.FieldConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveToPoseCommand;
-import frc.robot.commands.RequestArmCommand;
 import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
 import frc.robot.commands.WaitUntilNoCollision;
-import frc.robot.states.Direction;
 import frc.robot.states.GamePiece;
 import frc.robot.states.LoadingTarget;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
@@ -35,7 +32,6 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
-import frc.robot.utils.PathPointUtil;
 
 public class AutoActions {
     SJTUSwerveMK5Drivebase mDrivebase;
@@ -190,11 +186,11 @@ public class AutoActions {
             enterFront ? FieldConstants.Community.chargingStationInnerX - 0.3
                     : FieldConstants.Community.chargingStationOuterX + 0.3,
             MathUtil.clamp(startingPosition.getY(),
-                    FieldConstants.Community.chargingStationRightY + 0.1,
-                    FieldConstants.Community.chargingStationLeftY - 0.1),
+                    FieldConstants.Community.chargingStationRightY + 2.0,
+                    FieldConstants.Community.chargingStationLeftY - 1.0),
             enterFront ? Rotation2d.fromDegrees(180.0) : Rotation2d.fromDegrees(0.0));
 
-        return new DriveToPoseCommand(mDrivebase, () -> position)
+        return new DriveToPoseCommand(mDrivebase, () -> position, false)
         .andThen(
             new AutoBalanceCommand(mDrivebase, enterFront)
         )

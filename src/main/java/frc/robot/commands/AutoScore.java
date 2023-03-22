@@ -46,7 +46,7 @@ public class AutoScore {
     private static final Translation3d higherDeltaCube = new Translation3d(0.05, 0.0, 0.7);
     private static final Translation3d midDeltaCube = new Translation3d(0.15, 0.0, 0.4);
     private static final Translation3d lowerDeltaCube = new Translation3d(-0.40, 0.0, 0.25);
-    private static final double minDriveX = FieldConstants.Grids.outerX + 0.6;
+    private static final double minDriveX = FieldConstants.Grids.outerX + 0.42;
     private static final double minDriveY = 0.5;
     private static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
 

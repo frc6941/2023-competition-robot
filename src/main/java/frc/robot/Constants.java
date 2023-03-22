@@ -33,7 +33,7 @@ import frc.robot.motion.SuperstructureConstraint;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final boolean TUNING = false;
+    public static final boolean TUNING = true;
     public static final boolean AUTO_TUNING = false;
 
     // FMS Related Information
@@ -44,7 +44,7 @@ public final class Constants {
     }
 
     // Looper Configurations
-    public static final double LOOPER_DT = 1.0 / 60.0; // The robot is running at 70Hz
+    public static final double LOOPER_DT = 1.0 / 50.0; // The robot is running at 50Hz
 
     // CAN ID Configurations
     public static final class CANID {
@@ -108,8 +108,8 @@ public final class Constants {
         public static final double BACK_LEFT_OFFSET = -249.43359375000003 + 90.0 + 180.0;
         public static final double BACK_RIGHT_OFFSET = -49.21875 + 90.0 + 180.0;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 0.07;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.006;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 0.1;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.007;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.001;
         
 
@@ -121,10 +121,11 @@ public final class Constants {
                 0.71241);
 
         public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(1.5, 3.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT_UNLIMITED = new Constraints(3.5, 3.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
-                300.0, 600.0);
+                300.0, 650.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED = new TrapezoidProfile.Constraints(
-            300.0, 150.0);
+            300.0, 200.0);
     }
 
     // Arm Constants
@@ -160,6 +161,12 @@ public final class Constants {
         public static final double IZONE = 200;
         public static final double CRUISE_V = 60000.0;
         public static final double CRUIVE_ACC = 120000.0;
+
+        public static final double KP_SOFT = 0.001;
+        public static final double KI_SOFT = 0.0;
+        public static final double KD_SOFT = 0.0;
+        public static final double KF_SOFT = 0.0;
+        public static final double IZONE_SOFT = 0.0;
     }
 
     // Intake Constants
@@ -214,12 +221,12 @@ public final class Constants {
     public static final class SUBSYSTEM_VISION {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants(
-                "IP_VM1",
+                "IP_VM2",
                 new Pose3d(-0.02, 0.115, 0.600, 
                 new Rotation3d(0.0, 0.0, -Math.PI))
             ),
             new CameraConstants(
-                "IP_VM2",
+                "IP_VM1",
                 new Pose3d(0.09, -0.110, 0.605,
                 new Rotation3d(0.0, 0.0, 0.0))
             )
