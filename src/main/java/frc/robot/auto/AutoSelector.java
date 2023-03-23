@@ -30,7 +30,8 @@ public class AutoSelector {
     public enum AUTO_ACTION {
         SCORE_PRELOAD,
         JUST_GRAB,
-        GRAB_AND_SCORE
+        GRAB_AND_SCORE,
+        GRAB_SCORE_GRAB
     }
 
     public enum AUTO_BALANCE {
@@ -56,9 +57,10 @@ public class AutoSelector {
         autoAction.setDefaultOption("Score Preload", AUTO_ACTION.SCORE_PRELOAD);
         autoAction.addOption("Score Preload, then Just Brab", AUTO_ACTION.JUST_GRAB);
         autoAction.addOption("Score Preload, then Grab and Score", AUTO_ACTION.GRAB_AND_SCORE);
+        autoAction.addOption("Score Preload, then Grab and Score, Finally Grab", AUTO_ACTION.GRAB_SCORE_GRAB);
 
         autoBalance.setDefaultOption("DO NOT Balance", AUTO_BALANCE.NO);
-        autoBalance.addOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT", AUTO_BALANCE.YES);
+        autoBalance.addOption("Balance - MAKE SURE THAT YOUR TEAMMATES DO NOT, and auto has enough time", AUTO_BALANCE.YES);
 
         autoConfiguration = new AutoConfiguration(
             autoStartPosition.getSelected(),
@@ -120,16 +122,16 @@ public class AutoSelector {
         }
         
         HashMap<String, Command> commandMap = autoActions.getCommandMapping(new ScoringTarget[] { objective1, objective2, objective3 });
-        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 3.5, 2.2);
+        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 4.0, 2.8);
         PPAutoBuilder builder = new PPAutoBuilder(SJTUSwerveMK5Drivebase.getInstance(), commandMap);
 
-
+        
         actionStage = builder.fullAuto(trajectory);
         balanceStage = config.ifBalance == AUTO_BALANCE.YES ? autoActions.balance(trajectory.getEndState().poseMeters) : autoActions.commute();
 
         return Commands.sequence(
             actionStage,
-            balanceStage
+            balanceStage.alongWith(autoActions.stopIntake())
         );
     }
 

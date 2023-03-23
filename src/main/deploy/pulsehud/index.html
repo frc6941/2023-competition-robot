@@ -93,6 +93,12 @@
           </div>
 
           <div class="column center is-1">
+            <p v-if="cubeMode" class="title is-1 cube">
+            </p>
+            <p v-else class="title is-1 cone">
+            </p>
+            <br>
+
             <p v-if="commuteNear" class="title is-1">
               近
             </p>
@@ -170,6 +176,12 @@
 
     .cube {
       background-color: rgb(116, 8, 116);
+      aspect-ratio: 1;
+      box-shadow: none;
+    }
+
+    .hybrid {
+      background-color: #BA5F3A;
       aspect-ratio: 1;
       box-shadow: none;
     }

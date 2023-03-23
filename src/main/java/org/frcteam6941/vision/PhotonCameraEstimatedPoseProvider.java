@@ -70,7 +70,7 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider 
             double altDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(new Pose3d(prevEstimatedRobotPose), bestTransformPosition));
 
-            if(target.getPoseAmbiguity() > 0.20 || target.getBestCameraToTarget().getTranslation().getNorm() > 7.0) {
+            if(target.getPoseAmbiguity() > 0.20 || target.getBestCameraToTarget().getTranslation().getNorm() > 5.0) {
                 return Optional.empty();
             } else if (altDifference < bestDifference) {
                 lowestDeltaPose =
@@ -104,4 +104,8 @@ public class PhotonCameraEstimatedPoseProvider implements EstimatedPoseProvider 
         return x.getTranslation().getDistance(y.getTranslation());
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s: %s", this.constants.getCameraName(), this.constants.getCameraPoseToRobotCenter().getRotation().getAngle());
+    }
 }

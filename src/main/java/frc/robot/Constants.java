@@ -33,7 +33,7 @@ import frc.robot.motion.SuperstructureConstraint;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final boolean TUNING = false;
+    public static final boolean TUNING = true;
     public static final boolean AUTO_TUNING = false;
 
     // FMS Related Information
@@ -44,7 +44,7 @@ public final class Constants {
     }
 
     // Looper Configurations
-    public static final double LOOPER_DT = 1.0 / 60.0; // The robot is running at 70Hz
+    public static final double LOOPER_DT = 1.0 / 50.0; // The robot is running at 50Hz
 
     // CAN ID Configurations
     public static final class CANID {
@@ -95,7 +95,7 @@ public final class Constants {
         public static final double DRIVE_MAX_ANGULAR_VELOCITY = 300.0;
 
         public static final double MODULE_MAX_VELOCITY = 4.5;
-        public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.05);
+        public static final double MODULE_WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(4.10);
 
         public static final double DRIVE_GEAR_RATIO = 7.0;
         public static final double ANGLE_GEAR_RATIO = (56.0 / 6.0) * (60.0 / 10.0);
@@ -108,8 +108,8 @@ public final class Constants {
         public static final double BACK_LEFT_OFFSET = -249.43359375000003 + 90.0 + 180.0;
         public static final double BACK_RIGHT_OFFSET = -49.21875 + 90.0 + 180.0;
 
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 0.07;
-        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.006;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KP = 0.12;
+        public static final double DRIVETRAIN_HEADING_CONTROLLER_KI = 0.007;
         public static final double DRIVETRAIN_HEADING_CONTROLLER_KD = 0.001;
         
 
@@ -121,10 +121,11 @@ public final class Constants {
                 0.71241);
 
         public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT = new Constraints(1.5, 3.0);
+        public static final Constraints DRIVETRAIN_TRANSLATIONAL_CONSTRAINT_UNLIMITED = new Constraints(3.0, 3.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT = new TrapezoidProfile.Constraints(
-                300.0, 600.0);
+                320.0, 670.0);
         public static final Constraints DRIVETRAIN_HEADING_CONTROLLER_CONSTRAINT_RESTRICTED = new TrapezoidProfile.Constraints(
-            300.0, 150.0);
+            300.0, 200.0);
     }
 
     // Arm Constants
@@ -160,16 +161,22 @@ public final class Constants {
         public static final double IZONE = 200;
         public static final double CRUISE_V = 60000.0;
         public static final double CRUIVE_ACC = 120000.0;
+
+        public static final double KP_SOFT = 0.001;
+        public static final double KI_SOFT = 0.0;
+        public static final double KD_SOFT = 0.0;
+        public static final double KF_SOFT = 0.0;
+        public static final double IZONE_SOFT = 0.0;
     }
 
     // Intake Constants
     public static final class SUBSYSTEM_INTAKE {
         public static final double INTAKING_PERCENTAGE_CONE = 1.00;
-        public static final double INTAKING_PERCENTAGE_CUBE = 0.40;
-        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.55;
+        public static final double INTAKING_PERCENTAGE_CUBE = 0.45;
+        public static final double OUTTAKING_SLOW_PERCENTAGE = -0.60;
         public static final double OUTTAKING_FAST_PERCENTAGE = -0.70;
         public static final double HOLD_PERCENTAGE_CUBE = 0.20;
-        public static final double HOLD_PERCENTAGE_CONE = 0.75;
+        public static final double HOLD_PERCENTAGE_CONE = 0.80;
         public static final double HOLD_DELAY = 0.2;
         public static final double GEAR_RATIO = 10.0;
         public static final double STOP_THRESHOLD = 1.5;
@@ -215,12 +222,25 @@ public final class Constants {
         public static final CameraConstants[] CAMERA_CONSTANTS = new CameraConstants[] {
             new CameraConstants(
                 "IP_VM1",
-                new Pose3d(-0.05, 0.12, 0.576, 
+                new Pose3d(-0.02, 0.115, 0.600, 
                 new Rotation3d(0.0, 0.0, -Math.PI))
             ),
             new CameraConstants(
                 "IP_VM2",
-                new Pose3d(0.05, -0.12, 0.550,
+                new Pose3d(0.09, -0.110, 0.605,
+                new Rotation3d(0.0, 0.0, 0.0))
+            )
+        };
+
+        public static final CameraConstants[] CAMERA_CONSTANTS_INVERTED = new CameraConstants[] {
+            new CameraConstants(
+                "IP_VM2",
+                new Pose3d(-0.02, 0.115, 0.600, 
+                new Rotation3d(0.0, 0.0, -Math.PI))
+            ),
+            new CameraConstants(
+                "IP_VM1",
+                new Pose3d(0.09, -0.110, 0.605,
                 new Rotation3d(0.0, 0.0, 0.0))
             )
         };

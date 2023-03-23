@@ -14,6 +14,10 @@ public class DriveToDoubleSubstationCommand extends DriveToPoseCommand {
 
     public DriveToDoubleSubstationCommand(SJTUSwerveMK5Drivebase mDrivebase, TargetSelector mSelector) {
         super(mDrivebase, () -> {
+            if(doubleSubstationTargetX.hasChanged()) {
+                System.out.println("Double Substation X Changed!");
+            }
+
             return new Pose2d(
                 new Translation2d(doubleSubstationTargetX.get(), mDrivebase.getLocalizer().getLatestPose().getY()),
                 mSelector.getLoadingDirection() == Direction.NEAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0)

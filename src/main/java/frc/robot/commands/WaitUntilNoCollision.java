@@ -11,6 +11,7 @@ import frc.robot.utils.AllianceFlipUtil;
 public class WaitUntilNoCollision extends SequentialCommandGroup{
     public static final double minDriveX = FieldConstants.Grids.outerX + 0.7;
     public static final double maxDriveX = FieldConstants.LoadingZone.doubleSubstationX - 2.5;
+    
     public WaitUntilNoCollision(Supplier<Pose2d> pose) {
         addCommands(
             new WaitUntilCommand(() -> AllianceFlipUtil.apply(pose.get()).getX() > minDriveX && AllianceFlipUtil.apply(pose.get()).getX() < maxDriveX)

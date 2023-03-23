@@ -7,6 +7,7 @@ const matchNumberTopic = "/MatchInfo/matchNumber"
 const matchStageTopic = "/MatchInfo/matchStage"
 const dsConnectedTopic = "/MatchInfo/dsConnected"
 
+const cubeModeTopic = "/TargetSelector/isCube"
 const cursorTopic = "/TargetSelector/cursor"
 const targetTopic = "/TargetSelector/target"
 const loadingTargetTopic = "/TargetSelector/load"
@@ -27,7 +28,7 @@ for(let i = 0; i < alerts.length; i++) {
 
 const targetCollection = [
     matchTimeTopic, matchTypeTopic, matchNameTopic, matchNumberTopic, matchStageTopic, dsConnectedTopic,
-    cursorTopic, targetTopic, loadingTargetTopic, canCommuteNearTopic
+    cubeModeTopic, cursorTopic, targetTopic, loadingTargetTopic, canCommuteNearTopic
 ].concat(alertTopics)
 
 
@@ -63,6 +64,7 @@ let app = createApp({
             isConnected: false,
             dsConnected: false,
 
+            cubeMode: false,
             target: [2, 1],
             cursor: [2, 2],
             commuteNear: false,
@@ -93,6 +95,8 @@ let app = createApp({
                 this.bannerClass = bannerClassPrefix + bannerMap.get(value)
             } else if(topic == dsConnectedTopic) {
                 this.dsConnected = value
+            } else if (topic == cubeModeTopic) {
+                this.cubeMode = value;
             } else if (topic == cursorTopic) {
                 this.cursor = value
             } else if (topic == targetTopic) {
@@ -124,6 +128,9 @@ let app = createApp({
                 return false
             }
         },
+        isHybrid(row, column) {
+            return row == 0;
+        },
         isSeparation(column) {
             return column == 2 || column == 5 
         },
@@ -135,10 +142,16 @@ let app = createApp({
             let result = []
             for (let i = 0; i < 9; i++) {
                 let temp = ""
-                if (this.isCube(row, i)) {
-                    temp = "box cube"
+                if(this.isHybrid(row, i)) {
+                    temp = "box hybrid"
+                } else if (this.isCube(row, i)) {
+                    if(this.cubeMode) {
+                        temp = "box cube"
+                    } else {
+                        temp = "box cube restricted"
+                    }
                 } else {
-                    if(this.isRestricted(row, i, this.commuteNear)) {
+                    if(this.isRestricted(row, i, this.commuteNear) || this.cubeMode) {
                         temp = "box cone restricted"
                     } else {
                         temp = "box cone"
