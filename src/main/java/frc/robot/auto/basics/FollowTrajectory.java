@@ -20,8 +20,8 @@ public class FollowTrajectory extends CommandBase {
     private List<PathPoint> wayPoints;
     private boolean reverse;
 
-    private static final LoggedTunableNumber maxVelocity = new LoggedTunableNumber("maxAcceleration", 3.0);
-    private static final LoggedTunableNumber maxAcceleration = new LoggedTunableNumber("maxAcceleration", 4.0);
+    private static final LoggedTunableNumber maxVelocity = new LoggedTunableNumber("maxAcceleration", 3.5);
+    private static final LoggedTunableNumber maxAcceleration = new LoggedTunableNumber("maxAcceleration", 1.5);
 
     public FollowTrajectory(
             SJTUSwerveMK5Drivebase mDrivebase,

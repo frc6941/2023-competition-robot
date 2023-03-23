@@ -2,9 +2,14 @@ package frc.robot.states;
 
 public class ScoringTarget {
     public static enum SCORING_ROW {
-        LOW,
-        MID,
-        HIGH
+        LOW(0),
+        MID(1),
+        HIGH(2);
+
+        public int id;
+        SCORING_ROW(int id) {
+            this.id = id;
+        }
     }
 
     public static enum SCORING_GRID {
@@ -12,9 +17,9 @@ public class ScoringTarget {
         INNER(7),
         COOPERTITION(4);
 
-        public int num;
-        SCORING_GRID(int num) {
-            this.num = num;
+        public int id;
+        SCORING_GRID(int id) {
+            this.id = id;
         }
     }
 
@@ -117,7 +122,14 @@ public class ScoringTarget {
     }
 
     public int getPosition() {
-        return scoringGrid.num + scoringSide.delta;
+        return scoringGrid.id + scoringSide.delta;
+    }
+
+    public int[] getTargetArray() {
+        return new int[] {
+            this.scoringRow.id,
+            getPosition()
+        };
     }
 
     @Override

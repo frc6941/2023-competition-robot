@@ -90,6 +90,11 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/SendableChooser[0]": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
@@ -108,8 +113,7 @@
           "Drivetrain": {
             "open": true
           }
-        },
-        "open": true
+        }
       },
       "Shuffleboard": {
         ".recording": {

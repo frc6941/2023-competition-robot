@@ -2,24 +2,18 @@ package frc.robot;
 
 import org.frcteam6941.looper.UpdateManager;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
-import frc.robot.commands.DriveSnapRotationCommand;
 import frc.robot.commands.DriveTeleopCommand;
-import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
-import frc.robot.states.LoadingTarget;
-import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.RobotStateEstimator;
@@ -59,7 +53,8 @@ public class RobotContainer {
                 mSuperstructure,
                 mControlBoard::getSwerveTranslation,
                 mControlBoard::getSwerveRotation,
-                () -> mTracker.isInScore() || mTracker.isInLoad(),
+                () -> mTracker.isInLoad(),
+                () -> mTracker.isInScore(),
                 () -> mTracker.isInLoad(),
                 mSuperstructure::getExtensionPercentage,
                 false
@@ -69,7 +64,8 @@ public class RobotContainer {
 
         mSuperstructure.setDefaultCommand(
             new AutoCommuteCommand(mSuperstructure, mSelector)
-                .alongWith(new InstantCommand(mTracker::clear)).repeatedly()
+                .alongWith(new InstantCommand(mTracker::clear))
+                .repeatedly()
         );
 
         AutoLoad autoLoad = new AutoLoad(mDrivebase, mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation);
@@ -88,12 +84,14 @@ public class RobotContainer {
                 .finallyDo((interrupted) -> mIntaker.stopIntake()));
 
         mControlBoard.getAutoPath().whileTrue(
-            Commands.either(
-                autoLoad.getDriveCommand(),
-                autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
-                mTracker::isInLoad
+            new InstantCommand(() -> mDrivebase.setLockHeading(true)).andThen(
+                Commands.either(
+                    autoLoad.getDriveCommand(),
+                    autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
+                    mTracker::isInLoad
+                )
             )
-        );
+        ).onFalse(new InstantCommand(() -> mDrivebase.setLockHeading(false)));
 
         mControlBoard.getSpit().whileTrue(
             Commands.run(() -> mIntaker.runOuttake(mSelector::getTargetGamePiece)))
@@ -102,43 +100,61 @@ public class RobotContainer {
         mControlBoard.getIntake().whileTrue(
             Commands.run(() -> mIntaker.runIntake(mSelector::getTargetGamePiece)))
             .onFalse(Commands.runOnce(mIntaker::stopIntake));
+        mControlBoard.getDriverController().getController().povUp().whileTrue(
+            new AutoBalanceCommand(mDrivebase, true)
+        );
+
+        mControlBoard.getDriverController().getController().povDown().whileTrue(
+            new AutoBalanceCommand(mDrivebase, false)
+        );
+        
 
         // Bind Operator
         mControlBoard.getTargetMoveForward().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(-1, 0)));
+            new InstantCommand(() -> mSelector.moveCursor(-1, 0)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveBackward().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(1, 0)));
+            new InstantCommand(() -> mSelector.moveCursor(1, 0)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveLeft().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(0, 1)));
+            new InstantCommand(() -> mSelector.moveCursor(0, 1)).ignoringDisable(true)
+        );
         mControlBoard.getTargetMoveRight().onTrue(
-            new InstantCommand(() -> mSelector.moveCursor(0, -1)));
+            new InstantCommand(() -> mSelector.moveCursor(0, -1)).ignoringDisable(true)
+        );
         mControlBoard.getApplyCursor().onTrue(
-            new InstantCommand(() -> mSelector.applyCursorToTarget()));
+            new InstantCommand(() -> mSelector.applyCursorToTarget()).ignoringDisable(true)
+        );
         mControlBoard.getLoadingTargetIncrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(1))
+            new InstantCommand(() -> mSelector.moveLoadingTarget(1)).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetDecrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(-1))
+            new InstantCommand(() -> mSelector.moveLoadingTarget(-1)).ignoringDisable(true)
         );
         mControlBoard.getCanCommuteNear().onTrue(
             new InstantCommand(mSelector::toggleCanCommuteNear)
         ).onFalse(
             Commands.none()
         );
+        mControlBoard.getSetCone().onTrue(
+            Commands.runOnce(mSelector::setCone)
+        );
+        mControlBoard.getSetCube().onTrue(
+            Commands.runOnce(mSelector::setCube)
+        );
         
 
         mControlBoard.getArmIncrease().whileTrue(
-            Commands.runOnce(() -> mSuperstructure.setArmPercentage(0.15), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
+            Commands.runOnce(() -> mSuperstructure.setArmPercentage(0.10), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
 
         mControlBoard.getArmDecrease().whileTrue(
-            Commands.runOnce(() -> mSuperstructure.setArmPercentage(-0.15), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
+            Commands.runOnce(() -> mSuperstructure.setArmPercentage(-0.10), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
-        
     }
 
     public UpdateManager getUpdateManager() {

@@ -49,7 +49,7 @@ public class Intaker extends SubsystemBase implements Updatable{
     private Intaker() {
         intakerMotor.setCANTimeout(10);
         intakerMotor.setIdleMode(IdleMode.kBrake);
-        intakerMotor.setSmartCurrentLimit(15, 5);
+        intakerMotor.setSmartCurrentLimit(17, 10);
     }
 
     private void setIntakerPower(double power) {

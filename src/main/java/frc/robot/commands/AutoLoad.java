@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
+import frc.robot.states.Direction;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
@@ -46,7 +47,12 @@ public class AutoLoad {
         this.confirmation = confirmation;
 
         loadDriveCommandMap = Map.of(
-            LOADING_LOCATION.DOUBLE_SUBSTATION, new DriveToDoubleSubstationCommand(mDrivebase, mTargetSelector),
+            LOADING_LOCATION.DOUBLE_SUBSTATION,
+                    Commands.either(
+                        new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(0.0)),
+                        new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(180.0)),
+                        () -> mTargetSelector.getLoadingDirection() == Direction.NEAR
+                    ),
             LOADING_LOCATION.SINGLE_SUBSTATION, new DriveToSingleSubstationCommand(mDrivebase),
             LOADING_LOCATION.GROUND, Commands.none()
         );

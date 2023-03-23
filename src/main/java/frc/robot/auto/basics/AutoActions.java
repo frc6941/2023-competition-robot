@@ -1,7 +1,6 @@
 package frc.robot.auto.basics;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Supplier;
 
 import com.team254.lib.util.Util;
@@ -18,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.FieldConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.AutoScore;
+import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.commands.RequestExtenderCommand;
 import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
@@ -32,7 +32,6 @@ import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
-import frc.robot.utils.PathPointUtil;
 
 public class AutoActions {
     SJTUSwerveMK5Drivebase mDrivebase;
@@ -82,13 +81,13 @@ public class AutoActions {
         return new RequestSuperstructureStateCommand(mSuperstructure,
             scoreSuperstructureStateSupplierLower)
             .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-            .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
+            .andThen(new WaitCommand(0.15).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
             .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
-            .andThen(new WaitCommand(0.3));
+            .andThen(new WaitCommand(0.2));
     }
 
-    public Command delayExtenderAction(boolean value) {
-        return Commands.runOnce(() -> mSuperstructure.setDelayExtenderAction(value));
+    public Command delayZeroing(boolean value) {
+        return Commands.runOnce(() -> mSuperstructure.setDelayZeroing(value));
     }
 
     public Command commute() {
@@ -116,7 +115,9 @@ public class AutoActions {
 
     public Command configTargetSelector(ScoringTarget scoringTarget) {
         return Commands.runOnce(() -> {
-            mTargetSelector.setScoringTarget(scoringTarget);
+            if(scoringTarget != null) {
+                mTargetSelector.setScoringTarget(scoringTarget);
+            }
         });
     }
 
@@ -159,29 +160,45 @@ public class AutoActions {
         }
     }
 
+    public Command scorePreloadFromFront(ScoringTarget target) {
+        if (target == null) {
+            return Commands.none();
+        } else {
+            return Commands.sequence(
+                configGroundIntake(),
+                configTargetSelector(target),
+                delayZeroing(true),
+                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
+                delayZeroing(false),
+                waitUntilHomed(),
+                prepScore(),
+                score(),
+                stopIntake()
+            );
+        }
+    }
+
     public Command balance(Pose2d startingPosition) {
         boolean enterFront = startingPosition
                 .getX() < (FieldConstants.Community.chargingStationInnerX
                         + FieldConstants.Community.chargingStationOuterX) / 2.0;
-        Pose2d position0 = new Pose2d(
-                enterFront ? FieldConstants.Community.chargingStationInnerX
-                        : FieldConstants.Community.chargingStationOuterX,
-                MathUtil.clamp(startingPosition.getY(),
-                        FieldConstants.Community.chargingStationRightY + 0.8,
-                        FieldConstants.Community.chargingStationLeftY - 0.8),
-                enterFront ? Rotation2d.fromDegrees(0.0) : Rotation2d.fromDegrees(180.0));
-        Pose2d position1 = new Pose2d((FieldConstants.Community.chargingStationOuterX
-                + FieldConstants.Community.chargingStationInnerX) / 2.0 + (enterFront ? 0.7 : -0.7),
-                position0.getY(), position0.getRotation());
+        Pose2d position = new Pose2d(
+            enterFront ? FieldConstants.Community.chargingStationInnerX - 0.3
+                    : FieldConstants.Community.chargingStationOuterX + 0.3,
+            MathUtil.clamp(startingPosition.getY(),
+                    FieldConstants.Community.chargingStationRightY + 2.0,
+                    FieldConstants.Community.chargingStationLeftY - 1.0),
+            enterFront ? Rotation2d.fromDegrees(180.0) : Rotation2d.fromDegrees(0.0));
 
-        return new FollowTrajectory(mDrivebase,
-                PathPointUtil.transfromPose2dToPathPoints(
-                        List.of(startingPosition, position0, position1))).alongWith(commute())
-                                .andThen(new AutoBalanceCommand(mDrivebase));
+        return new DriveToPoseCommand(mDrivebase, () -> position, false)
+        .andThen(
+            new AutoBalanceCommand(mDrivebase, enterFront)
+        )
+        .alongWith(commute());
     }
 
     public void initMapping() {
-        commandMapping.put("ground intake", groundIntake());
+        commandMapping.put("ground intake", configGroundIntake().andThen(groundIntake()));
         commandMapping.put("prep score", prepScore());
         commandMapping.put("score", score());
         commandMapping.put("commute", commute());
