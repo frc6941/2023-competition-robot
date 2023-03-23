@@ -64,7 +64,8 @@ public class RobotContainer {
 
         mSuperstructure.setDefaultCommand(
             new AutoCommuteCommand(mSuperstructure, mSelector)
-                .alongWith(new InstantCommand(mTracker::clear)).repeatedly()
+                .alongWith(new InstantCommand(mTracker::clear))
+                .repeatedly()
         );
 
         AutoLoad autoLoad = new AutoLoad(mDrivebase, mSuperstructure, mIntaker, mSelector, mControlBoard::getConfirmation);
@@ -83,12 +84,14 @@ public class RobotContainer {
                 .finallyDo((interrupted) -> mIntaker.stopIntake()));
 
         mControlBoard.getAutoPath().whileTrue(
-            Commands.either(
-                autoLoad.getDriveCommand(),
-                autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
-                mTracker::isInLoad
+            new InstantCommand(() -> mDrivebase.setLockHeading(true)).andThen(
+                Commands.either(
+                    autoLoad.getDriveCommand(),
+                    autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
+                    mTracker::isInLoad
+                )
             )
-        );
+        ).onFalse(new InstantCommand(() -> mDrivebase.setLockHeading(false)));
 
         mControlBoard.getSpit().whileTrue(
             Commands.run(() -> mIntaker.runOuttake(mSelector::getTargetGamePiece)))
@@ -136,30 +139,16 @@ public class RobotContainer {
         
 
         mControlBoard.getArmIncrease().whileTrue(
-            Commands.runOnce(() -> mSuperstructure.setArmPercentage(0.15), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
+            Commands.runOnce(() -> mSuperstructure.setArmPercentage(0.10), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
 
         mControlBoard.getArmDecrease().whileTrue(
-            Commands.runOnce(() -> mSuperstructure.setArmPercentage(-0.15), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
+            Commands.runOnce(() -> mSuperstructure.setArmPercentage(-0.10), mSuperstructure).repeatedly().alongWith(Commands.runOnce(() -> mTracker.setInManual(true)))).onFalse(
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
-        
-        // new Trigger(() -> mSelector.needTurnToScore(mDrivebase.getLocalizer().getLatestPose())).onTrue(
-        //     new RumbleCommand(mControlBoard.getDriverController(), 0.5, 0.2)
-        // ).onFalse(
-        //     new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
-        // );
-
-        // new Trigger(() -> {
-        //     return mIntaker.hasGamePiece() && mTracker.isInLoad();
-        // }).onTrue(
-        //     new RumbleCommand(mControlBoard.getDriverController(), 1.0, 0.0)
-        // ).onFalse(
-        //     new RumbleCommand(mControlBoard.getDriverController(), 0.0, 0.0)
-        // );
     }
 
     public UpdateManager getUpdateManager() {

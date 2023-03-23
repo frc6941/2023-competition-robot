@@ -90,6 +90,6 @@ public class DriveToPoseCommand extends CommandBase {
     public boolean isFinished() {
         Pose2d currentPose = mDrivebase.getLocalizer().getLatestPose();
         Transform2d delta = AllianceFlipUtil.apply(targetPose.get()).minus(currentPose);
-        return delta.getTranslation().getNorm() < 0.05 && Math.abs(delta.getRotation().getDegrees()) < 1.0;
+        return delta.getTranslation().getNorm() < 0.10 && Math.abs(delta.getRotation().getDegrees()) < 5.0;
     }
 }

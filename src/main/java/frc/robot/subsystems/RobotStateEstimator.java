@@ -18,9 +18,11 @@ import org.photonvision.PhotonCamera;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.utils.PolynomialRegression;
+// import frc.robot.utils.PolynomialRegression;
 
 public class RobotStateEstimator implements Updatable {
     private Localizer localizer = SJTUSwerveMK5Drivebase.getInstance().getLocalizer();
@@ -29,25 +31,28 @@ public class RobotStateEstimator implements Updatable {
     private HashMap<EstimatedPoseProvider, Alert> alerts = new HashMap<>();
     private boolean seeAprilTag = false;
 
-    private PolynomialRegression xyStdDevModel = new PolynomialRegression(
-            new double[] {
-                    0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
-                    3.223358, 4.093358
-            },
-            new double[] {
-                    0.003, 0.007, 0.01, 0.015, 0.04, 0.1, 0.22, 0.25, 0.35, 0.50
-            },
-            1);
+    private boolean cameraSettingsInverted = false;
+    private SendableChooser<Boolean> isInverted = new SendableChooser<>();
+
+    // private PolynomialRegression xyStdDevModel = new PolynomialRegression(
+    //         new double[] {
+    //                 0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
+    //                 3.223358, 4.093358
+    //         },
+    //         new double[] {
+    //                 0.003, 0.007, 0.01, 0.015, 0.04, 0.1, 0.22, 0.25, 0.35, 0.50
+    //         },
+    //         1);
     
-    private PolynomialRegression thetaStdDevModel = new PolynomialRegression(
-            new double[] {
-                    0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
-                    3.223358, 4.093358
-            },
-            new double[] {
-                    0.5, 1.0, 1.5, 1.5, 1.5, 2.0, 5.0, 10.0, 20.0, 40.0
-            },
-            1);
+    // private PolynomialRegression thetaStdDevModel = new PolynomialRegression(
+    //         new double[] {
+    //                 0.752358, 1.016358, 1.296358, 1.574358, 1.913358, 2.184358, 2.493358, 2.758358,
+    //                 3.223358, 4.093358
+    //         },
+    //         new double[] {
+    //                 0.5, 1.0, 1.5, 1.5, 1.5, 2.0, 5.0, 10.0, 20.0, 40.0
+    //         },
+    //         1);
 
     private static RobotStateEstimator instance;
 
@@ -60,8 +65,20 @@ public class RobotStateEstimator implements Updatable {
 
     private RobotStateEstimator() {
         PhotonCamera.setVersionCheckEnabled(false); // Self-handle connection issues
+        initChooser();
+        initProviders(isInverted.getSelected());
+        SmartDashboard.putData(isInverted);
+    }
 
-        for (CameraConstants camera : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
+    private void initChooser() {
+        isInverted.addOption("Invert", true);
+        isInverted.setDefaultOption("Not Inverted", false);
+    }
+
+    private void initProviders(boolean reversed) {
+        providers = new ArrayList<>();
+        alerts = new HashMap<>();
+        for (CameraConstants camera : reversed ? Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS_INVERTED : Constants.SUBSYSTEM_VISION.CAMERA_CONSTANTS) {
             PhotonCameraEstimatedPoseProvider provider = new PhotonCameraEstimatedPoseProvider(camera, FieldConstants.LAYOUT);
             providers.add(provider);
             alerts.put(
@@ -78,7 +95,12 @@ public class RobotStateEstimator implements Updatable {
 
     @Override
     public synchronized void read(double time, double dt) {
-        // Auto Generated Method
+        if(DriverStation.isDisabled()) {
+            if(cameraSettingsInverted != isInverted.getSelected()) {
+                initProviders(isInverted.getSelected());
+                cameraSettingsInverted = isInverted.getSelected();
+            }
+        }
     }
 
     @Override
@@ -99,7 +121,7 @@ public class RobotStateEstimator implements Updatable {
                         // double xyStdDev = xyStdDevModel.predict(eposeWithDistance.distance);
                         // double thetaStdDev = thetaStdDevModel.predict(eposeWithDistance.distance);
                         double xyStdDev = 0.01 * Math.pow(eposeWithDistance.distance, 2);
-                        double thetaStdDev = 0.03 * Math.pow(eposeWithDistance.distance, 2);
+                        // double thetaStdDev = 0.03 * Math.pow(eposeWithDistance.distance, 2);
                         localizer.addMeasurement(eposeWithDistance.pose.timestampSeconds,
                                 eposeWithDistance.pose.estimatedPose.toPose2d(),
                                 new Pose2d(xyStdDev, xyStdDev, Rotation2d.fromDegrees(10000000.0)));
@@ -134,6 +156,12 @@ public class RobotStateEstimator implements Updatable {
 
     @Override
     public synchronized void telemetry() {
+        ArrayList<String> result = new ArrayList<>();
+        for(EstimatedPoseProvider provider : providers) {
+            result.add(provider.toString());
+        }
+
+        SmartDashboard.putString("VM Status", result.toString());
     }
 
     @Override
@@ -148,6 +176,6 @@ public class RobotStateEstimator implements Updatable {
 
     @Override
     public synchronized void simulate(double time, double dt) {
-        // Auto Generated Method
+        read(time, dt);
     }
 }

@@ -31,6 +31,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     public static class TargetSelectorPeriodicIO {
         public long[] cursor = new long[] { 1, 5 };
         public long[] target = new long[] { 1, 5 };
+        public boolean isCube = false;
         public boolean commuteNear = false;
         public boolean statusHasChanged = false;
 

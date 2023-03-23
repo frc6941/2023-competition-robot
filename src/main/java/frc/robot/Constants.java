@@ -231,6 +231,19 @@ public final class Constants {
                 new Rotation3d(0.0, 0.0, 0.0))
             )
         };
+
+        public static final CameraConstants[] CAMERA_CONSTANTS_INVERTED = new CameraConstants[] {
+            new CameraConstants(
+                "IP_VM2",
+                new Pose3d(-0.02, 0.115, 0.600, 
+                new Rotation3d(0.0, 0.0, -Math.PI))
+            ),
+            new CameraConstants(
+                "IP_VM1",
+                new Pose3d(0.09, -0.110, 0.605,
+                new Rotation3d(0.0, 0.0, 0.0))
+            )
+        };
     }
 
     // Controller

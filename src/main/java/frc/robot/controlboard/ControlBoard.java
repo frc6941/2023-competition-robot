@@ -87,7 +87,7 @@ public class ControlBoard {
     }
 
     public boolean getForceExtendInScore() {
-        return driver.getController().povUp().getAsBoolean();
+        return driver.getController().rightStick().getAsBoolean();
     }
 
     public Trigger getResetGyro() {

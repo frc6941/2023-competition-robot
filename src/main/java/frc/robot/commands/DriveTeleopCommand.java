@@ -149,14 +149,12 @@ public class DriveTeleopCommand extends CommandBase {
         }
         previousVelocity = desiredVelocity;
 
-        mDrivebase.setLockHeading(false);
         mDrivebase.drive(new Translation2d(desiredVelocity.vxMetersPerSecond, desiredVelocity.vyMetersPerSecond), rotationalVelocity, true, isOpenLoop, true);
     }
 
     @Override
     public void end(boolean interrupted) {
         mDrivebase.stopMovement();
-        mDrivebase.setLockHeading(false);
     }
 
     @Override
