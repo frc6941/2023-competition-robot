@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
+import com.ctre.phoenix.GadgeteerUartClient.GadgeteerConnection;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
@@ -202,7 +203,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
 
     public void moveCursor(int rowDelta, int columnDelta) {
         long[] beforeMove = mPeriodicIO.cursor.clone();
-
         long[] afterMove = clampTargetSelect(new long[] { beforeMove[0] + rowDelta, beforeMove[1] + columnDelta });
 
         if(afterMove == null) {
@@ -234,12 +234,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         transformed[0] = (int) mPeriodicIO.target[0];
         transformed[1] = AllianceFlipUtil.shouldFlip() ? 8 - (int) mPeriodicIO.target[1]: (int) mPeriodicIO.target[1];
         scoringTarget = new ScoringTarget(transformed);
-
-        if(transformed[0] == 0 || transformed[1] == 1 || transformed[1] == 4 || transformed[1] == 7) {
-            targetGamePiece = GamePiece.CUBE;
-        } else {
-            targetGamePiece = GamePiece.CONE;
-        }
     }
 
     private long[] clampTargetSelect(long[] ids) {
@@ -261,7 +255,9 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         boolean notFlip = loadingTarget.getLoadingLocation() != LOADING_LOCATION.SINGLE_SUBSTATION
         && loadingTarget.getLoadingLocation() != LOADING_LOCATION.GROUND_TIPPED;
 
-        if(mPeriodicIO.isCube) {
+        if(unrestrictedTarget[0] == 0) {
+            return unrestrictedTarget;
+        } else if(mPeriodicIO.isCube) {
             return new long[] { unrestrictedTarget[0], (long) GetNearestNumber.apply((int)unrestrictedTarget[1], cubeColumns) };
         } else {
             // Handle Cone Case
@@ -283,15 +279,6 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     public void updateDirection() {
-        if(
-            this.scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE
-            || this.scoringTarget.getScoringRow() == SCORING_ROW.LOW
-        ) {
-            this.targetGamePiece = GamePiece.CUBE;
-        } else {
-            this.targetGamePiece = GamePiece.CONE;
-        }
-
         if(DriverStation.isAutonomous()) {
             scoringDirection = Direction.NEAR;
             commutingDirection = Direction.FAR;
@@ -332,6 +319,12 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             mPeriodicIO.target = regulateCurrent(mPeriodicIO.target);
             mPeriodicIO.cursor = regulateCurrent(mPeriodicIO.cursor);
             mPeriodicIO.statusHasChanged = false;
+        }
+
+        if(mPeriodicIO.isCube) {
+            targetGamePiece = GamePiece.CUBE;
+        } else {
+            targetGamePiece = GamePiece.CONE;
         }
     }
 
