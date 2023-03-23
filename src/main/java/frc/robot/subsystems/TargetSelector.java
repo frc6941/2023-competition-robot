@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import org.frcteam6941.looper.UpdateManager.Updatable;
 
-import com.ctre.phoenix.GadgeteerUartClient.GadgeteerConnection;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
@@ -102,6 +101,11 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         this.scoringTarget = scoringTarget;
         mPeriodicIO.target = IntArrayToLong.apply(scoringTarget.getTargetArray());
         mPeriodicIO.cursor = IntArrayToLong.apply(scoringTarget.getTargetArray());
+        if(scoringTarget.getScoringSide() == SCORING_SIDE.MIDDLE) {
+            mPeriodicIO.isCube = true;
+        } else {
+            mPeriodicIO.isCube = false;
+        }
     }
 
     public LoadingTarget getLoadingTarget() {

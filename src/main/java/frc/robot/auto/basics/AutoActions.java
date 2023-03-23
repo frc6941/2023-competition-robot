@@ -78,9 +78,7 @@ public class AutoActions {
     }
 
     public Command score() {
-        return new RequestSuperstructureStateCommand(mSuperstructure,
-            scoreSuperstructureStateSupplierLower)
-            .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
+        return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
             .andThen(new WaitCommand(0.15).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
             .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
             .andThen(new WaitCommand(0.2));
