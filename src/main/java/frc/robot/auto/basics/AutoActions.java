@@ -67,7 +67,7 @@ public class AutoActions {
                 mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
                         : mIntaker::runIntakeCube)
                     .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                            () -> mTargetSelector.getLoadSuperstructureState()))
+                            () -> mTargetSelector.getLoadSuperstructureState(), 60.0))
                     .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
                     .andThen(commute().alongWith(stopIntake()));
     }
