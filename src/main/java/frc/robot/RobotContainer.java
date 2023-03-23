@@ -136,6 +136,12 @@ public class RobotContainer {
         ).onFalse(
             Commands.none()
         );
+        mControlBoard.getSetCone().onTrue(
+            Commands.runOnce(mSelector::setCone)
+        );
+        mControlBoard.getSetCube().onTrue(
+            Commands.runOnce(mSelector::setCube)
+        );
         
 
         mControlBoard.getArmIncrease().whileTrue(

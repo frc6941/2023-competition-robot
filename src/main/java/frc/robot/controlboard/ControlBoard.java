@@ -49,8 +49,8 @@ public class ControlBoard {
      * RT - Auto Path
      * 
      * Start - Reset Gyro
-     * POV Left - Loading
-     * POV Right - Scoring
+     * POV Left (Back Left Button) - Loading 
+     * POV Right (Back Right Button) - Scoring
      * Y - Arm Up
      * A - Arm Down
      * X - Intake
@@ -191,6 +191,14 @@ public class ControlBoard {
 
     public Trigger getApplyCursor() {
         return operator.getController().a();
+    }
+
+    public Trigger getSetCube() {
+        return operator.getController().x();
+    }
+
+    public Trigger getSetCone() {
+        return operator.getController().b();
     }
 
     public Trigger getCanCommuteNear() {

@@ -208,7 +208,7 @@ let app = createApp({
     },
     mounted() {
         let client = new NT4_Client(
-            "10.69.41.2",
+            window.location.hostname,
             "PulseHUD",
             (topic) => {
                 // Topic announce
