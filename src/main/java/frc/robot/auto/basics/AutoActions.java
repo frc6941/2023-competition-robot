@@ -74,7 +74,7 @@ public class AutoActions {
 
     public Command prepScore() {
         return new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                scoreSuperstructureStateSupplier);
+                scoreSuperstructureStateSupplier, 60.0);
     }
 
     public Command score() {

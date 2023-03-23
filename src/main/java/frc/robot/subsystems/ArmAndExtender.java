@@ -143,6 +143,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         armMotorLeader.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector,
                 LimitSwitchNormal.NormallyOpen);
         armMotorLeader.setInverted(InvertType.None);
+        armMotorLeader.configMotionSCurveStrength(7, 100);
 
         armMotorFollower.configFactoryDefault(50);
         armMotorFollower.setNeutralMode(NeutralMode.Coast);
