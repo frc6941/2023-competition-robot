@@ -271,6 +271,12 @@ public class TargetSelector extends SubsystemBase implements Updatable {
     }
 
     private long clampLoadingTarget(double value) {
+        if(value >= 4) {
+            value -= 4;
+        }
+        if(value <= -2) {
+            value += 4;
+        }
         return (long) Util.clamp(value, 0, 3);
     }
 

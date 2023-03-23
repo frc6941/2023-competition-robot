@@ -126,10 +126,10 @@ public class RobotContainer {
             new InstantCommand(() -> mSelector.applyCursorToTarget()).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetIncrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(1)).ignoringDisable(true)
+            new InstantCommand(() -> mSelector.moveLoadingTarget(2)).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetDecrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(-1)).ignoringDisable(true)
+            new InstantCommand(() -> mSelector.moveLoadingTarget(-2)).ignoringDisable(true)
         );
         mControlBoard.getCanCommuteNear().onTrue(
             new InstantCommand(mSelector::toggleCanCommuteNear)
