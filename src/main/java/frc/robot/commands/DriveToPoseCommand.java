@@ -21,7 +21,7 @@ public class DriveToPoseCommand extends CommandBase {
     );
     private ProfiledPIDController driveControllerUnlimited = new ProfiledPIDController(
         4.0, 0.00, 0,
-        Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT
+        Constants.SUBSYSTEM_DRIVETRAIN.DRIVETRAIN_TRANSLATIONAL_CONSTRAINT_UNLIMITED
     );
     private boolean limited = true;
 

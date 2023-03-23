@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.FieldConstants;
 import frc.robot.states.Direction;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
@@ -47,12 +48,15 @@ public class AutoLoad {
         this.confirmation = confirmation;
 
         loadDriveCommandMap = Map.of(
-            LOADING_LOCATION.DOUBLE_SUBSTATION, 
-                Commands.either(
-                    new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(0.0)),
-                    new DriveSnapRotationCommand(mDrivebase, () -> Rotation2d.fromDegrees(180.0)),
-                    () -> mTargetSelector.getLoadingDirection() == Direction.NEAR
-                ),
+            LOADING_LOCATION.DOUBLE_SUBSTATION,
+                Commands.sequence(
+                    Commands.run(() -> mDrivebase.setLockHeading(true)),
+                    Commands.either(
+                        new InstantCommand(() -> mDrivebase.setHeadingTarget(0.0)),
+                        new InstantCommand(() -> mDrivebase.setHeadingTarget(180.0)),
+                        () -> mTargetSelector.getLoadingDirection() == Direction.NEAR
+                    )
+                ).finallyDo((interrupted) -> mDrivebase.setLockHeading(false)),
             LOADING_LOCATION.SINGLE_SUBSTATION, new DriveToSingleSubstationCommand(mDrivebase),
             LOADING_LOCATION.GROUND, Commands.none()
         );

@@ -14,11 +14,11 @@ public class AutoBalanceCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
     private static final LoggedTunableNumber autoBalanceAdjustmentTime = new LoggedTunableNumber(
-            "Auto Balance Back Adjustment Time", 0.7);
+            "Auto Balance Back Adjustment Time", 0.8);
     private static final LoggedTunableNumber autoBalanceClimbSpeed = new LoggedTunableNumber("Auto Balance Climb Speed",
-            0.6);
+            0.9);
     private static final LoggedTunableNumber autoBalanceDashSpeed = new LoggedTunableNumber("Auto Balance Dash Speed",
-            1.7);
+            2.2);
     private static final LoggedTunableNumber autoOnPlatformDegreeThreshold = new LoggedTunableNumber(
             "On Platform Angle Degree Threshold", 8.0);
 
