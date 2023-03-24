@@ -77,7 +77,7 @@ public class AutoScore {
             .andThen(new RequestArmCommand(mSuperstructure, () -> superstructureTargetSupplier.get().armAngle.getDegrees(), 5.0)),
 
             () -> {
-                Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
+                Pose2d pose = AllianceFlipUtil.apply(mDrivebase.getLocalizer().getLatestPose());
                 boolean onTranslation = pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60;
                 boolean onRotation = Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 30.0;
                 boolean armOnTarget = Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);

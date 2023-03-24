@@ -55,7 +55,8 @@ public class RobotContainer {
                 mControlBoard::getSwerveRotation,
                 () -> mTracker.isInLoad(),
                 () -> mTracker.isInScore(),
-                () -> mTracker.isInLoad(),
+                () -> mTracker.isSpeedRedctionActivate(),
+                () -> mTracker.isYCancelActivate(),
                 mSuperstructure::getExtensionPercentage,
                 false
             )
@@ -86,12 +87,15 @@ public class RobotContainer {
         mControlBoard.getAutoPath().whileTrue(
             new InstantCommand(() -> mDrivebase.setLockHeading(true)).andThen(
                 Commands.either(
-                    autoLoad.getDriveCommand(),
+                    autoLoad.getDriveCommand().alongWith(Commands.runOnce(() -> mTracker.setYCancel(true))),
                     autoScore.getDriveCommand().alongWith(Commands.runOnce(mTracker::enableSpeedLimit)),
                     mTracker::isInLoad
                 )
             )
-        ).onFalse(new InstantCommand(() -> mDrivebase.setLockHeading(false)));
+        ).onFalse(new InstantCommand(() -> {
+            mDrivebase.setLockHeading(false);
+            mTracker.setYCancel(false);
+        }));
 
         mControlBoard.getSpit().whileTrue(
             Commands.run(() -> mIntaker.runOuttake(mSelector::getTargetGamePiece)))

@@ -45,6 +45,7 @@ public class StatusTracker implements Updatable {
         public boolean isCube = false;
         public boolean inManual = false;
         public boolean speedLimitActivate = false;
+        public boolean yCancelActivate = false;
     }
 
     public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
@@ -105,9 +106,17 @@ public class StatusTracker implements Updatable {
         return mPeriodicIO.inManual;
     }
 
+    public boolean isYCancelActivate() {
+        return mPeriodicIO.yCancelActivate;
+    }
+
 
     public void setInManual(boolean value) {
         mPeriodicIO.inManual = value;
+    }
+
+    public void setYCancel(boolean value) {
+        mPeriodicIO.yCancelActivate = value;
     }
 
     public void setLoad() {
@@ -128,6 +137,7 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.isInload = false;
         mPeriodicIO.isInScore = false;
         mPeriodicIO.speedLimitActivate = false;
+        mPeriodicIO.yCancelActivate = false;
     }
 
     public void updateIndicator() {
