@@ -278,7 +278,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
         if(value >= 4) {
             value -= 4;
         }
-        if(value <= -2) {
+        if(value <= -1) {
             value += 4;
         }
         return (long) Util.clamp(value, 0, 3);
@@ -303,7 +303,7 @@ public class TargetSelector extends SubsystemBase implements Updatable {
                         scoringDirection = Direction.NEAR;
                         commutingDirection = Direction.FAR;
                         loadingDirection = Direction.FAR;
-                    } else if(mPeriodicIO.commuteNear && scoringTarget.getScoringRow() == SCORING_ROW.HIGH) {
+                    } else if(mPeriodicIO.commuteNear) {
                         scoringDirection = Direction.NEAR;
                         commutingDirection = Direction.NEAR;
                         loadingDirection = Direction.NEAR;

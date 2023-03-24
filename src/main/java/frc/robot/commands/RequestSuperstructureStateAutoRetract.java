@@ -11,7 +11,7 @@ import frc.robot.subsystems.ArmAndExtender;
 public class RequestSuperstructureStateAutoRetract extends SequentialCommandGroup{
     public RequestSuperstructureStateAutoRetract(ArmAndExtender armAndExtender, Supplier<SuperstructureState> targetState, double epsilon) {
         addCommands(
-            new RequestExtenderCommand(armAndExtender, 0.89, 0.05),
+            new RequestExtenderCommand(armAndExtender, 0.90, 0.01),
             Commands.either(
                 new RequestArmCommand(armAndExtender, () -> targetState.get().armAngle.getDegrees(), 2.0),
                 new RequestArmCommand(armAndExtender, () -> targetState.get().armAngle.getDegrees(), epsilon),
@@ -24,7 +24,7 @@ public class RequestSuperstructureStateAutoRetract extends SequentialCommandGrou
 
     public RequestSuperstructureStateAutoRetract(ArmAndExtender armAndExtender, Supplier<SuperstructureState> targetState) {
         addCommands(
-            new RequestExtenderCommand(armAndExtender, 0.89, 0.05),
+            new RequestExtenderCommand(armAndExtender, 0.90, 0.01),
             Commands.either(
                 new RequestArmCommand(armAndExtender, () -> targetState.get().armAngle.getDegrees(), 2.0),
                 new RequestArmCommand(armAndExtender, () -> targetState.get().armAngle.getDegrees(), 2.0),

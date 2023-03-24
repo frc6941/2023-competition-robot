@@ -142,7 +142,7 @@ public final class Constants {
         = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
         public static final double CRUISE_V = 24000.0;
-        public static final double CRUIVE_ACC = 12000.0;
+        public static final double CRUIVE_ACC = 14000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
         public static final double ANGLE_OFFSET_TO_HORIZONTAL = -14.467;

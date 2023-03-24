@@ -21,7 +21,7 @@ public class LoadShelfCommand extends SequentialCommandGroup {
             Commands.sequence(
                 new RequestSuperstructureStateAutoRetract(mSuperstructure, mTargetSelector::getLoadSuperstructureStateMinExtenderLength),
                 new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece), mIntaker),
-                new RequestExtenderCommand(mSuperstructure, 1.0, 0.02).unless(mIntaker::hasGamePiece),
+                new RequestExtenderCommand(mSuperstructure, 1.0, 0.02),
                 new WaitUntilCommand(mIntaker::hasGamePiece),
                 new RequestSuperstructureStateCommand(mSuperstructure, () -> {
                     SuperstructureState temp = mTargetSelector.getLoadSuperstructureStateMinExtenderLength();
@@ -36,7 +36,7 @@ public class LoadShelfCommand extends SequentialCommandGroup {
                 new RequestExtenderCommand(mSuperstructure, 0.885, 0.02),
                 new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose()),
                 new RequestSuperstructureStateAutoRetract(mSuperstructure, mTargetSelector::getCommuteSuperstructureState)
-            ).unless(mIntaker::hasGamePiece)
+            )
         );
     }
 }

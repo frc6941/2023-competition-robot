@@ -46,6 +46,8 @@ public class StatusTracker implements Updatable {
         public boolean inManual = false;
         public boolean speedLimitActivate = false;
         public boolean yCancelActivate = false;
+        public boolean forceExtend = false;
+        public boolean hasLoadChanged = false;
     }
 
     public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
@@ -64,7 +66,7 @@ public class StatusTracker implements Updatable {
                 config.staticFiles.add(
                         Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "pulsehud").toString(),
                         Location.EXTERNAL);
-            }).start(3000);
+            }).start(5807);
 
     private static StatusTracker instance;
 
@@ -115,8 +117,32 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.inManual = value;
     }
 
+    public void setForceExtend(boolean value) {
+        mPeriodicIO.forceExtend = value;
+    }
+
+    public void toggleForceExtend() {
+        mPeriodicIO.forceExtend = !mPeriodicIO.forceExtend;
+    }
+
+    public boolean getForceExtend() {
+        return mPeriodicIO.forceExtend;
+    }
+
     public void setYCancel(boolean value) {
         mPeriodicIO.yCancelActivate = value;
+    }
+
+    public boolean hasLoadHasChanged() {
+        return mPeriodicIO.hasLoadChanged;
+    }
+
+    public void setLoadHasChanged() {
+        mPeriodicIO.hasLoadChanged = true;
+    }
+
+    public void clearLoadRecorder() {
+        mPeriodicIO.hasLoadChanged = false;
     }
 
     public void setLoad() {

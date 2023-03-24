@@ -83,7 +83,7 @@ public class AutoScore {
                 boolean armOnTarget = Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);
                 boolean override = forceExtend.getAsBoolean();
 
-                return (onTranslation && onRotation && armOnTarget) || override;
+                return (onTranslation && onRotation && armOnTarget) || (override && armOnTarget);
             }
         ).repeatedly().until(confirmation)
         // new RequestSuperstructureStateAutoRetract(mSuperstructure, superstructureTargetSupplier).andThen(

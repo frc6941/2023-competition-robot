@@ -52,7 +52,7 @@ public class Intaker extends SubsystemBase implements Updatable{
         intakerMotor.setSmartCurrentLimit(17, 10);
     }
 
-    private void setIntakerPower(double power) {
+    public void setIntakerPower(double power) {
         mPeriodicIO.intakerMotorDemand = Util.clamp(power, -1.0, 1.0);
     }
 

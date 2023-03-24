@@ -11,6 +11,7 @@ import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveTeleopCommand;
+import frc.robot.commands.ManualHomeExtenderCommand;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
@@ -73,11 +74,13 @@ public class RobotContainer {
         mControlBoard.getLoad().onTrue(
             autoLoad.getArmCommand().alongWith(new InstantCommand(mTracker::setLoad))
             .until(mControlBoard::getCancellation)
-            .finallyDo((interrupted) -> mIntaker.stopIntake())
+            .finallyDo((interrupted) -> {
+                mIntaker.stopIntake();
+            })
         );
 
         AutoScore autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mSelector,
-                mControlBoard::getConfirmation, mControlBoard::getForceExtendInScore, () -> true);
+                mControlBoard::getConfirmation, mTracker::getForceExtend, () -> true);
         mControlBoard.getScore().onTrue(
             autoScore.getArmCommand().alongWith(new InstantCommand(mTracker::setScore))
                 .andThen(new WaitUntilNoCollision(() -> mDrivebase.getPose()))
@@ -111,6 +114,12 @@ public class RobotContainer {
         mControlBoard.getDriverController().getController().povDown().whileTrue(
             new AutoBalanceCommand(mDrivebase, false)
         );
+        mControlBoard.getForceExtendInScore().onTrue(
+            Commands.runOnce(mTracker::toggleForceExtend)
+        );
+        mControlBoard.getDriverController().getController().back().onTrue(
+            new ManualHomeExtenderCommand(mSuperstructure)
+        );
         
 
         // Bind Operator
@@ -130,10 +139,10 @@ public class RobotContainer {
             new InstantCommand(() -> mSelector.applyCursorToTarget()).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetIncrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(2)).ignoringDisable(true)
+            new InstantCommand(() -> mSelector.moveLoadingTarget(1)).ignoringDisable(true)
         );
         mControlBoard.getLoadingTargetDecrease().onTrue(
-            new InstantCommand(() -> mSelector.moveLoadingTarget(-2)).ignoringDisable(true)
+            new InstantCommand(() -> mSelector.moveLoadingTarget(-1)).ignoringDisable(true)
         );
         mControlBoard.getCanCommuteNear().onTrue(
             new InstantCommand(mSelector::toggleCanCommuteNear)

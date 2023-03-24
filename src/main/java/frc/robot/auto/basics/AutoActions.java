@@ -67,20 +67,26 @@ public class AutoActions {
                 mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
                         : mIntaker::runIntakeCube)
                     .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                            () -> mTargetSelector.getLoadSuperstructureState(), 60.0))
+                            () -> mTargetSelector.getLoadSuperstructureState(), 30.0))
                     .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
                     .andThen(commute().alongWith(stopIntake()));
     }
 
     public Command prepScore() {
         return new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                scoreSuperstructureStateSupplier, 60.0);
+                scoreSuperstructureStateSupplier, 40.0);
     }
 
     public Command score() {
         return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-            .andThen(new WaitCommand(0.15).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
-            .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
+            .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
+            .andThen(
+                Commands.either(
+                    new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)), 
+                    new InstantCommand(() -> mIntaker.setIntakerPower(-0.20)),
+                    () -> mTargetSelector.getTargetGamePiece() == GamePiece.CONE
+                )
+            )
             .andThen(new WaitCommand(0.2));
     }
 

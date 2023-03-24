@@ -143,7 +143,7 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
         armMotorLeader.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector,
                 LimitSwitchNormal.NormallyOpen);
         armMotorLeader.setInverted(InvertType.None);
-        armMotorLeader.configMotionSCurveStrength(7, 100);
+        armMotorLeader.configMotionSCurveStrength(3, 100);
 
         armMotorFollower.configFactoryDefault(50);
         armMotorFollower.setNeutralMode(NeutralMode.Coast);
@@ -303,13 +303,11 @@ public class ArmAndExtender extends SubsystemBase implements Updatable {
                 Rotation2d.fromDegrees(mPeriodicIO.armAngle),
                 mPeriodicIO.extenderLength);
 
-        if (mPeriodicIO.armRevLimitReached) {
-            homeArm(Constants.SUBSYSTEM_ARM.HOME_NEGATIVE_ANGLE);
-        } else if (mPeriodicIO.armCurrent > 10.0 && !armIsHomed) {
+        if (mPeriodicIO.armCurrent > 9.0 && !armIsHomed) {
             homeArm(Constants.SUBSYSTEM_ARM.HOME_POSITIVE_ANGLE);
         }
 
-        if (mPeriodicIO.extenderCurrent > 10.0 && !extenderIsHomed) {
+        if (mPeriodicIO.extenderCurrent > 9.0 && !extenderIsHomed) {
             homeExtender(Constants.SUBSYSTEM_EXTENDER.HOME_LENGTH);
         }
     }

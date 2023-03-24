@@ -86,8 +86,8 @@ public class ControlBoard {
         return driver.getController().getHID().getLeftBumperPressed();
     }
 
-    public boolean getForceExtendInScore() {
-        return driver.getController().rightStick().getAsBoolean();
+    public Trigger getForceExtendInScore() {
+        return driver.getController().rightStick();
     }
 
     public Trigger getResetGyro() {
