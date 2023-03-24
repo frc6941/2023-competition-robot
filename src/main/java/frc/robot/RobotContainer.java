@@ -11,9 +11,13 @@ import frc.robot.commands.AutoCommuteCommand;
 import frc.robot.commands.AutoLoad;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.DriveTeleopCommand;
+import frc.robot.commands.RequestSuperstructureFollowTrajectory;
 import frc.robot.commands.ResetGyroCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.controlboard.ControlBoard;
+import frc.robot.motion.SuperstructureObstacles;
+import frc.robot.states.SuperstructureState;
+import frc.robot.states.SuperstructureStateBuilder;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
 import frc.robot.subsystems.RobotStateEstimator;
@@ -155,6 +159,10 @@ public class RobotContainer {
                 Commands.runOnce(() -> mSuperstructure.setAngle(mSuperstructure.getAngle()), mSuperstructure)
                     .alongWith(new WaitUntilCommand(() -> false)).until(mControlBoard::getCancellation)
                     .finallyDo((interrupted) -> mTracker.setInManual(false)));
+
+        mControlBoard.getDriverController().getController().leftStick().whileTrue(
+            new RequestSuperstructureFollowTrajectory(mSuperstructure, mSuperstructure::getCurrentSuperstructureState, () -> new SuperstructureState(Rotation2d.fromDegrees(222.0), 1.20), SuperstructureObstacles.get(), 0.5, 0.02).repeatedly()
+        );
     }
 
     public UpdateManager getUpdateManager() {

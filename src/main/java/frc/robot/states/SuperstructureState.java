@@ -4,6 +4,7 @@ import com.team254.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 
 /*
@@ -42,6 +43,15 @@ public class SuperstructureState implements Interpolatable<SuperstructureState> 
 
     public boolean isExtenderOnTarget(SuperstructureState desiredState, double extenderThreshold) {
         return Util.epsilonEquals(desiredState.extenderLength, extenderLength, extenderThreshold);
+    }
+
+    /**
+     * Turn the SuperstructureState to Polar form.
+     * 
+     * @return Translation2d. X is the angle in degrees, Y is the length in meters.
+     */
+    public Translation2d toPolar() {
+        return new Translation2d(armAngle.getDegrees(), extenderLength);
     }
 
     @Override

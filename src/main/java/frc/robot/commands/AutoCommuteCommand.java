@@ -14,10 +14,11 @@ public class AutoCommuteCommand extends SequentialCommandGroup {
             Commands.either(
                 new RequestSuperstructureStateCommand(mSuperstructure, mTargetSelector::getCommuteSuperstructureState),
                 Commands.sequence(
-                    new RequestExtenderCommand(mSuperstructure, 0.89, 0.02),
+                    new RequestExtenderCommand(mSuperstructure, () -> mTargetSelector.getCommuteSuperstructureState().extenderLength, 0.05),
                     new RequestSuperstructureStateCommand(mSuperstructure, () -> {
-                        return new SuperstructureState(mTargetSelector.getCommuteSuperstructureState().armAngle, 0.89);
+                        return new SuperstructureState(mTargetSelector.getCommuteSuperstructureState().armAngle, 0.90);
                     }),
+                    Commands.print("Arm Back!"),
                     new RequestSuperstructureStateCommand(mSuperstructure, mTargetSelector::getCommuteSuperstructureState).unless(() -> !Util.epsilonEquals(mTargetSelector.getCommuteSuperstructureState().armAngle.getDegrees(), mSuperstructure.getAngle(), 2.0))
                 ),
                 () -> {

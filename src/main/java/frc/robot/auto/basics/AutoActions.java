@@ -194,7 +194,12 @@ public class AutoActions {
         .andThen(
             new AutoBalanceCommand(mDrivebase, enterFront)
         )
-        .alongWith(commute());
+        .alongWith(
+            Commands.sequence(
+                stopIntake(),
+                commute()
+            )
+        );
     }
 
     public void initMapping() {
