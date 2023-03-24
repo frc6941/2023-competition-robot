@@ -202,6 +202,7 @@ public class AutoActions {
         commandMapping.put("commute", commute());
     }
 
+    @SuppressWarnings("unchecked")
     public HashMap<String, Command> getCommandMapping(ScoringTarget... objectives) {
         HashMap<String, Command> baseMapping = (HashMap<String, Command>) commandMapping.clone();
         baseMapping.put("set target 1", configTargetSelector(objectives[0]));
