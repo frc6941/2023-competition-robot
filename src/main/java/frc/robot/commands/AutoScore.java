@@ -1,10 +1,13 @@
 package frc.robot.commands;
 
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.team254.lib.util.Util;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -47,10 +50,7 @@ public class AutoScore {
     private static final Translation3d midDeltaCube = new Translation3d(0.15, 0.0, 0.4);
     private static final Translation3d lowerDeltaCube = new Translation3d(-0.40, 0.0, 0.25);
     private static final double minDriveX = FieldConstants.Grids.outerX + 0.42;
-    private static final double minDriveY = 0.5;
-    private static final double maxDriveY = FieldConstants.Community.leftY - 0.5;
-
-    private static final double minExtension = 0.60;
+    
     private static final double lowMaxExtension = 0.60;
     private static final double midMaxExtension = 1.20;
     private static final double highMaxExtension = 1.60;
@@ -73,17 +73,17 @@ public class AutoScore {
         new ConditionalCommand(
             new RequestSuperstructureStateCommand(mSuperstructure, superstructureTargetSupplier),
 
-            new RequestExtenderCommand(mSuperstructure, 0.89, 0.05)
+            new RequestExtenderCommand(mSuperstructure, 0.90, 0.05)
             .andThen(new RequestArmCommand(mSuperstructure, () -> superstructureTargetSupplier.get().armAngle.getDegrees(), 5.0)),
 
             () -> {
-                Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
+                Pose2d pose = AllianceFlipUtil.apply(mDrivebase.getLocalizer().getLatestPose());
                 boolean onTranslation = pose.getTranslation().minus(drivetrainTargetSupplier.get().getTranslation()).getNorm() < 0.60;
                 boolean onRotation = Math.abs(pose.getRotation().minus(drivetrainTargetSupplier.get().getRotation()).getDegrees()) < 30.0;
                 boolean armOnTarget = Util.epsilonEquals(superstructureTargetSupplier.get().armAngle.getDegrees(), mSuperstructure.getCurrentSuperstructureState().armAngle.getDegrees(), 5.0);
                 boolean override = forceExtend.getAsBoolean();
 
-                return (onTranslation && onRotation && armOnTarget) || override;
+                return (onTranslation && onRotation && armOnTarget) || (override && armOnTarget);
             }
         ).repeatedly().until(confirmation)
         // new RequestSuperstructureStateAutoRetract(mSuperstructure, superstructureTargetSupplier).andThen(
@@ -101,82 +101,39 @@ public class AutoScore {
     }
 
     public void initSuppliers() {
-        drivetrainTargetSupplier = () -> getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean());
+        drivetrainTargetSupplier = () -> getDrivetrainTarget(mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), getNearestScoringTarget());
         superstructureTargetSupplier = () -> getSupertructureStateTarget(
-            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
-            mTargetSelector.getScoringTarget(),
+            getDrivetrainTarget(mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), getNearestScoringTarget()),
+            getNearestScoringTarget(),
             mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
             0.0
         );
         superstructureTargetLoweredSupplier = () -> getSupertructureStateTarget(
-            getDrivetrainTarget(mDrivebase.getLocalizer().getLatestPose(), mTargetSelector.getScoringTarget(), mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), alignedScore.getAsBoolean()),
-            mTargetSelector.getScoringTarget(),
+            getDrivetrainTarget(mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), getNearestScoringTarget()),
+            getNearestScoringTarget(),
             mTargetSelector.getTargetGamePiece(),
             mTargetSelector.getScoringDirection(),
             0.32
         );
     }
 
-    public static Pose2d getDrivetrainTarget(Pose2d currentPose, ScoringTarget target, GamePiece gamepiece, Direction direction, boolean alignedScore) {
+    public Pose2d getDrivetrainTarget(GamePiece gamepiece, Direction direction, ScoringTarget target) {
         Translation3d endEffectorTarget = getEndEffectorTargetPosition(target, gamepiece);
         double endEffectorZ = endEffectorTarget.getZ();
         Translation2d endEffectorXYPlane = endEffectorTarget.toTranslation2d();
 
-        Translation2d deltaTranslation = AllianceFlipUtil.apply(currentPose).getTranslation().minus(endEffectorXYPlane);
         double maxDistance = getMaxSuperstructureExtension(target, direction, endEffectorZ);
         
-        if(alignedScore) {
-            return new Pose2d(
-                new Translation2d(
-                    Math.max(minDriveX, endEffectorXYPlane.getX() + maxDistance), endEffectorXYPlane.getY()
-                ),
-                direction == Direction.FAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0)
-            );
-        }
-
-        double distanceFromNode = Util.clamp(
-            deltaTranslation.getNorm(),
-            minExtension,
-            maxDistance
+        return new Pose2d(
+            new Translation2d(
+                Math.max(minDriveX, endEffectorXYPlane.getX() + maxDistance), endEffectorXYPlane.getY()
+            ),
+            direction == Direction.FAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0)
         );
-        
-        Rotation2d angleFromNode = deltaTranslation.getAngle();
-        Rotation2d maxRotation = new Rotation2d(Math.acos((minDriveX - endEffectorXYPlane.getX()) / maxDistance));
-        if (angleFromNode.getRadians() > maxRotation.getRadians()) {
-            angleFromNode = maxRotation;
-        }
-        if (angleFromNode.getRadians() < -maxRotation.getRadians()) {
-            angleFromNode = maxRotation.unaryMinus();
-        }
-
-        double minDistanceAtAngle = (minDriveX - endEffectorXYPlane.getX()) / angleFromNode.getCos();
-        if (distanceFromNode < minDistanceAtAngle) {
-            distanceFromNode = minDistanceAtAngle;
-        }
-
-        Translation2d unrestrictedTranslation = new Translation2d(
-            distanceFromNode,
-            angleFromNode
-        ).plus(endEffectorXYPlane);
-
-        Translation2d restrictedTranslation = new Translation2d(
-            unrestrictedTranslation.getX(),
-            Util.clamp(unrestrictedTranslation.getY(), minDriveY, maxDriveY)
-        );
-
-        Rotation2d skewAngle = restrictedTranslation.minus(endEffectorXYPlane).getAngle();
-        Rotation2d delta = direction == Direction.FAR ? new Rotation2d() : Rotation2d.fromDegrees(180.0);
-
-        Pose2d driveTarget = new Pose2d(
-            restrictedTranslation,
-            skewAngle.plus(delta)
-        );
-        
-        return driveTarget;
     }
 
-    public static SuperstructureState getSupertructureStateTarget(Pose2d currentPose, ScoringTarget target, GamePiece gamepiece, Direction direction, double lower) {
+    public SuperstructureState getSupertructureStateTarget(Pose2d currentPose, ScoringTarget target, GamePiece gamepiece, Direction direction, double lower) {
         Translation3d endEffectorTarget = getEndEffectorTargetPosition(target, gamepiece);
         Translation2d endEffectorXZPlane = new Translation2d(endEffectorTarget.getX(), endEffectorTarget.getZ());
         Translation2d endEffectorXYPlane = endEffectorTarget.toTranslation2d();
@@ -193,7 +150,7 @@ public class AutoScore {
         return armTarget;
     }
 
-    public static Translation3d getEndEffectorTargetPosition(ScoringTarget target, GamePiece targetGamepiece) {
+    public Translation3d getEndEffectorTargetPosition(ScoringTarget target, GamePiece targetGamepiece) {
         Translation3d targetEndEffectorPosition;
         Translation3d delta;
         if(targetGamepiece == GamePiece.CUBE) {
@@ -231,7 +188,7 @@ public class AutoScore {
         return targetEndEffectorPosition;
     }
 
-    public static double getMaxSuperstructureExtension(ScoringTarget target, Direction direction, double height) {
+    public double getMaxSuperstructureExtension(ScoringTarget target, Direction direction, double height) {
         Rotation2d armAngleInitial = direction == Direction.NEAR ? Rotation2d.fromDegrees(-90.0) : Rotation2d.fromDegrees(270.0);
 
         double armMaxExtension = Math.abs(SuperstructureKinematics.forwardKinematics2d(
@@ -265,6 +222,27 @@ public class AutoScore {
         return Math.min(presetMaxExtension, armMaxExtension);
     }
 
+    public ScoringTarget getNearestScoringTarget() {
+        Pose2d pose = mDrivebase.getLocalizer().getLatestPose();
+        SCORING_ROW row = mTargetSelector.getScoringRow();
+        Pose2d actualPose = AllianceFlipUtil.apply(pose);
+
+        List<Translation2d> searchTargets;
+        GamePiece targetGamePiece = mTargetSelector.getTargetGamePiece();
+        SCORING_ROW targetRow = mTargetSelector.getScoringRow();
+
+        if(targetRow == SCORING_ROW.LOW) {
+            searchTargets = List.of(FieldConstants.Grids.complexLowTranslations);
+        } else {
+            searchTargets = List.of(targetGamePiece == GamePiece.CUBE ? FieldConstants.Grids.complexLowCubeTranslations : FieldConstants.Grids.complexLowConeTranslations);
+        }
+        Translation2d lowTranslationTarget = actualPose.getTranslation().nearest(searchTargets);
+        int positionTarget = (int) MathUtil.clamp(Math.floor((lowTranslationTarget.getY() - FieldConstants.Grids.nodeFirstY) / FieldConstants.Grids.nodeSeparationY), 0.0, 8.0);
+        return new ScoringTarget(
+            new int[] { row.id, positionTarget }
+        );
+    }
+
     public Command getDriveCommand() {
         return driveCommand;
     }
@@ -287,5 +265,25 @@ public class AutoScore {
 
     public Supplier<SuperstructureState> getSuperstructureTargetSupplierLower() {
         return superstructureTargetLoweredSupplier;
+    }
+
+    public SuperstructureState getSuperstructureTarget(ScoringTarget target) {
+        return getSupertructureStateTarget(
+            getDrivetrainTarget(mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), getNearestScoringTarget()),
+            target,
+            mTargetSelector.getTargetGamePiece(),
+            mTargetSelector.getScoringDirection(),
+            0.0
+        );
+    }
+
+    public SuperstructureState getSuperstructureTargetLowered(ScoringTarget target) {
+        return getSupertructureStateTarget(
+            getDrivetrainTarget(mTargetSelector.getTargetGamePiece(), mTargetSelector.getScoringDirection(), getNearestScoringTarget()),
+            target,
+            mTargetSelector.getTargetGamePiece(),
+            mTargetSelector.getScoringDirection(),
+            0.32
+        );
     }
 }

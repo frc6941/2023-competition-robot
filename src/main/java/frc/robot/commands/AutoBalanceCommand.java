@@ -14,13 +14,14 @@ public class AutoBalanceCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
 
     private static final LoggedTunableNumber autoBalanceAdjustmentTime = new LoggedTunableNumber(
-            "Auto Balance Back Adjustment Time", 0.8);
+            "Auto Balance Back Adjustment Time", 0.95);
     private static final LoggedTunableNumber autoBalanceClimbSpeed = new LoggedTunableNumber("Auto Balance Climb Speed",
-            0.9);
+            0.65);
+            
     private static final LoggedTunableNumber autoBalanceDashSpeed = new LoggedTunableNumber("Auto Balance Dash Speed",
             2.0);
     private static final LoggedTunableNumber autoOnPlatformDegreeThreshold = new LoggedTunableNumber(
-            "On Platform Angle Degree Threshold", 8.0);
+            "On Platform Angle Degree Threshold", 10.0);
 
     // private static final LoggedTunableNumber autoBalancePositionDegreeThreshold = new LoggedTunableNumber(
     //         "Auto Balance Angle Degree Threshold", 10.0);
@@ -102,12 +103,12 @@ public class AutoBalanceCommand extends CommandBase {
                 } else {
                     mDrivebase.unbrake();
                     mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (isInitialPositive ? 1.0 : -1.0), 0.0), 0.0, true,
-                        false, true);
+                        false, false);
                 }
             } else {
                 mDrivebase.unbrake();
                 mDrivebase.drive(new Translation2d(autoBalanceClimbSpeed.get() * (angle > 0.0 ? -1.0 : 1.0), 0.0), 0.0, true,
-                        false, true);
+                        false, false);
             }
         } else {
             mDrivebase.drive(new Translation2d(enterFront ? autoBalanceDashSpeed.get() : -autoBalanceDashSpeed.get(), 0.0), 0.0, true, false, true);

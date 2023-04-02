@@ -23,7 +23,6 @@ import frc.robot.commands.RequestSuperstructureStateAutoRetract;
 import frc.robot.commands.RequestSuperstructureStateCommand;
 import frc.robot.commands.WaitUntilNoCollision;
 import frc.robot.states.GamePiece;
-import frc.robot.states.LoadingTarget;
 import frc.robot.states.LoadingTarget.LOADING_LOCATION;
 import frc.robot.states.ScoringTarget;
 import frc.robot.states.SuperstructureState;
@@ -40,11 +39,13 @@ public class AutoActions {
     TargetSelector mTargetSelector;
 
     AutoScore autoScore;
+    Supplier<ScoringTarget> scoringTargetSupplier;
     Supplier<SuperstructureState> scoreSuperstructureStateSupplier;
     Supplier<SuperstructureState> scoreSuperstructureStateSupplierLower;
     Supplier<Pose2d> scoreDriveTargetSupplier;
 
     private final HashMap<String, Command> commandMapping = new HashMap<String, Command>();
+    private ScoringTarget currentScoringTarget;
 
     public AutoActions(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure,
             Intaker mIntaker, TargetSelector mTargetSelector) {
@@ -55,34 +56,41 @@ public class AutoActions {
 
         autoScore = new AutoScore(mDrivebase, mSuperstructure, mIntaker, mTargetSelector,
                 () -> false, () -> false, () -> true);
-        scoreSuperstructureStateSupplier = autoScore.getSuperstructureTargetSupplier();
-        scoreSuperstructureStateSupplierLower = autoScore.getSuperstructureTargetSupplierLower();
-        scoreDriveTargetSupplier = autoScore.getDrivetrainTargetSupplier();
+        scoreSuperstructureStateSupplier = () -> {
+            return autoScore.getSuperstructureTarget(currentScoringTarget);
+        };
+        scoreSuperstructureStateSupplierLower = () -> {
+            return autoScore.getSuperstructureTargetLowered(currentScoringTarget);
+        };
 
         initMapping();
     }
 
     public Command groundIntake() {
         return new InstantCommand(
-                mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
-                        : mIntaker::runIntakeCube)
-                    .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                            () -> mTargetSelector.getLoadSuperstructureState()))
-                    .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
-                    .andThen(commute().alongWith(stopIntake()));
+            mTargetSelector.getTargetGamePiece() == GamePiece.CONE ? mIntaker::runIntakeCone
+                    : mIntaker::runIntakeCube)
+                .andThen(new RequestSuperstructureStateAutoRetract(mSuperstructure,
+                        () -> mTargetSelector.getLoadSuperstructureState(), 30.0))
+                .andThen(new WaitUntilCommand(mIntaker::hasGamePiece))
+                .andThen(commute().alongWith(stopIntake()));
     }
 
     public Command prepScore() {
         return new RequestSuperstructureStateAutoRetract(mSuperstructure,
-                scoreSuperstructureStateSupplier);
+                scoreSuperstructureStateSupplier, 40.0);
     }
 
     public Command score() {
-        return new RequestSuperstructureStateCommand(mSuperstructure,
-            scoreSuperstructureStateSupplierLower)
-            .unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
-            .andThen(new WaitCommand(0.15).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
-            .andThen(new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)).alongWith(new PrintCommand("Ejecting Gamepiece!")))
+        return new RequestSuperstructureStateCommand(mSuperstructure, scoreSuperstructureStateSupplierLower).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE)
+            .andThen(new WaitCommand(0.4).unless(() -> mTargetSelector.getTargetGamePiece() == GamePiece.CUBE))
+            .andThen(
+                Commands.either(
+                    new InstantCommand(() -> mIntaker.runOuttake(mTargetSelector::getTargetGamePiece)), 
+                    new InstantCommand(() -> mIntaker.setIntakerPower(-0.20)),
+                    () -> mTargetSelector.getTargetGamePiece() == GamePiece.CONE
+                )
+            )
             .andThen(new WaitCommand(0.2));
     }
 
@@ -113,17 +121,9 @@ public class AutoActions {
         return new WaitUntilCommand(mSuperstructure::isHomed);
     }
 
-    public Command configTargetSelector(ScoringTarget scoringTarget) {
-        return Commands.runOnce(() -> {
-            if(scoringTarget != null) {
-                mTargetSelector.setScoringTarget(scoringTarget);
-            }
-        });
-    }
-
     public Command configGroundIntake() {
         return Commands.runOnce(
-                () -> mTargetSelector.setLoadingTarget(new LoadingTarget(LOADING_LOCATION.GROUND)));
+                () -> mTargetSelector.setLoadingTarget(LOADING_LOCATION.GROUND));
     }
 
     public Command stopIntake() {
@@ -143,21 +143,29 @@ public class AutoActions {
         return Commands.runOnce(() -> mSuperstructure.overrideProtection(false));
     }
 
-    public Command scorePreload(ScoringTarget target) {
-        if (target == null) {
-            return Commands.none();
-        } else {
-            return Commands.sequence(
-                configGroundIntake(),
-                configTargetSelector(target),
-                Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
-                waitUntilHomed(),
-                overrideAndGrabFarEnd(),
-                prepScore(),
-                score(),
-                stopIntake()
-            );
-        }
+    public Command scorePreload() {
+        return Commands.sequence(
+            configGroundIntake(),
+            Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
+            waitUntilHomed(),
+            overrideAndGrabFarEnd(),
+            prepScore(),
+            score(),
+            stopIntake()
+        );
+    }
+
+    public Command scorePreloadFromFront() {
+        return Commands.sequence(
+            configGroundIntake(),
+            delayZeroing(true),
+            Commands.runOnce(mIntaker::runIntakeCone, mIntaker),
+            delayZeroing(false),
+            waitUntilHomed(),
+            prepScore(),
+            score(),
+            stopIntake()
+        );
     }
 
     public Command scorePreloadFromFront(ScoringTarget target) {
@@ -187,7 +195,7 @@ public class AutoActions {
                     : FieldConstants.Community.chargingStationOuterX + 0.3,
             MathUtil.clamp(startingPosition.getY(),
                     FieldConstants.Community.chargingStationRightY + 2.0,
-                    FieldConstants.Community.chargingStationLeftY - 1.0),
+                    FieldConstants.Community.chargingStationLeftY - 2.0),
             enterFront ? Rotation2d.fromDegrees(180.0) : Rotation2d.fromDegrees(0.0));
 
         return new DriveToPoseCommand(mDrivebase, () -> position, false)
@@ -204,12 +212,22 @@ public class AutoActions {
         commandMapping.put("commute", commute());
     }
 
+    @SuppressWarnings("unchecked")
     public HashMap<String, Command> getCommandMapping(ScoringTarget... objectives) {
         HashMap<String, Command> baseMapping = (HashMap<String, Command>) commandMapping.clone();
-        baseMapping.put("set target 1", configTargetSelector(objectives[0]));
-        baseMapping.put("set target 2", configTargetSelector(objectives[1]));
-        baseMapping.put("set target 3", configTargetSelector(objectives[2]));
-        baseMapping.put("score preload", scorePreload(objectives[0]));
+        baseMapping.put("set target 1", Commands.runOnce(() -> {
+            this.currentScoringTarget = objectives[0];
+            mTargetSelector.setTargetGamePiece(GamePiece.CONE);
+        }));
+        baseMapping.put("set target 2", Commands.runOnce(() -> {
+            this.currentScoringTarget = objectives[1];
+            mTargetSelector.setTargetGamePiece(GamePiece.CUBE);
+        }));
+        baseMapping.put("set target 3", Commands.runOnce(() -> {
+            this.currentScoringTarget = objectives[2];
+            mTargetSelector.setTargetGamePiece(GamePiece.CONE);
+        }));
+        baseMapping.put("score preload", scorePreload());
 
         return baseMapping;
     }

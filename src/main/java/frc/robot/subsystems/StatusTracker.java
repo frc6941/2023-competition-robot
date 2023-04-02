@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.nio.file.Paths;
-
 import org.frcteam6941.led.AddressableLEDPattern;
 import org.frcteam6941.led.AddressableLEDWrapper;
 import org.frcteam6941.looper.UpdateManager.Updatable;
@@ -15,13 +13,10 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation.MatchType;
-import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
 import frc.robot.controlboard.ControlBoard;
 import frc.robot.states.GamePiece;
 import frc.robot.utils.Lights;
-import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
 
 public class StatusTracker implements Updatable {
     public AddressableLEDWrapper led;
@@ -45,6 +40,9 @@ public class StatusTracker implements Updatable {
         public boolean isCube = false;
         public boolean inManual = false;
         public boolean speedLimitActivate = false;
+        public boolean yCancelActivate = false;
+        public boolean forceExtend = false;
+        public boolean hasLoadChanged = false;
     }
 
     public StatusTrackerPeriodicIO mPeriodicIO = new StatusTrackerPeriodicIO();
@@ -58,12 +56,12 @@ public class StatusTracker implements Updatable {
     public StringPublisher matchType = matchInfoTable.getStringTopic("matchType").publish();
     public StringPublisher matchAlliance = matchInfoTable.getStringTopic("matchAlliance").publish();
 
-    Javalin app = Javalin.create(
-            config -> {
-                config.staticFiles.add(
-                        Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "pulsehud").toString(),
-                        Location.EXTERNAL);
-            }).start(3000);
+    // Javalin app = Javalin.create(
+    //         config -> {
+    //             config.staticFiles.add(
+    //                     Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "pulsehud").toString(),
+    //                     Location.EXTERNAL);
+    //         }).start(5807);
 
     private static StatusTracker instance;
 
@@ -105,9 +103,41 @@ public class StatusTracker implements Updatable {
         return mPeriodicIO.inManual;
     }
 
+    public boolean isYCancelActivate() {
+        return mPeriodicIO.yCancelActivate;
+    }
+
 
     public void setInManual(boolean value) {
         mPeriodicIO.inManual = value;
+    }
+
+    public void setForceExtend(boolean value) {
+        mPeriodicIO.forceExtend = value;
+    }
+
+    public void toggleForceExtend() {
+        mPeriodicIO.forceExtend = !mPeriodicIO.forceExtend;
+    }
+
+    public boolean getForceExtend() {
+        return mPeriodicIO.forceExtend;
+    }
+
+    public void setYCancel(boolean value) {
+        mPeriodicIO.yCancelActivate = value;
+    }
+
+    public boolean hasLoadHasChanged() {
+        return mPeriodicIO.hasLoadChanged;
+    }
+
+    public void setLoadHasChanged() {
+        mPeriodicIO.hasLoadChanged = true;
+    }
+
+    public void clearLoadRecorder() {
+        mPeriodicIO.hasLoadChanged = false;
     }
 
     public void setLoad() {
@@ -128,6 +158,7 @@ public class StatusTracker implements Updatable {
         mPeriodicIO.isInload = false;
         mPeriodicIO.isInScore = false;
         mPeriodicIO.speedLimitActivate = false;
+        mPeriodicIO.yCancelActivate = false;
     }
 
     public void updateIndicator() {
@@ -149,7 +180,18 @@ public class StatusTracker implements Updatable {
                 if (mPeriodicIO.inManual) {
                     mPeriodicIO.desiredPattern = Lights.MANUAL;
                 } else if (mPeriodicIO.isInScore) {
-                    mPeriodicIO.desiredPattern = mPeriodicIO.seeAprilTag ? Lights.SCORING_HAS_VISION : Lights.SCORING;
+                    switch(TargetSelector.getInstance().getScoringRow()) {
+                        case HIGH:
+                            mPeriodicIO.desiredPattern = Lights.SCORING_HIGH;
+                            break;
+                        case MID:
+                            mPeriodicIO.desiredPattern = Lights.SCORING_MID;
+                            break;
+                        case LOW:
+                        default:
+                            mPeriodicIO.desiredPattern = Lights.SCORING_LOW;
+                            break;
+                    }
                 } else if (mPeriodicIO.isInload) {
                     if(mPeriodicIO.hasGamePiece) {
                         mPeriodicIO.desiredPattern = Lights.HAS_GAMEPIECE;
@@ -157,7 +199,18 @@ public class StatusTracker implements Updatable {
                         mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.LOAD_CUBE : Lights.LOAD_CONE;
                     }
                 } else {
-                    mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE : Lights.COMMUTE_CONE;
+                    switch(TargetSelector.getInstance().getScoringRow()) {
+                        case HIGH:
+                            mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE_HIGH : Lights.COMMUTE_CONE_HIGH;
+                            break;
+                        case MID:
+                            mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE_MID : Lights.COMMUTE_CONE_MID;
+                            break;
+                        case LOW:
+                        default:
+                            mPeriodicIO.desiredPattern = mPeriodicIO.isCube ? Lights.COMMUTE_CUBE_LOW : Lights.COMMUTE_CONE_LOW;
+                            break;
+                    }
                 }
                 break;
             case ESTOP:

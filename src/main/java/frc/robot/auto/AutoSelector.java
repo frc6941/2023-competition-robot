@@ -122,7 +122,7 @@ public class AutoSelector {
         }
         
         HashMap<String, Command> commandMap = autoActions.getCommandMapping(new ScoringTarget[] { objective1, objective2, objective3 });
-        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 4.0, 2.8);
+        PathPlannerTrajectory trajectory = PathPlanner.loadPath(config.toString(), 3.5, 2.5);
         PPAutoBuilder builder = new PPAutoBuilder(SJTUSwerveMK5Drivebase.getInstance(), commandMap);
 
         

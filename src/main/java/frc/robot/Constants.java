@@ -84,10 +84,7 @@ public final class Constants {
     // DIO Configurations
     public static final class DIO_ID {
         public static final int ARM_LIMIT_SWTICH_PORT = 0;
-    }
-
-
-    
+    }    
 
     // Swerve Drivetrain Constants
     public static final class SUBSYSTEM_DRIVETRAIN {
@@ -142,7 +139,7 @@ public final class Constants {
         = 1023.0 / (6380.0 * 2048.0) * 0.1;
         public static final double IZONE = 500;
         public static final double CRUISE_V = 24000.0;
-        public static final double CRUIVE_ACC = 12000.0;
+        public static final double CRUIVE_ACC = 10000.0;
 
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0.1673, 0.10902, 0.043741, 0.0022842);
         public static final double ANGLE_OFFSET_TO_HORIZONTAL = -14.467;
@@ -162,7 +159,7 @@ public final class Constants {
         public static final double CRUISE_V = 60000.0;
         public static final double CRUIVE_ACC = 120000.0;
 
-        public static final double KP_SOFT = 0.001;
+        public static final double KP_SOFT = 0.0005;
         public static final double KI_SOFT = 0.0;
         public static final double KD_SOFT = 0.0;
         public static final double KF_SOFT = 0.0;

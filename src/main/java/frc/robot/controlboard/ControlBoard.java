@@ -86,8 +86,8 @@ public class ControlBoard {
         return driver.getController().getHID().getLeftBumperPressed();
     }
 
-    public boolean getForceExtendInScore() {
-        return driver.getController().rightStick().getAsBoolean();
+    public Trigger getForceExtendInScore() {
+        return driver.getController().rightStick();
     }
 
     public Trigger getResetGyro() {
@@ -124,86 +124,47 @@ public class ControlBoard {
     
     /**
      * OPERATOR METHODS
+     * 
+     * Y - Double Substation (Cone)
+     * X - Ground (Cube)
+     * B - Ground (Cone)
+     * A - Ground Tipped (Cube Maintain at Ground Intake Height)
+     * 
+     * LB - High
+     * POV up - Middle
+     * POV down - Low
      */
-    // public Trigger getTargetMoveLeft() {
-    //     return operator.button(BUTTON.ML);
-    // }
+    
 
-    // public Trigger getTargetMoveRight() {
-    //     return operator.button(BUTTON.MR);
-    // }
-
-    // public Trigger getTargetMoveForward() {
-    //     return operator.button(BUTTON.UM);
-    // }
-
-    // public Trigger getTargetMoveBackward() {
-    //     return operator.button(BUTTON.LM);
-    // }
-
-    // public Trigger getApplyCursor() {
-    //     return operator.button(BUTTON.MM);
-    // }
-
-    // public Trigger getLoadingStation() {
-    //     return operator.button(BUTTON.UL);
-    // }
-
-    // public Trigger getGroundLoading() {
-    //     return operator.button(BUTTON.UR);
-    // }
-
-    // public Trigger getSingleSubstation() {
-    //     return operator.button(BUTTON.LL);
-    // }
-
-    // public Trigger getGroundTipped() {
-    //     return operator.button(BUTTON.LR);
-    // }
-
-    // public Trigger getCanCommuteNear() {
-    //     return operator.axisLessThan(1, -0.5);
-    // }
-
-    public Trigger getTargetMoveLeft() {
-        return operator.getController().povLeft();
+    public Trigger getSetDoubleSubstation() {
+        return operator.getController().y();
     }
 
-    public Trigger getTargetMoveRight() {
-        return operator.getController().povRight();
-    }
-
-    public Trigger getTargetMoveForward() {
-        return operator.getController().povUp();
-    }
-
-    public Trigger getTargetMoveBackward() {
-        return operator.getController().povDown();
-    }
-
-    public Trigger getLoadingTargetIncrease() {
-        return operator.getController().rightBumper();
-    }
-
-    public Trigger getLoadingTargetDecrease() {
-        return operator.getController().leftBumper();
-    }
-
-    public Trigger getApplyCursor() {
-        return operator.getController().a();
-    }
-
-    public Trigger getSetCube() {
+    public Trigger getGroundAlongWithSetCube() {
         return operator.getController().x();
     }
 
-    public Trigger getSetCone() {
+    public Trigger getGroundAlongWithSetCone() {
         return operator.getController().b();
     }
 
-    public Trigger getCanCommuteNear() {
-        return operator.getController().leftTrigger(0.5).and(
-            () -> operator.getController().rightTrigger(0.5).getAsBoolean()
-        );
+    public Trigger getGroundTipped() {
+        return operator.getController().a();
+    }
+
+    public Trigger getSetHighTarget() {
+        return operator.getController().leftBumper();
+    }
+
+    public Trigger getSetMidTarget() {
+        return operator.getController().povUp();
+    }
+
+    public Trigger getSetLowTarget() {
+        return operator.getController().povDown();
+    }
+
+    public Trigger togggleCommuteNear() {
+        return operator.getController().leftTrigger(0.5).and(() -> operator.getController().rightTrigger(0.5).getAsBoolean());
     }
 }

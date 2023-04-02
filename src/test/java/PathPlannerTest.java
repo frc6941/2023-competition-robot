@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import com.pathplanner.lib.PathConstraints;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.FieldConstants;
 import frc.robot.motion.FieldObstacles;
 
