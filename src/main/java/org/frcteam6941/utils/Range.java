@@ -20,6 +20,6 @@ public class Range {
     }
 
     public double average() {
-        return (min + max ) / 2.0;
+        return (min + max) / 2.0;
     }
 }

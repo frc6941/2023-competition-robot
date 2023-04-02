@@ -57,10 +57,10 @@ public class AutoLoad {
             LOADING_LOCATION.GROUND, Commands.none()
         );
         loadArmCommandMap = Map.of(
-            LOADING_LOCATION.DOUBLE_SUBSTATION, new LoadShelfCommand(mDrivebase, mSuperstructure, mIntaker, mTargetSelector, confirmation),
+            LOADING_LOCATION.DOUBLE_SUBSTATION, new LoadShelfCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation),
             LOADING_LOCATION.SINGLE_SUBSTATION, new LoadSingleSubstationCommand(mSuperstructure, mIntaker, mTargetSelector),
-            LOADING_LOCATION.GROUND, new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector),
-            LOADING_LOCATION.GROUND_TIPPED, new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector)
+            LOADING_LOCATION.GROUND, new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation),
+            LOADING_LOCATION.GROUND_TIPPED, new LoadGroundCommand(mSuperstructure, mIntaker, mTargetSelector, confirmation)
         );
         
 

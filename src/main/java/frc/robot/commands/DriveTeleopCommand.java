@@ -24,6 +24,7 @@ public class DriveTeleopCommand extends CommandBase {
     Supplier<Double> rotationSupplier;
     Supplier<Boolean> reducdMode1Activate;
     Supplier<Boolean> reducdMode2Activate;
+    Supplier<Boolean> yCancelActivate;
     Supplier<Double> extesionPercentageSupplier;
     Supplier<Boolean> speedLimitActivate;
     boolean isOpenLoop;
@@ -36,7 +37,7 @@ public class DriveTeleopCommand extends CommandBase {
     private Double lockAngleRecord = null;
 
     private static final LoggedTunableNumber maxExtensionVelocity = new LoggedTunableNumber("Max Extension Velocity", 2.5);
-    private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 15.0);
+    private static final LoggedTunableNumber minExtensionLinearAcceleration = new LoggedTunableNumber("Min Extension Linear Acceleration", 12.0);
     private static final LoggedTunableNumber maxExtensionLinearAcceleration = new LoggedTunableNumber("Max Extension Linear Acceleration", 2.0);
     private static final LoggedTunableNumber minExtensionThetaAcceleration = new LoggedTunableNumber("Min Extension Theta Acceleration", 300.0);
     private static final LoggedTunableNumber maxExtensionThetaAcceleration = new LoggedTunableNumber("Max Extension Theta Acceleration", 150.0);
@@ -49,6 +50,7 @@ public class DriveTeleopCommand extends CommandBase {
             Supplier<Boolean> reducdMode1Activate,
             Supplier<Boolean> reducdMode2Activate,
             Supplier<Boolean> speedLimitActivate,
+            Supplier<Boolean> yCancelActivate,
             Supplier<Double> extensionPercentageSupplier,
             boolean isOpenLoop) {
         this.mDrivebase = mDrivebase;
@@ -57,6 +59,7 @@ public class DriveTeleopCommand extends CommandBase {
         this.rotationSupplier = rotationSupplier;
         this.reducdMode1Activate = reducdMode1Activate;
         this.reducdMode2Activate = reducdMode2Activate;
+        this.yCancelActivate = yCancelActivate;
         this.speedLimitActivate = speedLimitActivate;
         this.extesionPercentageSupplier = extensionPercentageSupplier;
         this.isOpenLoop = isOpenLoop;
@@ -79,7 +82,7 @@ public class DriveTeleopCommand extends CommandBase {
             turnAidController.setP(turnAidControllerKp.get());
         }
 
-        Translation2d translation = translationSupplier.get();
+        Translation2d translation = yCancelActivate.get() ?  new Translation2d(translationSupplier.get().getX(), 0.0) : translationSupplier.get();
         Rotation2d linearDirection = new Rotation2d(translation.getX(), translation.getY());
         double rotation = rotationSupplier.get();
 

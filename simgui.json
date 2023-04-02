@@ -101,6 +101,9 @@
   "NetworkTables": {
     "transitory": {
       "AdvantageKit": {
+        "Arm and Extender": {
+          "open": true
+        },
         "Drivetrain": {
           "Gyro": {
             "open": true
@@ -169,6 +172,30 @@
       },
       "TargetSelector": {
         "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
+    "visible": true
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "height": 326
+        }
+      ],
+      "window": {
+        "visible": false
       }
     }
   }

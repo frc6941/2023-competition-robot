@@ -284,9 +284,9 @@ public class SuperstructureStateBuilder {
         Loading.singleLength.initDefault(0.89);
 
         /* Commuting */
-        Commuting.commuteAngleNear.initDefault(-90);
-        Commuting.commuteLengthNear.initDefault(0.89);
-        Commuting.commuteAngleFar.initDefault(231.0);
-        Commuting.commuteLengthFar.initDefault(0.89);
+        Commuting.commuteAngleNear.initDefault(-77.0);
+        Commuting.commuteLengthNear.initDefault(0.90);
+        Commuting.commuteAngleFar.initDefault(229.0);
+        Commuting.commuteLengthFar.initDefault(0.93);
     }
 }

@@ -9,7 +9,7 @@ import frc.robot.FieldConstants;
 import frc.robot.utils.AllianceFlipUtil;
 
 public class WaitUntilNoCollision extends SequentialCommandGroup{
-    public static final double minDriveX = FieldConstants.Grids.outerX + 0.7;
+    public static final double minDriveX = FieldConstants.Grids.outerX + 0.5;
     public static final double maxDriveX = FieldConstants.LoadingZone.doubleSubstationX - 2.5;
     
     public WaitUntilNoCollision(Supplier<Pose2d> pose) {

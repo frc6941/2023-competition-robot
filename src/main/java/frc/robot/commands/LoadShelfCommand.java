@@ -11,32 +11,32 @@ import frc.robot.motion.SuperstructureKinematics;
 import frc.robot.states.SuperstructureState;
 import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.Intaker;
-import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 import frc.robot.subsystems.TargetSelector;
 
 public class LoadShelfCommand extends SequentialCommandGroup {
-    public LoadShelfCommand(SJTUSwerveMK5Drivebase mDrivebase, ArmAndExtender mSuperstructure, Intaker mIntaker,
+    public LoadShelfCommand(ArmAndExtender mSuperstructure, Intaker mIntaker,
             TargetSelector mTargetSelector, BooleanSupplier confirmation) {
         addCommands(
-            Commands.sequence(
-                new RequestSuperstructureStateAutoRetract(mSuperstructure, mTargetSelector::getLoadSuperstructureStateMinExtenderLength),
+            new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece), mIntaker),
+            new RequestExtenderCommand(mSuperstructure, 1.0, 0.02),
+            Commands.print("On Load"),
+            Commands.parallel(
                 new InstantCommand(() -> mIntaker.runIntake(mTargetSelector::getTargetGamePiece), mIntaker),
-                new RequestExtenderCommand(mSuperstructure, 1.0, 0.02).unless(mIntaker::hasGamePiece),
-                new WaitUntilCommand(mIntaker::hasGamePiece),
-                new RequestSuperstructureStateCommand(mSuperstructure, () -> {
-                    SuperstructureState temp = mTargetSelector.getLoadSuperstructureStateMinExtenderLength();
-                    return SuperstructureKinematics.inverseKinematics2d(
-                        SuperstructureKinematics.forwardKinematics2d(
-                            temp
-                        ).plus(new Translation2d(0.0, 0.10))
-                    );
-                }),
-                new WaitUntilCommand(confirmation),
-                new InstantCommand(mIntaker::stopIntake),
-                new RequestExtenderCommand(mSuperstructure, 0.885, 0.02),
-                new WaitUntilNoCollision(() -> mDrivebase.getLocalizer().getLatestPose()),
-                new RequestSuperstructureStateAutoRetract(mSuperstructure, mTargetSelector::getCommuteSuperstructureState)
-            ).unless(mIntaker::hasGamePiece)
+                new RequestArmCommand(mSuperstructure, () -> mTargetSelector.getLoadSuperstructureState().armAngle.getDegrees(), 2.0),
+                Commands.print("Test")
+            ).repeatedly().until(mIntaker::hasGamePiece),
+            new RequestSuperstructureStateCommand(mSuperstructure, () -> {
+                SuperstructureState temp = mTargetSelector.getLoadSuperstructureStateMinExtenderLength();
+                return SuperstructureKinematics.inverseKinematics2d(
+                    SuperstructureKinematics.forwardKinematics2d(
+                        temp
+                    ).plus(new Translation2d(0.0, 0.10))
+                );
+            }),
+            new WaitUntilCommand(confirmation),
+            new InstantCommand(mIntaker::stopIntake),
+            new ManualHomeExtenderCommand(mSuperstructure),
+            new RequestSuperstructureStateAutoRetract(mSuperstructure, mTargetSelector::getCommuteSuperstructureState)
         );
     }
 }

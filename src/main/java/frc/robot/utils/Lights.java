@@ -30,10 +30,17 @@ public class Lights {
     public static final AddressableLEDPattern LOAD_CUBE = new BlinkingPattern(Color.kPurple, 0.2);
     public static final AddressableLEDPattern HAS_GAMEPIECE = new SolidColorPattern(Color.kGreen);
 
-    public static final AddressableLEDPattern COMMUTE_CONE = new BlinkingPattern(Color.kYellow, 0.5);
-    public static final AddressableLEDPattern COMMUTE_CUBE = new BlinkingPattern(Color.kPurple, 0.5);
-    public static final AddressableLEDPattern SCORING = new SolidColorPattern(Color.kWhite);
-    public static final AddressableLEDPattern SCORING_HAS_VISION = new BlinkingPattern(Color.kWhite, 0.2);
+    public static final AddressableLEDPattern COMMUTE_CONE_HIGH = new BlinkingPattern(Color.kYellow, 0.05);
+    public static final AddressableLEDPattern COMMUTE_CONE_MID = new BlinkingPattern(Color.kYellow, 0.2);
+    public static final AddressableLEDPattern COMMUTE_CONE_LOW = new BlinkingPattern(Color.kYellow, 0.5);
+
+    public static final AddressableLEDPattern COMMUTE_CUBE_HIGH = new BlinkingPattern(Color.kPurple, 0.05);
+    public static final AddressableLEDPattern COMMUTE_CUBE_MID = new BlinkingPattern(Color.kPurple, 0.2);
+    public static final AddressableLEDPattern COMMUTE_CUBE_LOW = new BlinkingPattern(Color.kPurple, 0.5);
+
+    public static final AddressableLEDPattern SCORING_HIGH = new BlinkingPattern(Color.kGreen, 0.05);
+    public static final AddressableLEDPattern SCORING_MID = new BlinkingPattern(Color.kGreen, 0.2);
+    public static final AddressableLEDPattern SCORING_LOW = new BlinkingPattern(Color.kGreen, 0.5);
 
     public static final AddressableLEDPattern MANUAL = new BlinkingPattern(Color.kRed, 0.05);
 }
