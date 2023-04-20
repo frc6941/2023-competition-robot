@@ -14,11 +14,14 @@ import com.team254.lib.util.TimeDelayedBoolean;
 import com.team254.lib.util.Util;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.states.GamePiece;
 
-public class Intaker extends SubsystemBase implements Updatable{
+public class Intaker extends SubsystemBase implements Updatable {
     @AutoLog
     public static class IntakerPeriodicIO {
         // INPUT
@@ -34,8 +37,8 @@ public class Intaker extends SubsystemBase implements Updatable{
     public IntakerPeriodicIOAutoLogged mPeriodicIO = new IntakerPeriodicIOAutoLogged();
 
     private final CANSparkMax intakerMotor = new CANSparkMax(Constants.CANID.INTAKER_MOTOR, MotorType.kBrushless);
-    private final AnalogInput gamepieceSensor = new AnalogInput(Constants.ANALOG_ID.GAMEPIECE_SENSOR);
     private final TimeDelayedBoolean hasGamePieceDelayedBoolean = new TimeDelayedBoolean();
+    private final DoubleSolenoid extender  = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.PNEUMATICS_ID.INTAKER_EXTENDER_FORWARD, Constants.PNEUMATICS_ID.INTAKER_EXTENDER_REVERSE);
 
     private static Intaker instance;
 
@@ -47,7 +50,7 @@ public class Intaker extends SubsystemBase implements Updatable{
     }
     
     private Intaker() {
-        intakerMotor.setIdleMode(IdleMode.kBrake);
+        intakerMotor.setIdleMode(IdleMode.kCoast);
         intakerMotor.setSmartCurrentLimit(15, 5);
 
         intakerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
@@ -79,6 +82,7 @@ public class Intaker extends SubsystemBase implements Updatable{
         setHoldPower(Constants.SUBSYSTEM_INTAKE.HOLD_PERCENTAGE_CONE);
     }
 
+
     public void runIntake(Supplier<GamePiece> gamePiece) {
         if(gamePiece.get() == GamePiece.CONE) {
             runIntakeCone();
@@ -99,10 +103,17 @@ public class Intaker extends SubsystemBase implements Updatable{
         return hasGamePieceDelayedBoolean.update(mPeriodicIO.hasGamePiece, Constants.SUBSYSTEM_INTAKE.HOLD_DELAY);
     }
 
+    public void setForward() {
+        this.extender.set(Value.kForward);
+    }
+
+    public void setReverse() {
+        this.extender.set(Value.kReverse);
+    }
+
     @Override
     public synchronized void read(double time, double dt){
         mPeriodicIO.intakerMotorVoltage = intakerMotor.getAppliedOutput();
-        mPeriodicIO.hasGamePiece = gamepieceSensor.getAverageVoltage() < 2.0 ? true : false;
         mPeriodicIO.intakeMotorCurrent = intakerMotor.getOutputCurrent();
     }
     
@@ -112,13 +123,7 @@ public class Intaker extends SubsystemBase implements Updatable{
     
     @Override
     public synchronized void write(double time, double dt){
-        if(mPeriodicIO.intakerMotorDemand < -0.1 || !mPeriodicIO.hasGamePiece){
-            intakerMotor.set(mPeriodicIO.intakerMotorDemand);
-        } else if (mPeriodicIO.hasGamePiece) {
-            intakerMotor.set(mPeriodicIO.intakeMotorHoldDemand);
-        } else {
-            intakerMotor.set(mPeriodicIO.intakerMotorDemand);
-        }
+        intakerMotor.set(mPeriodicIO.intakerMotorDemand);
     }
     
     @Override
@@ -136,5 +141,11 @@ public class Intaker extends SubsystemBase implements Updatable{
 
     @Override
     public synchronized void simulate(double time, double dt){
+    }
+
+    @Override
+    public void disabled(double time, double dt) {
+        // TODO Auto-generated method stub
+        
     }
 }

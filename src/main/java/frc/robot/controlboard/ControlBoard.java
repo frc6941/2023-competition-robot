@@ -91,7 +91,9 @@ public class ControlBoard {
         } else {
             return (rotAxis - (Math.signum(rotAxis) * kSwerveDeadband)) / (1 - kSwerveDeadband) * 3.0;
         }
-    }
+    
+}   
+    
 
     public boolean getConfirmation() {
         return driver.getController().getHID().getRightBumperPressed();

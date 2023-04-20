@@ -4,12 +4,12 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.ArmAndExtender;
+// import frc.robot.subsystems.ArmAndExtender;
 import frc.robot.subsystems.SJTUSwerveMK5Drivebase;
 
 public class DriveTeleopCommand extends CommandBase {
     SJTUSwerveMK5Drivebase mDrivebase;
-    ArmAndExtender mSupersturcture;
+    // ArmAndExtender mSupersturcture;
     Supplier<Translation2d> translationSupplier;
     Supplier<Double> rotationSupplier;
     Supplier<Double> multiplierSupplier;
@@ -17,13 +17,13 @@ public class DriveTeleopCommand extends CommandBase {
 
     public DriveTeleopCommand(
             SJTUSwerveMK5Drivebase mDrivebase,
-            ArmAndExtender mSuperstructure,
+            // ArmAndExtender mSuperstructure,
             Supplier<Translation2d> translationSupplier,
             Supplier<Double> rotationSupplier,
             Supplier<Double> multiplierSupplier,
             boolean isOpenLoop) {
         this.mDrivebase = mDrivebase;
-        this.mSupersturcture = mSuperstructure;
+        // this.mSupersturcture = mSuperstructure;
         this.translationSupplier = translationSupplier;
         this.rotationSupplier = rotationSupplier;
         this.multiplierSupplier = multiplierSupplier;

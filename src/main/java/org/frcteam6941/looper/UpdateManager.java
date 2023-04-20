@@ -26,6 +26,7 @@ public final class UpdateManager {
 		void stop();
 
 		void simulate(double time, double dt);
+		void disabled(double time, double dt);
 	}
 
 	private double lastTimestamp = 0.0;

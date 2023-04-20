@@ -113,4 +113,10 @@ public class RobotStateEstimator implements Updatable {
     public synchronized void simulate(double time, double dt) {
         // Auto Generated Method
     }
+
+    @Override
+    public void disabled(double time, double dt) {
+        // TODO Auto-generated method stub
+        
+    }
 }

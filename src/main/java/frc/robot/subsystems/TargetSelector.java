@@ -293,4 +293,10 @@ public class TargetSelector extends SubsystemBase implements Updatable {
             this.loadingTarget.setLoadingLocation(LOADING_LOCATION.DOUBLE_SUBSTATION_INNER);
         }
     }
+
+    @Override
+    public void disabled(double time, double dt) {
+        // TODO Auto-generated method stub
+        
+    }
 }

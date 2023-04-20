@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import org.frcteam1678.lib.math.Conversions;
 import org.frcteam6941.utils.Range;
 import org.frcteam6941.vision.CameraConstants;
 
@@ -57,15 +58,23 @@ public final class Constants {
         public static final int DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR = 6;
         public static final int DRIVETRAIN_BACK_RIGHT_STEER_MOTOR = 7;
 
-        public static final int ARM_MOTOR_LEADER = 8;
-        public static final int ARM_MOTOR_FOLLOWER = 9;
-        public static final int EXTENDER_MOTOR = 10;
-        public static final int INTAKER_MOTOR = 15;
+        public static final int FlyMotor = 11; //need to confirm
+        public static final int FEEDER_MOTOR = 8;
+        public static final int TRIGGER_MOTOR = 16;
+        // public static final int ARM_MOTOR_LEADER = 8;
+        // public static final int ARM_MOTOR_FOLLOWER = 9;
+        // public static final int EXTENDER_MOTOR = 10;
+        public static final int INTAKER_MOTOR = 29;
+
+        public static final int TURRET_MOTOR = 909090909;
+        
     }
 
     // Analog ID Configurations
     public static final class ANALOG_ID {
         public static final int GAMEPIECE_SENSOR = 0;
+        public static final int BALL_POSITION_ONE_DETECTOR = 0;
+        public static final int BALL_POSITION_TWO_DETECTOR = 1;
     }
 
     public static final class LED_CONTROL {
@@ -102,10 +111,10 @@ public final class Constants {
         public static final double DRIVETRAIN_SIDE_WIDTH_BUMPERED = 0.818;
         public static final Translation2d DRIVETRAIN_CENTER_OF_ROTATION = new Translation2d(0.0, 0.0);
 
-        public static final double FRONT_LEFT_OFFSET = -74.091796875 + 90.0;
-        public static final double FRONT_RIGHT_OFFSET = -128.84765625 + 90.0;
-        public static final double BACK_LEFT_OFFSET = -249.43359375000003 + 90.0 + 180.0;
-        public static final double BACK_RIGHT_OFFSET = -49.21875 + 90.0 + 180.0;
+        public static final double FRONT_LEFT_OFFSET = -3339.755859 + 59.677734 + 180.0;
+        public static final double FRONT_RIGHT_OFFSET = -2304.580078 + 180.0;
+        public static final double BACK_LEFT_OFFSET = -2758.623047 + 180.0;
+        public static final double BACK_RIGHT_OFFSET = -2914.277344 + 180.0;
 
         public static final int MAX_LATENCY_COMPENSATION_MAP_ENTRIES = 50;
 
@@ -126,10 +135,15 @@ public final class Constants {
                 450.0, 2000.0);
     }
 
+ 
+        // public static final class LED_CONTROL {
+        //     public static final int LED_PORT = 0;
+        //     public static final int LED_LENGTH = 51;
+        // }
     // Arm Constants
     public static final class SUBSYSTEM_ARM {
         public static final double MASS = 2.9 + 0.9;
-        public static final double GEAR_RATIO = (68.0 / 8.0) * (64.0 / 18.0) * (60 / 12.0);
+        public static final double GEAR_RATIO = (64.0 / 14.0) * (64.0 / 18.0) * (60.0 / 12.0);
         public static final double HOME_ANGLE = -98.2;
 
         public static final double KP = 0.3;
@@ -170,6 +184,68 @@ public final class Constants {
         public static final double HOLD_DELAY = 0.25;
     }
 
+     // Turret Constants
+     
+    public static double TURRET_DEFAULT_ZERO_POSITION = 0.0;
+    public static double TURRET_GEAR_RATIO = 1.0;
+    public static double TURRET_SAFE_ZONE_DEGREE = 70.0;
+    public static double TURRET_MAX_ROTATION_DEGREE = 90.0;
+    public static double TURRET_FORWARD_MAX_POSITION = 2558.0;
+    public static double TURRET_REVERSE_MAX_POSITION = -1482.0;
+    public static double TURRET_ERROR_TOLERANCE = 1.0;
+    
+     
+
+     // Shooter Constants
+     public static final double SHOOTER_GEAR_RATIO = 36.0 / 24.0;
+     public static final double SHOOTER_MAX_FREE_SPEED_RPM = 6380.0;
+ 
+     public static final double SHOOTER_KF = 1024.0 / Conversions.RPMToFalcon(SHOOTER_MAX_FREE_SPEED_RPM, 1.0);
+     public static final double SHOOTER_KP = 0.15;
+     public static final double SHOOTER_KI = 0.001;
+     public static final double SHOOTER_KD = 1.5;
+     public static final double SHOOTER_IZONE = Conversions.RPMToFalcon(300, 1.0);
+     public static final double SHOOTER_RAMP = 0.25;
+     public static final double SHOOTER_ERROR_TOLERANCE = 35.0;
+ 
+    // Color Sensor Constants
+    public static final double COLOR_SENSOR_RATIO_THRESHOLD = 0.35;
+
+     // Feeder Constants
+    public static final double FEEDER_FAST_PERCENTAGE = 0.6;
+    public static final double FEEDER_SLOW_PERCENTAGE = 0.3;
+    public static final double FEEDER_FEED_PERCENTAGE = 0.45;
+    public static final double FEEDER_FEED_REVERSE_PERCENTAGE = -0.40;
+    public static final double FEEDER_SPIT_PERCENTAGE = -0.4;
+    public static final double FEEDER_EJECT_PERCENTAGE = 0.6;
+
+    public static final double FEEDER_KF = 1024.0 / Conversions.RPMToFalcon(6380, 1.0);
+    public static final double FEEDER_KP = 1024.0 / Conversions.RPMToFalcon(6380, 1.0) * 1.0;
+    public static final double FEEDER_KI = 0.0;
+    public static final double FEEDER_KD = 0.0;
+
+     // Trigger Constants
+    public static final double TRIGGER_GEAR_RATIO = 7.0;
+    public static final double TRIGGER_SLOW_EJECT_VELOCITY = 300.0;
+    public static final double TRIGGER_FEEDING_VELOCITY = 300.0;
+    public static final double TRIGGER_REVERSING_VELOCITY = -500.0;
+
+    public static final double TRIGGER_KF_V_SLOT_0 = 0.00009;
+    public static final double TRIGGER_KP_V_SLOT_0 = 0.000005;
+    public static final double TRIGGER_KI_V_SLOT_0 = 0.000001;
+    public static final double TRIGGER_KD_V_SLOT_0 = 0.01;
+    public static final double TRIGGER_IZONE_SLOT_0 = 350.0;
+
+    public static final double TRIGGER_KF_V_SLOT_1 = 0.0;
+    public static final double TRIGGER_KP_V_SLOT_1 = 0.8;
+    public static final double TRIGGER_KI_V_SLOT_1 = 0.006;
+    public static final double TRIGGER_KD_V_SLOT_1 = 0.00;
+
+    // Ballpath (Trigger + Feeder) Constants
+    public static final double BALLPATH_EXPEL_TIME = 0.5;
+    public static final double BALLPATH_SLOW_PROCESS_TIME = 2.0;
+    public static final double BALLPATH_FEEDING_REVERSE_TIME = 0.1;
+
     // Superstructure Constants
     public static final class SUBSYSTEM_SUPERSTRUCTURE {
         public static class STRUCTURE {
@@ -179,6 +255,7 @@ public final class Constants {
                 ROBOT_CENTER_TO_HIGH_PIVOT.getX(),
                 ROBOT_CENTER_TO_HIGH_PIVOT.getZ());
         }
+
 
         // Thresholds
         public static class THRESHOLD {

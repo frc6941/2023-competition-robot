@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.auto.AutoSelector;
-import frc.robot.subsystems.ArmAndExtender;
+// import frc.robot.auto.AutoSelector;
+// import frc.robot.subsystems.ArmAndExtender;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -35,7 +35,7 @@ import frc.robot.subsystems.ArmAndExtender;
 public class Robot extends LoggedRobot {
     private final RobotContainer mContainer = new RobotContainer();
     private final UpdateManager updateManager = mContainer.getUpdateManager();
-    private final AutoSelector mAutoSelector = AutoSelector.getInstance();
+    // private final AutoSelector mAutoSelector = AutoSelector.getInstance();
 
     public Robot() {
         super(Constants.LOOPER_DT);
@@ -86,7 +86,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void disabledPeriodic() {
-        mAutoSelector.update();
+        // mAutoSelector.update();
     }
 
     /**
@@ -98,7 +98,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().enable();
 
         updateManager.invokeStart();
-        mAutoSelector.getAutoCommand().schedule();
+        // mAutoSelector.getAutoCommand().schedule();
     }
 
     /** This function is called periodically during autonomous. */

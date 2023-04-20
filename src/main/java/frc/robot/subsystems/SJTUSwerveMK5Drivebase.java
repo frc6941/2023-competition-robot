@@ -9,6 +9,7 @@ import com.team254.lib.util.Util;
 import org.frcteam6941.control.HolonomicDriveSignal;
 import org.frcteam6941.control.HolonomicTrajectoryFollower;
 import org.frcteam6941.drivers.Gyro;
+import org.frcteam6941.drivers.NavX;
 import org.frcteam6941.drivers.Pigeon;
 import org.frcteam6941.localization.Localizer;
 import org.frcteam6941.localization.SwerveLocalizer;
@@ -84,17 +85,17 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
     }
 
     private SJTUSwerveMK5Drivebase() {
-        gyro = new Pigeon(0);
+        gyro = new NavX();
 
         // Swerve hardware configurations
         mSwerveMods = new SwerveModuleBase[] {
                 new SJTUSwerveModuleMK5(0, Constants.CANID.DRIVETRAIN_FRONT_LEFT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_LEFT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.FRONT_LEFT_OFFSET,
-                        true, false),
+                        false , true),
                 new SJTUSwerveModuleMK5(1, Constants.CANID.DRIVETRAIN_FRONT_RIGHT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_FRONT_RIGHT_STEER_MOTOR,
-                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_RIGHT_OFFSET, true, false),
+                        Constants.SUBSYSTEM_DRIVETRAIN.FRONT_RIGHT_OFFSET, false, true ),
                 new SJTUSwerveModuleMK5(2, Constants.CANID.DRIVETRAIN_BACK_LEFT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_BACK_LEFT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.BACK_LEFT_OFFSET,
@@ -102,7 +103,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
                 new SJTUSwerveModuleMK5(3, Constants.CANID.DRIVETRAIN_BACK_RIGHT_DRIVE_MOTOR,
                         Constants.CANID.DRIVETRAIN_BACK_RIGHT_STEER_MOTOR,
                         Constants.SUBSYSTEM_DRIVETRAIN.BACK_RIGHT_OFFSET,
-                        true, false)
+                        false , true )
         };
 
         // Module positions and swerve kinematics
@@ -134,6 +135,7 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
         gyro.setYaw(0.0);
         swerveLocalizer.reset(new Pose2d(), getModulePositions());
         angularVelocity = new MovingAverage(10);
+        
     }
 
     /**
@@ -543,5 +545,11 @@ public class SJTUSwerveMK5Drivebase extends SubsystemBase implements SwerveDrive
 
     public STATE getState() {
         return this.state;
+    }
+
+    @Override
+    public void disabled(double time, double dt) {
+        // TODO Auto-generated method stub
+        
     }
 }
